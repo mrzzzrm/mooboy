@@ -5,10 +5,6 @@ static void emu_reset() {
     cpu_reset();
 }
 
-static bool emu_start_rom(u8 *data, size_t size) {
-    mem_set_rom(data, size);
-}
-
 void emu_init() {
 
 }
@@ -17,18 +13,10 @@ void emu_close() {
 
 }
 
-bool emu_load(const char *path) {
-    u8 *romdata;
-    size_t romsize;
-
-    if((romdata = io_load_binary(path, &romsize)) == NULL) {
-        err_set(ERR_ROM_NOT_FOUND);
-        return false;
-    }
-
+bool emu_load(u8 *data, size_t size) {
     emu_reset();
 
-    if(!emu_start_rom(romdata, romsize)) {
+    if(!mem_load_rom(data, size)) {
         err_set(ERR_ROM_CORRUPT);
         return false;
     }
@@ -38,6 +26,6 @@ bool emu_load(const char *path) {
 
 bool emu_run() {
     cpu_emulate(1);
-    return false;
+    return true;
 }
 

@@ -1,6 +1,7 @@
 #ifndef CPU_H
 #define CPU_H
 
+    #include "mem.h"
     #include "util/defines.h"
 
     typedef union reg_s {
