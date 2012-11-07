@@ -3,12 +3,12 @@
 
     #define A (cpu.af.b[0])
     #define F (cpu.af.b[1])
-    #define B (cpu.af.b[0])
-    #define C (cpu.af.b[1])
-    #define D (cpu.af.b[0])
-    #define E (cpu.af.b[1])
-    #define H (cpu.af.b[0])
-    #define L (cpu.af.b[1])
+    #define B (cpu.bc.b[0])
+    #define C (cpu.bc.b[1])
+    #define D (cpu.de.b[0])
+    #define E (cpu.de.b[1])
+    #define H (cpu.hl.b[0])
+    #define L (cpu.hl.b[1])
 
     #define AF (cpu.af.w)
     #define BC (cpu.bc.w)
