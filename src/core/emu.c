@@ -25,7 +25,9 @@ bool emu_load(u8 *data, size_t size) {
 }
 
 bool emu_run() {
-    cpu_emulate(1);
+    while(true) {
+        cpu_emulate(1);
+    }
     return true;
 }
 

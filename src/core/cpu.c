@@ -4,14 +4,6 @@
 
 cpu_t cpu;
 
-#define AF (cpu.af.w)
-#define BC (cpu.bc.w)
-#define DE (cpu.de.w)
-#define HL (cpu.hl.w)
-#define SP (cpu.sp.w)
-#define PC (cpu.pc.w)
-
-#define FETCH mem_readb(PC++)
 
 void cpu_reset() {
     AF = 0x01B0;
@@ -24,7 +16,9 @@ void cpu_reset() {
 
 bool cpu_emulate(uint cycles) {
     u8 op = FETCH;
-    cpu_ops[op]();
+    printf("PC = %.4x | %.4x\n", PC, mem_readb(PC));
+    cpu_ops[op](op);
+    sys_sleep(500);
 
     return true;
 }

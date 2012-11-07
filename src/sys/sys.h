@@ -1,7 +1,8 @@
 #ifndef SYS_H
 #define SYS_H
 
-    #include <util/defines.h>
+    #include <time.h>
+    #include "util/defines.h"
 
     void sys_init(int argc, const char** argv);
     void sys_close();
@@ -12,5 +13,6 @@
     const char *sys_get_rompath();
 
     void sys_error();
+    void sys_sleep(time_t ticks);
 
 #endif // SYS_H

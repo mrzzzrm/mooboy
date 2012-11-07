@@ -46,26 +46,21 @@ bool mem_load_rom(u8 *data, uint datasize) {
     return true;
 }
 
-static u8 (*readf_map[])(u16) = {
-    read_rom, read_rom, read_rom, read_rom,
-    read_rom, read_rom, read_rom, read_rom,
-    read_vram, read_vram, read_xram, read_xram,
-    read_ram
-};
+//static u8 (*readf_map[])(u16) = {
+//    read_rom, read_rom, read_rom, read_rom,
+//    read_rom, read_rom, read_rom, read_rom,
+//    read_vram, read_vram, read_xram, read_xram,
+//    read_ram
+//};
 
-static u8 (*writefra_map[])(u16) = {
-    write_rom, write_rom, write_rom, write_rom,
-    write_rom, write_rom, write_rom, write_rom,
-    write_vram, write_vram, write_xram, write_xram,
-    write_ram
-};
+
 
 u8 mem_readb(u16 adr) {
     if(adr < 0xE000) {
-        return read_map[hb](adr >> 12);
+       // return readf_map[adr >> 12](adr);
     }
     else if(adr >= 0xE000 && adr < 0xFE00) { // Weird mirror of C000 -> FDFF
-        return read_mirror(adr);
+       // return read_mirror(adr);
     }
     else if(adr >= 0xFE00 && adr < 0xFEA0) { // Sprite attributes
 

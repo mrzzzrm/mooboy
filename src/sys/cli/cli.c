@@ -1,5 +1,7 @@
 #include "sys/sys.h"
 
+#include <time.h>
+
 #include "util/cmd.h"
 #include "util/err.h"
 
@@ -27,6 +29,10 @@ const char *sys_get_rompath() {
         return NULL;
     }
     return rom;
+}
+
+void sys_sleep(time_t ticks) {
+    usleep(ticks*1000);
 }
 
 void sys_error() {
