@@ -1,9 +1,14 @@
 #include "cpu.h"
 
-#include "cpu_tables.h"
+#include "cpu_ops.h"
+#include "cpu_defines.h"
 
 cpu_t cpu;
 
+void cpu_init() {
+    memset(op_chunk_map, 0, 0xFF);
+    memset(op_cb_chunk_map, 0, 0xFF);
+}
 
 void cpu_reset() {
     AF = 0x01B0;
@@ -15,10 +20,13 @@ void cpu_reset() {
 }
 
 bool cpu_emulate(uint cycles) {
-    u8 op = FETCH;
-    printf("PC = %.4x | %.4x\n", PC, mem_readb(PC));
-    cpu_ops[op](op);
-    sys_sleep(500);
+    u8 op = FETCHB;
+	op_chunk *c = op_chunk_map[op];
+	if(c == NULL) {
+		op_chunk_map[op] = op_create_chunk(op);
+		c = op_chunk_map[op];
+	}
+	c->func(c);
 
     return true;
 }

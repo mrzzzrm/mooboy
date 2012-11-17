@@ -28,6 +28,7 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/cpu.h" />
+		<Unit filename="src/core/cpu_defines.h" />
 		<Unit filename="src/core/cpu_ops.c">
 			<Option compilerVar="CC" />
 		</Unit>

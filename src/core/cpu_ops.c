@@ -2,490 +2,362 @@
 
 #include "cpu.h"
 #include "cpu_defines.h"
+#include "cpu_tables.h"
 
+op_chunk *op_chunk_map[0xFF];
+op_chunk *op_cb_chunk_map[0xFF];
 
+static u8 *regv[] = {&B, &C, &D, &E, &H, &L, NULL, &A};
 
-void op_null(u8 op) {
+op_chunk *op_create_chunk(u8 op) {
+	op_chunk *c = malloc(sizeof(op_chunk));
+	c->op = op;
+	c->func = op_func_map[op];
 
+	if(c->func == op_ld_ri) {
+        c->opl.b = REG(op>>3);
+        printf("Reg %p %p\n", REG(op>>3), &B);
+	}
+	else if(c->func == op_ld_rr) {
+        c->opl.b = LN == 7 ? &A : REG(HN-3 + (LN <= 5 ? 0 : 1));
+        c->opr.b = LN <= 5 ? REG(LN+1) : REG(LN-7);
+	}
+
+	return c;
 }
 
-void op_ld_rr(u8 op) {
-    switch(op) {
-        case 0x78: A = B; break;
-        case 0x79: A = C; break;
-        case 0x7A: A = D; break;
-        case 0x7B: A = E; break;
-        case 0x7C: A = H; break;
-        case 0x7D: A = L; break;
+op_chunk *op_create_cb_chunk(u8 op) {
+    op_chunk *c = malloc(sizeof(op_chunk));
+	c->op = op;
 
-        case 0x41: B = C; break;
-        case 0x42: B = D; break;
-        case 0x43: B = E; break;
-        case 0x44: B = H; break;
-        case 0x45: B = L; break;
-
-        case 0x48: C = B; break;
-        case 0x4A: C = D; break;
-        case 0x4B: C = E; break;
-        case 0x4C: C = H; break;
-        case 0x4D: C = L; break;
-
-        case 0x50: D = B; break;
-        case 0x51: D = C; break;
-        case 0x53: D = E; break;
-        case 0x54: D = H; break;
-        case 0x55: D = L; break;
-
-        case 0x58: E = B; break;
-        case 0x59: E = C; break;
-        case 0x5A: E = D; break;
-        case 0x5C: E = H; break;
-        case 0x5D: E = L; break;
-
-        case 0x60: H = B; break;
-        case 0x61: H = C; break;
-        case 0x62: H = D; break;
-        case 0x63: H = E; break;
-        case 0x65: H = L; break;
-
-        case 0x68: L = B; break;
-        case 0x69: L = C; break;
-        case 0x6A: L = D; break;
-        case 0x6B: L = E; break;
-        case 0x6C: L = H; break;
-
-        default: assert(0); break;
-    }
-}
-
-void op_ld_ri(u8 op) {
-    switch(op) {
-        case 0x06: B = BFETCH; break;
-        case 0x0E: C = BFETCH; break;
-        case 0x16: D = BFETCH; break;
-        case 0x1E: E = BFETCH; break;
-        case 0x26: F = BFETCH; break;
-        case 0x2E: G = BFETCH; break;
-        case 0x3E: H = BFETCH; break;
-
-        default: assert(0); break;
-    }
-}
-
-void op_ld_rrm(u8 op) {
-    switch(op) {
-        case 0x0A: A = BC_RREF; break;
-        case 0x1A: A = DE_RREF; break;
-        case 0x7E: A = HL_RREF; break;
-
-        case 0x46: B = HL_RREF; break;
-        case 0x4E: C = HL_RREF; break;
-        case 0x56: D = HL_RREF; break;
-        case 0x5E: E = HL_RREF; break;
-        case 0x66: H = HL_RREF; break;
-        case 0x6E: L = HL_RREF; break;
-
-        default: assert(0); break;
-    }
-}
-
-void op_ld_rmr(u8 op) {
-    switch(op) {
-        case 0x02: BC_WREF(A); break;
-        case 0x12: DE_WREF(A); break;
-        case 0x77: HL_WREF(A); break;
-
-        case 0x70: HL_WREF(B); break;
-        case 0x71: HL_WREF(C); break;
-        case 0x72: HL_WREF(D); break;
-        case 0x73: HL_WREF(E); break;
-        case 0x74: HL_WREF(H); break;
-        case 0x75: HL_WREF(L); break;
-
-        default: assert(0); break;
-    }
-}
-
-void op_ld_mi(u8 op) {
-    HL_WREF(BFETCH);
-}
-
-void op_ld_aim(u8 op) {
-    A = MEM_RREF(WFETCH);
-}
-
-void op_ld_ima(u8 op) {
-    MEM_WREF(WFETCH,  A);
-}
-
-void op_ld_aio(u8 op) {
-    switch(op) {
-        case 0xF0: A = MEM_RREF(0xFF00 + BFETCH); break;
-        case 0xF2: A = MEM_RREF(0xFF00 + C); break;
-
-        default: assert(0); break;
+	switch(HN) {
+        case 0x0: c->func = LN < 8 ? op_rlc  : op_rrc; break;
+        case 0x1: c->func = LN < 8 ? op_rl   : op_rr;  break;
+        case 0x2: c->func = LN < 8 ? op_sla  : op_sra; break;
+        case 0x3: c->func = LN < 8 ? op_swap : op_srl; break;
+        case 0x4: case 0x5: case 0x6: case 0x7: c->func = op_bit; break;
+        case 0x8: case 0x9: case 0xA: case 0xB: c->func = op_res; break;
+        case 0xC: case 0xd: case 0xE: case 0xF: c->func = op_set; break;
     }
 
-}
-
-void op_ld_ioa(u8 op) {
-    switch(op) {
-        case 0xE0: MEM_WREF(0xFF00 + BFETCH, A); break;
-        case 0xE2: MEM_WREF(0xFF00 + C, A); break;
-
-        default: assert(0); break;
+    u8 col = LN % 0x8;
+    if(col != 0x6) {
+        if(HN < 4) {
+            c->opl.b = col == 7 ? & A : REG(col+1);
+        }
+        else {
+            c->opr.b = col == 7 ? & A : REG(col+1);
+        }
     }
+
+    return c;
 }
 
-void op_ldx_am(u8 op) {
-    switch(op) {
-        case 0x2A: A = HL_RREF; HL++; break;
-        case 0x3A: A = HL_RREF; HL--; break;
+void op_null(op_chunk *c) {
 
-        default: assert(0); break;
-    }
 }
 
-void op_ldx_ma(u8 op) {
-    switch(op) {
-        case 0x22: HL_WREF(A); HL++; break;
-        case 0x32: HL_WREF(A); HL--; break;
-
-        default: assert(0); break;
-    }
+void op_ld_rr(op_chunk *c)    {
+    OPLB = OPRB;
 }
 
-void op_ld_rrim(u8 op) {
-    switch(op) {
-        case 0x01: BC = WFETCH; break;
-        case 0x11: DE = WFETCH; break;
-        case 0x21: HL = WFETCH; break;
-        case 0x31: SP = WFETCH; break;
-    }
+void op_ld_ri(op_chunk *c)    {
+    OPLB = FETCHB;
 }
 
-void op_ld_imsp(u8 op) {
-    MEM_WREF(WFETCH, SP);
+void op_ld_rrm(op_chunk *c)   {
+    OPLB = mem_readb(OPRW);
 }
 
-void op_ldhl_spi(u8 op) {
-    HL = SP + (s8)BFETCH;
-    Z = 0;
-    N = 0;
-    H = ?;
-    C = ?;
+void op_ld_rmr(op_chunk *c)   {
+    mem_writeb(OPLW, OPRB);
 }
 
-void op_ld_sphl(u8 op) {
+void op_ld_rmi(op_chunk *c)   {
+    mem_writeb(OPLW, FETCHB);
+}
+
+void op_ld_aim(op_chunk *c)   {
+    A = mem_readb(FETCHW);
+}
+
+void op_ld_ima(op_chunk *c)   {
+    mem_writeb(FETCHW, A);
+}
+
+void op_ld_acio(op_chunk *c)  {
+    A = mem_readb(0xFF00 + C);
+}
+
+void op_ld_cioa(op_chunk *c)  {
+    mem_writeb(0xFF00 + C, A);
+}
+
+void op_ld_aiio(op_chunk *c)  {
+    A =  mem_readb(0xFF00 + FETCHB);
+}
+
+void op_ld_iioa(op_chunk *c)  {
+    mem_writeb(0xFF00 + FETCHB, A);
+}
+
+void op_ldx_hlma(op_chunk *c) {
+    mem_writeb(HL, A); HL += HN == 3 ? -1 : 1;
+}
+
+void op_ldx_ahlm(op_chunk *c) {
+    A = mem_readb(HL); HL += HN == 3 ? -1 : 1;
+}
+
+void op_ld_rri(op_chunk *c)   {
+    OPLW = FETCHW;
+}
+
+void op_ld_sphl(op_chunk *c)  {
     SP = HL;
 }
 
-void op_push_sp(u8 op) {
-    switch(op) {
-        case 0xF5: MEM_WREF(SP, AF); SP -= 2; break;
-        case 0xC5: MEM_WREF(SP, BC); SP -= 2; break;
-        case 0xD5: MEM_WREF(SP, DE); SP -= 2; break;
-        case 0xE5: MEM_WREF(SP, HL); SP -= 2; break;
+void op_ldhl_spi(op_chunk *c) {
+    HL = SP + (s8)FETCHB;
+}
 
-        default: assert(0); break;
+void op_ld_imsp(op_chunk *c)  {
+    mem_writew(FETCHW, SP);
+}
+
+void op_push_sp(op_chunk *c)  {
+    mem_writew(SP, OPLW); SP -= 2;
+}
+
+void op_pop_sp(op_chunk *c)   {
+    OPLW = mem_readw(SP); SP += 2;
+}
+
+
+void op_add(op_chunk *c) {
+    u8 s = (u16)(HN == 0xC ? FETCHB : (LN == 0x6 ? mem_readb(HL) : OPLB));
+    u16 r = (u16)A + (u16)s;
+    // TODO: Set flags
+    A = (u8)r;
+}
+
+void op_adc(op_chunk *c) {
+    u8 s = (u16)(HN == 0xC ? FETCHB : (LN == 0xE ? mem_readb(HL) : OPLB)) + FC;
+    u16 r = (u16)A + (u16)s;
+    // TODO: Set flags
+    A = (u8)r;
+}
+
+void op_sub(op_chunk *c) {
+    u8 s = (u16)(HN == 0xD ? FETCHB : (LN == 0x6 ? mem_readb(HL) : OPLB));
+    // TODO: Add operation
+}
+
+void op_sbc(op_chunk *c) {
+    u8 s = (u16)(HN == 0xD ? FETCHB : (LN == 0xE ? mem_readb(HL) : OPLB));
+    // TODO: Add operation
+}
+
+void op_inc_b(op_chunk *c) {
+    if(c->op == 0x34)
+        mem_writeb(HL, mem_readb(HL) + 1);
+    else
+        OPLB++;
+    // TODO: Set flags
+}
+
+void op_dec_b(op_chunk *c) {
+    if(c->op == 0x35)
+        mem_writeb(HL, mem_readb(HL) - 1);
+    else
+        OPLB--;
+    // TODO: Set flags
+}
+
+void op_and(op_chunk *c) {
+    A &= HN == 0xE ? FETCHB : (LN == 0x6 ? mem_readb(HL) : OPLB);
+    // TODO: Set flags
+}
+
+void op_xor(op_chunk *c) {
+    A ^= HN == 0xE ? FETCHB : (LN == 0xE ? mem_readb(HL) : OPLB);
+    // TODO: Set flags
+}
+
+void op_or(op_chunk *c) {
+    A |= HN == 0xF ? FETCHB : (LN == 0x6 ? mem_readb(HL) : OPLB);
+    // TODO: Set flags
+}
+
+void op_cp(op_chunk *c) {
+    u8 o = HN == 0xF ? FETCHB : (LN == 0xE ? mem_readb(HL) : OPLB);
+    //u16 c = A - o;
+    // TODO: Set flags
+}
+
+void op_add_hlrr(op_chunk *c) {
+    u32 r = (u32)HL + (u32)OPLW;
+    // TODO: Set flags
+    HL = (u16)r;
+}
+
+void op_add_spi(op_chunk *c) {
+    u32 r = (u32)SP + (s8)FETCHB;
+    // TODO: Set flags
+}
+
+void op_inc_w(op_chunk *c) {
+    OPLW++;
+}
+
+void op_dec_w(op_chunk *c) {
+    OPLW--;
+}
+
+void op_cb(op_chunk *c) {
+    u8 cbop = FETCHB;
+    op_chunk *cbc = op_cb_chunk_map[cbop];
+    if(cbc == NULL) {
+        cbc = op_cb_chunk_map[cbop] = op_create_cb_chunk(cbop);
+    }
+
+    if(cbop % 0x08 == 0x06) {
+        op_chunk xcbc;
+        u8 hlp = mem_readb(HL);
+        xcbc.opl.b = &hlp;
+        cbc->func(&xcbc);
+        mem_writeb(HL, hlp);
+    }
+    else {
+        cbc->func(cbc);
     }
 }
 
-void op_pop_sp(u8 op) {
-    switch(op) {
-        case 0xF1: AF = MEM_RREF(SP); SP += 2; break;
-        case 0xC1: BC = MEM_RREF(SP); SP += 2; break;
-        case 0xD1: DE = MEM_RREF(SP); SP += 2; break;
-        case 0xE1: HL = MEM_RREF(SP); SP += 2; break;
+void op_rl(op_chunk *c) {
+    u8 fc = FCB7(OPLB);
+    OPLB = (OPLB<<1) | (FC>>4);
+    F = FZZ(OPLB) | fc;
+}
 
-        default: assert(0); break;
+void op_rr(op_chunk *c) {
+    u8 fc = FCB0(OPLB);
+    OPLB = (OPLB>>1) | (FC<<3);
+    F = FZZ(OPLB) | fc;
+}
+
+void op_rlc(op_chunk *c) {
+    OPLB = (OPLB<<1) | (OPLB>>7);
+    F = FZZ(OPLB) | FCB0(OPLB);
+}
+
+void op_rrc(op_chunk *c) {
+    OPLB = (OPLB>>1) | (OPLB<<7);
+    F = FZZ(OPLB) | FCB7(OPLB);
+}
+
+void op_sla(op_chunk *c) {
+    u8 fc = FCB7(OPLB);
+    OPLB <<= 1;
+    F = FZZ(OPLB) | fc;
+}
+
+void op_sra(op_chunk *c) {
+    u8 fc = FCB0(OPLB);
+    u8 msb = OPLB | 0x80;
+    OPLB >>= 1;
+    OPLB |= msb;
+    F = FZZ(OPLB) | fc;
+}
+
+void op_srl(op_chunk *c) {
+    u8 fc = FCB0(OPLB);
+    OPLB >>= 1;
+    F = FZZ(OPLB) | fc;
+}
+
+void op_swap(op_chunk *c) {
+    OPLB = LN << 4 | HN >> 4;
+    F = FZZ(OPLB);
+}
+
+void op_daa(op_chunk *c) {
+
+}
+
+void op_cpl(op_chunk *c) {
+
+}
+
+void op_bit(op_chunk *c) {
+    F = FZZ((1<<OPLD)&OPRB) | FHBIT | FC;
+}
+
+void op_set(op_chunk *c) {
+    OPRB |= 1<<OPLD;
+}
+
+void op_res(op_chunk *c) {
+    OPRB &= ~(1<<OPLD);
+}
+
+void op_nop(op_chunk *c) {
+
+}
+
+void op_ccf(op_chunk *c) {
+    F = FZ | (FC ? 0 : FCBIT);
+}
+
+void op_scf(op_chunk *c) {
+    F = FZ | FCBIT;
+}
+
+void op_halt(op_chunk *c) {
+
+}
+
+void op_stop(op_chunk *c) {
+
+}
+
+void op_di(op_chunk *c) {
+
+}
+
+void op_ei(op_chunk *c) {
+
+}
+
+void op_jp(op_chunk *c) {
+    if(LN == 0x3) {
+        PC = FETCHW;
+    }
+    else if(HN == 0xE) {
+        PC = HL;
+    }
+    else {
+        // TODO
     }
 }
 
-void op_add_r(u8 op) {
+void op_jr(op_chunk *c) {
 
 }
 
-void op_add_i(u8 op) {
+void op_call(op_chunk *c) {
 
 }
 
-void op_add_m(u8 op) {
+void op_rst(op_chunk *c) {
 
 }
 
-void op_adc_r(u8 op) {
+void op_ret(op_chunk *c) {
 
 }
 
-void op_adc_i(u8 op) {
+void op_reti(op_chunk *c) {
 
 }
 
-void op_adc_m(u8 op) {
 
-}
-
-void op_sub_r(u8 op) {
-
-}
-
-void op_sub_i(u8 op) {
-
-}
-
-void op_sub_m(u8 op) {
-
-}
-
-void op_sbc_r(u8 op) {
-
-}
-
-void op_sbc_i(u8 op) {
-
-}
-
-void op_sbc_m(u8 op) {
-
-}
-
-void op_inc_r(u8 op) {
-
-}
-
-void op_inc_m(u8 op) {
-
-}
-
-void op_dec_r(u8 op) {
-
-}
-
-void op_dec_m(u8 op) {
-
-}
-
-void op_and_r(u8 op) {
-
-}
-
-void op_and_i(u8 op) {
-
-}
-
-void op_and_m(u8 op) {
-
-}
-
-void op_xor_r(u8 op) {
-
-}
-
-void op_xor_i(u8 op) {
-
-}
-
-void op_xor_m(u8 op) {
-
-}
-
-void op_or_r(u8 op) {
-
-}
-
-void op_or_i(u8 op) {
-
-}
-
-void op_or_m(u8 op) {
-
-}
-
-void op_cp_r(u8 op) {
-
-}
-
-void op_cp_i(u8 op) {
-
-}
-
-void op_cp_m(u8 op) {
-
-}
-
-void op_daa(u8 op) {
-
-}
-
-void op_cpl(u8 op) {
-
-}
-
-void op_add_hlrr(u8 op) {
-
-}
-
-void op_add_spi(u8 op) {
-
-}
-
-void op_inc_rr(u8 op) {
-
-}
-
-void op_dec_rr(u8 op) {
-
-}
-
-void op_ld_hlspd(u8 op) {
-
-}
-
-void op_rla(u8 op) {
-
-}
-
-void op_rra(u8 op) {
-
-}
-
-void op_cb(u8 op) {
-
-}
-
-void op_rl_r(u8 op) {
-
-}
-
-void op_rl_m(u8 op) {
-
-}
-
-void op_rr_r(u8 op) {
-
-}
-
-void op_rr_m(u8 op) {
-
-}
-
-void op_sla_r(u8 op) {
-
-}
-
-void op_sla_m(u8 op) {
-
-}
-
-void op_sra_r(u8 op) {
-
-}
-
-void op_sra_m(u8 op) {
-
-}
-
-void op_swap_r(u8 op) {
-
-}
-
-void op_swap_m(u8 op) {
-
-}
-
-void op_bit_r(u8 op) {
-
-}
-
-void op_bit_m(u8 op) {
-
-}
-
-void op_set_r(u8 op) {
-
-}
-
-void op_set_m(u8 op) {
-
-}
-
-void op_res_r(u8 op) {
-
-}
-
-void op_res_m(u8 op) {
-
-}
-
-void op_nop(u8 op) {
-
-}
-
-void op_ccf(u8 op) {
-
-}
-
-void op_scf(u8 op) {
-
-}
-
-void op_halt(u8 op) {
-
-}
-
-void op_stop(u8 op) {
-
-}
-
-void op_di(u8 op) {
-
-}
-
-void op_ei(u8 op) {
-
-}
-
-void op_jp(u8 op) {
-
-}
-
-void op_jp_c(u8 op) {
-
-}
-
-void op_jp_m(u8 op) {
-
-}
-
-void op_jr(u8 op) {
-
-}
-
-void op_jr_c(u8 op) {
-
-}
-
-void op_call(u8 op) {
-
-}
-
-void op_call_c(u8 op) {
-
-}
-
-void op_rst(u8 op) {
-
-}
-
-void op_ret(u8 op) {
-
-}
-
-void op_ret_c(u8 op) {
-
-}
-
-void op_reti(u8 op) {
-
-}

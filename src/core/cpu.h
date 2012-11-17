@@ -16,6 +16,7 @@
 
     extern cpu_t cpu;
 
+    void cpu_init();
     void cpu_reset();
     bool cpu_emulate(uint cycles);
 
