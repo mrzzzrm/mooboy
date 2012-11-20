@@ -1,7 +1,7 @@
 #include "cpu.h"
 
-#include "cpu_ops.h"
-#include "cpu_defines.h"
+#include "cpu/ops.h"
+#include "cpu/defines.h"
 
 cpu_t cpu;
 
@@ -26,7 +26,8 @@ bool cpu_emulate(uint cycles) {
 		op_chunk_map[op] = op_create_chunk(op);
 		c = op_chunk_map[op];
 	}
-	c->func(c);
+	c->sp = 0;
+	c->funcs[0](c);
 
     return true;
 }

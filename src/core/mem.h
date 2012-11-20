@@ -30,6 +30,8 @@
     bool mem_load_rom(u8 *data, uint datasize);
 
     u8 mem_readb(u16 adr);
+    u16 mem_readw(u16 adr);
     void mem_writeb(u16 adr, u8 val);
+    void mem_writew(u16 adr, u16 val);
 
 #endif // MEM_H
