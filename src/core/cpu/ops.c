@@ -4,7 +4,6 @@
 #include "../mem.h"
 #include "defines.h"
 #include "chunks.h"
-#include "tables.h"
 
 
 static u8 static_byte;
