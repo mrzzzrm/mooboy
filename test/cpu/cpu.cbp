@@ -36,12 +36,29 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../src/core/cpu.h" />
-		<Unit filename="../../src/core/cpu_defines.h" />
-		<Unit filename="../../src/core/cpu_ops.c">
+		<Unit filename="../../src/core/cpu/chunks.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../src/core/cpu_ops.h" />
-		<Unit filename="../../src/core/cpu_tables.h" />
+		<Unit filename="../../src/core/cpu/chunks.h" />
+		<Unit filename="../../src/core/cpu/defines.h" />
+		<Unit filename="../../src/core/cpu/ops.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/core/cpu/ops.h" />
+		<Unit filename="../../src/core/cpu/tables.h" />
+		<Unit filename="../../src/util/cmd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/util/cmd.h" />
+		<Unit filename="../../src/util/defines.h" />
+		<Unit filename="../../src/util/err.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/util/err.h" />
+		<Unit filename="../../src/util/io.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/util/io.h" />
 		<Unit filename="src/main.c">
 			<Option compilerVar="CC" />
 		</Unit>

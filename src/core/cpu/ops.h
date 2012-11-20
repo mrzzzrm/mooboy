@@ -24,11 +24,10 @@
     void op_ldx(op_chunk *c);
 
     // 16-Bit Loads
-    void op_ld_sphl(op_chunk *c);
     void op_ldhl_spi(op_chunk *c);
     void op_ld_imsp(op_chunk *c);
-    void op_push_sp(op_chunk *c);
-    void op_pop_sp(op_chunk *c);
+    void op_push(op_chunk *c);
+    void op_pop(op_chunk *c);
 
     // Alu Arithmetic
     void op_add_b(op_chunk *c);

@@ -10,6 +10,17 @@
 static u8 static_byte;
 static u16 static_word;
 
+static void push(u16 w) {
+    mem_writew(SP, w);
+    SP -= 2;
+}
+
+static u16 pop() {
+    u16 r = mem_readw(SP);
+    SP += 2;
+    return r;
+}
+
 void op_opl_memcall(op_chunk *c) {
     op_chunk xc;
 
@@ -92,12 +103,9 @@ void op_ldx(op_chunk *c) {
     HL = (c->op & 0x10) ? HL + 1 : HL - 1;
 }
 
-void op_ld_sphl(op_chunk *c)  {
-    SP = HL;
-}
-
 void op_ldhl_spi(op_chunk *c) {
     HL = SP + (s8)FETCHB;
+    // TODO: Flags!
 }
 
 void op_ld_imsp(op_chunk *c)  {
@@ -105,57 +113,56 @@ void op_ld_imsp(op_chunk *c)  {
     PC += 2;
 }
 
-void op_push_sp(op_chunk *c)  {
+void op_push(op_chunk *c)  {
     mem_writew(SP, OPLW);
     SP -= 2;
 }
 
-void op_pop_sp(op_chunk *c)   {
+void op_pop(op_chunk *c)   {
     OPLW = mem_readw(SP);
     SP += 2;
 }
 
 void op_add_b(op_chunk *c) {
-
+    u16 r = (u16)OPLB + (u16)OPRB;
+    F = FZZ((u8)r) | (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) | (FCBIT & (r >> 4));
+    OPLB = (u8)r;
 }
 
 void op_add_w(op_chunk *c) {
-    u32 r = (u32)((u32)OPLW + (u32)OPRW);
-    // TODO: Set flags
+    u32 r = (u32)OPLW + (u32)OPRW;
+    F = FZZ((u16)r) | (FHBIT & ((OPLB ^ OPRB ^ r) >> 7)) | (FCBIT & (r >> 12));
     OPLW = (u16)r;
 }
 
 void op_adc(op_chunk *c) {
-    u8 s = (u16)(HN == 0xC ? FETCHB : (LN == 0xE ? mem_readb(HL) : OPLB)) + FC;
-    u16 r = (u16)A + (u16)s;
-    // TODO: Set flags
-    A = (u8)r;
+    u16 r = (u16)OPLB + (u16)OPRB + (u16)FC;
+    F = FZZ((u8)r) | (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) | (FCBIT & (r >> 4));
+    OPLB = (u8)r;
 }
 
 void op_sub(op_chunk *c) {
-    u8 s = (u16)(HN == 0xD ? FETCHB : (LN == 0x6 ? mem_readb(HL) : OPLB));
-    // TODO: Add operation
+    u16 r = (u16)OPLB - (u16)OPRB;
+    F = FZZ((u8)r) | FNBIT | (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) | (FCBIT & (r >> 4));
+    OPLB = (u8)r;
 }
 
 void op_sbc(op_chunk *c) {
-    u8 s = (u16)(HN == 0xD ? FETCHB : (LN == 0xE ? mem_readb(HL) : OPLB));
-    // TODO: Add operation
+    u16 r = (u16)OPLB - (u16)OPRB - (u16)FC;
+    F = FZZ((u8)r) | FNBIT | (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) | (FCBIT & (r >> 4));
+    OPLB = (u8)r;
 }
 
 void op_inc_b(op_chunk *c) {
-    if(c->op == 0x34)
-        mem_writeb(HL, mem_readb(HL) + 1);
-    else
-        OPLB++;
-    // TODO: Set flags
+    u8 r = OPLB + 1;
+    F = FZZ((u8)r) | (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) | FC;
+    OPLB = r;
 }
 
 void op_dec_b(op_chunk *c) {
-    if(c->op == 0x35)
-        mem_writeb(HL, mem_readb(HL) - 1);
-    else
-        OPLB--;
-    // TODO: Set flags
+    u8 r = OPLB - 1;
+    F = FZZ((u8)r) | (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) | FC;
+    OPLB = r;
 }
 
 void op_inc_w(op_chunk *c) {
@@ -169,27 +176,27 @@ void op_dec_w(op_chunk *c) {
 void op_add_spi(op_chunk *c) {
     u32 r = (u32)SP + (s8)FETCHB;
     // TODO: Set flags
+    SP = r;
 }
 
 void op_and(op_chunk *c) {
-    A &= HN == 0xE ? FETCHB : (LN == 0x6 ? mem_readb(HL) : OPLB);
-    // TODO: Set flags
+    OPLB &= OPRB;
+    F = FZZ(OPLB) | FHBIT;
 }
 
 void op_xor(op_chunk *c) {
-    A ^= HN == 0xE ? FETCHB : (LN == 0xE ? mem_readb(HL) : OPLB);
-    // TODO: Set flags
+    OPLB ^= OPRB;
+    F = FZZ(OPLB);
 }
 
 void op_or(op_chunk *c) {
-    A |= HN == 0xF ? FETCHB : (LN == 0x6 ? mem_readb(HL) : OPLB);
-    // TODO: Set flags
+    OPLB |= OPRB;
+    F = FZZ(OPLB);
 }
 
 void op_cp(op_chunk *c) {
-    u8 o = HN == 0xF ? FETCHB : (LN == 0xE ? mem_readb(HL) : OPLB);
-    //u16 c = A - o;
-    // TODO: Set flags
+    u16 r = (u16)OPLB - (u16)OPRB;
+    F = FZZ((u8)r) | FNBIT | (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) | (FCBIT & (r >> 4));
 }
 
 void op_daa(op_chunk *c) {
@@ -197,7 +204,8 @@ void op_daa(op_chunk *c) {
 }
 
 void op_cpl(op_chunk *c) {
-
+    OPLB ^= 0xFF;
+    F = FNBIT | FHBIT;
 }
 
 void op_rl(op_chunk *c) {
@@ -246,19 +254,11 @@ void op_cb(op_chunk *c) {
     u8 cbop = FETCHB;
     op_chunk *cbc = op_cb_chunk_map[cbop];
     if(cbc == NULL) {
-        //cbc = op_cb_chunk_map[cbop] = op_create_cb_chunk(cbop);
+        cbc = op_cb_chunk_map[cbop] = op_create_cb_chunk(cbop);
     }
 
-    if(cbop % 0x08 == 0x06) {
-        op_chunk xcbc;
-        u8 hlp = mem_readb(HL);
-        xcbc.opl.b = &hlp;
-        cbc->funcs[0](&xcbc);
-        mem_writeb(HL, hlp);
-    }
-    else {
-        cbc->funcs[0](cbc);
-    }
+    cbc->sp = 0;
+    cbc->funcs[0](cbc);
 }
 
 void op_swap(op_chunk *c) {
@@ -291,51 +291,70 @@ void op_scf(op_chunk *c) {
 }
 
 void op_halt(op_chunk *c) {
-
+    // TODO!
 }
 
 void op_stop(op_chunk *c) {
-
+    // TODO!
 }
 
 void op_di(op_chunk *c) {
-
+    // TODO!
 }
 
 void op_ei(op_chunk *c) {
-
+    // TODO!
 }
 
 void op_jp(op_chunk *c) {
-    if(LN == 0x3) {
-        PC = FETCHW;
-    }
-    else if(HN == 0xE) {
-        PC = HL;
-    }
-    else {
-        // TODO
+    switch(c->op) {
+        case 0xC3: PC = mem_readw(PC); break;
+        case 0xE9: PC = HL; break;
+        case 0xC2: if(!FZ) PC = mem_readw(PC); break;
+        case 0xCA: if(FZ)  PC = mem_readw(PC); break;
+        case 0xD2: if(!FC) PC = mem_readw(PC); break;
+        case 0xDA: if(FC)  PC = mem_readw(PC); break;
     }
 }
 
 void op_jr(op_chunk *c) {
-
+    switch(c->op) {
+        case 0x18: PC += (s8)FETCHB; break;
+        case 0x20: if(!FZ) PC = mem_readw(PC); break;
+        case 0x28: if(FZ)  PC = mem_readw(PC); break;
+        case 0x30: if(!FC) PC = mem_readw(PC); break;
+        case 0x38: if(FC)  PC = mem_readw(PC); break;
+    }
 }
 
 void op_call(op_chunk *c) {
-
+    switch(c->op) {
+        case 0xCD: push(PC+2); PC = mem_readw(PC); break;
+        case 0xC4: if(!FZ) push(PC+2); PC = mem_readw(PC); break;
+        case 0xCC: if(FZ)  push(PC+2); PC = mem_readw(PC); break;
+        case 0xD4: if(!FC) push(PC+2); PC = mem_readw(PC); break;
+        case 0xDC: if(FC)  push(PC+2); PC = mem_readw(PC); break;
+    }
 }
 
 void op_rst(op_chunk *c) {
-
+    push(PC);
+    PC = ((c->op >> 3) & 0x07) * 8;
 }
 
 void op_ret(op_chunk *c) {
-
+    switch(c->op) {
+        case 0xC9: PC = pop(); break;
+        case 0xC0: if(!FZ) PC = pop(); break;
+        case 0xC8: if(FZ)  PC = pop(); break;
+        case 0xD0: if(!FC) PC = pop(); break;
+        case 0xD8: if(FC)  PC = pop(); break;
+    }
 }
 
 void op_reti(op_chunk *c) {
-
+    PC = pop();
+    // TODO enable interrupts!
 }
 
 

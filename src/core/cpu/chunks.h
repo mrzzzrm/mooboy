@@ -22,5 +22,6 @@
     extern op_chunk *op_cb_chunk_map[0xFF];
 
     op_chunk *op_create_chunk(u8 op);
+    op_chunk *op_create_cb_chunk(u8 op);
 
 #endif

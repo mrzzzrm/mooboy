@@ -77,7 +77,11 @@ op_chunk *op_create_chunk(u8 op) {
         case 0xF3: PUSH_FUNC(op_di); break;
         case 0xFB: PUSH_FUNC(op_ei); break;
         case 0xF8: PUSH_FUNC(op_ldhl_spi); break;
-        case 0xF9: PUSH_FUNC(op_ld_sphl); break;
+        case 0xF9:
+            c->opl.w = &SP;
+            c->opr.w = &HL;
+            PUSH_FUNC(op_ld_w);
+        break;
 
         default:
             switch((op&0xC0)>>6) {
@@ -168,7 +172,7 @@ op_chunk *op_create_chunk(u8 op) {
                     switch(op & 0x03) {
                         case 0x01:
                             c->opl.w = WREG_AF((op&0x30)>>4);
-                            PUSH_FUNC(op_pop_sp);
+                            PUSH_FUNC(op_pop);
                         break;
                         case 0x04:
                             PUSH_FUNC(op_opl_iw);
@@ -176,7 +180,7 @@ op_chunk *op_create_chunk(u8 op) {
                         break;
                         case 0x05:
                             c->opl.w = WREG_AF((op&0x30)>>4);
-                            PUSH_FUNC(op_push_sp);
+                            PUSH_FUNC(op_push);
                         break;
                         case 0x06:
                             c->opl.b = &A;
