@@ -45,6 +45,7 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../src/core/cpu/ops.h" />
+		<Unit filename="../../src/core/cpu/tables.h" />
 		<Unit filename="../../src/util/cmd.c">
 			<Option compilerVar="CC" />
 		</Unit>

@@ -8,17 +8,24 @@
     #include "util/defines.h"
 
     typedef struct ram_s {
-        byte ibanks[8][0x1000]; // GB - 2 banks; CGB - 8 banks
-        byte (*xbanks)[0x2000]; // Variable number of cartridge-ram
+        u8 ibanks[8][0x1000]; // Gameboy internal; GB - 2 banks; CGB - 8 banks
+        u8 (*xbanks)[0x2000]; // Variable number of cartridge-ram
+        u8 hram[0x80];
+        u8 vbanks[2][0x2000]; // 2nd bank for GBC
     } ram_t;
 
     typedef struct rom_s {
-        byte (*banks)[0x4000];
+        u8 (*banks)[0x4000];
     } rom_t;
 
     typedef struct mbc_s {
         uint romsize;
         uint ramsize;
+
+        u8 *rombank;
+        u8 *irambank;
+        u8 *xrambank;
+        u8 *vrambank;
     } mbc_t;
 
     extern ram_t ram;
