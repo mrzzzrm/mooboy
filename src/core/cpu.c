@@ -20,6 +20,8 @@ void cpu_reset() {
 }
 
 bool cpu_emulate(uint cycles) {
+
+
     u8 op = FETCHB;
 	op_chunk *c = op_chunk_map[op];
 	if(c == NULL) {

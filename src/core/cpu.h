@@ -18,6 +18,6 @@
 
     void cpu_init();
     void cpu_reset();
-    bool cpu_emulate(uint cycles);
+    bool cpu_emulate(uint cycles); // Ḿachine cycles
 
 #endif // CPU_H

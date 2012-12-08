@@ -6,6 +6,7 @@
     #include <string.h>
     #include "util/err.h"
     #include "util/defines.h"
+    #include "mem/mbc.h"
 
     typedef struct ram_s {
         u8 ibanks[8][0x1000]; // Gameboy internal; GB - 2 banks; CGB - 8 banks
@@ -18,23 +19,12 @@
         u8 (*banks)[0x4000];
     } rom_t;
 
-    typedef struct mbc_s {
-        uint romsize;
-        uint ramsize;
-
-        u8 *rombank;
-        u8 *irambank;
-        u8 *xrambank;
-        u8 *vrambank;
-    } mbc_t;
 
     extern ram_t ram;
     extern rom_t rom;
-    extern mbc_t mbc;
 
     void mem_init();
     void mem_reset();
-    bool mem_load_rom(u8 *data, uint datasize);
 
     u8 mem_readb(u16 adr);
     u16 mem_readw(u16 adr);
