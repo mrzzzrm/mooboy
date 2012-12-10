@@ -32,6 +32,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="../../src/core/assert.h" />
 		<Unit filename="../../src/core/cpu.c">
 			<Option compilerVar="CC" />
 		</Unit>

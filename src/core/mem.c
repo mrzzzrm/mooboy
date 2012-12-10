@@ -10,7 +10,7 @@ ram_t ram;
 rom_t rom;
 
 static inline u8 *mem_direct_map(u16 adr) {
-    switch((adr & 0xF000) >> 12) {
+    switch(adr>>12) {
         case 0x0: case 0x1: case 0x2: case 0x3: return &rom.banks[0][adr]; break;
         case 0x4: case 0x5: case 0x6: case 0x7: return &mbc.rombank[adr - 0x4000]; break;
         case 0x8: case 0x9: return &mbc.vrambank[adr - 0x8000]; break;
@@ -26,7 +26,6 @@ void mem_init() {
 }
 
 void mem_reset() {
-    // Init bank pointers
     mbc.rombank = rom.banks[1];
     mbc.irambank = ram.ibanks[0];
     mbc.xrambank = ram.xbanks[0];

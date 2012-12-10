@@ -1,5 +1,6 @@
 #include "include.h"
 #include "assert.h"
+#include "mem/mbc.h"
 
 static u8 rom_bankcount(u8 ref) {
     if(ref <= 6) {
@@ -69,15 +70,29 @@ static void init_rombanks(u8 ref) {
     memcpy(rom.banks, data, datasize);
 }
 
+static void init_xrambanks(u8 ref) {
+    switch(ref) {
+        case 0x00:
+        break;
+        case 0x01: case 0x02:
+            mbc.ramsize = 1;
+            ram.xbanks = realloc(ram.xbanks, sizeof(*ram.xbanks) * mbc.ramsize);
+        break;
+        case 0x03:
+            mbc.ramsize = 4;
+            ram.xbanks = realloc(ram.xbanks, sizeof(*ram.xbanks) * mbc.ramsize);
+        break;
+        default:
+            assert_corrupt(1, "No such RAM size");
+    }
+}
+
 bool load_rom(u8 *data, uint datasize) {
     assert_corrupt(datasize > 0x014F, "ROM too small for header");
 
     init_mbc(data[0x0147]);
     init_rombanks(data[0x0148]);
-    init_xram
-
-    // Init cartridge RAM
-
+    init_xrambanks(data[0x0149]);
 
     return true;
 }
