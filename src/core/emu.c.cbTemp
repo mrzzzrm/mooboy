@@ -1,5 +1,4 @@
 #include "emu.h"
-#include "loader.h"
 
 static void emu_reset() {
     mem_reset();
@@ -17,7 +16,7 @@ void emu_close() {
 bool emu_load(u8 *data, size_t size) {
     emu_reset();
 
-    if(!load_rom(data, size)) {
+    if(!mem_load_rom(data, size)) {
         err_set(ERR_ROM_CORRUPT);
         return false;
     }

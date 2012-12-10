@@ -4,9 +4,7 @@
 #include "mem_write.h"
 #include "mem_read.h"
 
-#define assert_corrupt(expr, msg) if(!(expr)) {err_set(ERR_ROM_CORRUPT); fprintf(stderr, "%s\n", (msg)); return 0; }
-#define assert_illegal_read(expr, msg) if(!(expr)) {err_set(ERR_ILLEGAL_READ); fprintf(stderr, "%s\n", (msg)); return 0; }
-#define assert_illegal_write(expr, msg) if(!(expr)) {err_set(ERR_ILLEGAL_WRITE); fprintf(stderr, "%s\n", (msg)); return 0; }
+
 
 ram_t ram;
 rom_t rom;
@@ -28,7 +26,8 @@ void mem_init() {
 }
 
 void mem_reset() {
-    mbc.rombank = rom.banks[0];
+    // Init bank pointers
+    mbc.rombank = rom.banks[1];
     mbc.irambank = ram.ibanks[0];
     mbc.xrambank = ram.xbanks[0];
     mbc.vrambank = ram.vbanks[0];
