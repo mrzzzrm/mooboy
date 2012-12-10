@@ -1,10 +1,10 @@
 #ifndef MEM_MBC_H
 #define MEM_MBC_H
 
-
-
     typedef struct mbc_s {
         uint type;
+
+        void (*control_func)(u16, u8);
 
         uint romsize;
         uint ramsize;
@@ -16,7 +16,5 @@
     } mbc_t;
 
     extern mbc_t mbc;
-
-    void mbc_control(u16 adr, u8 val);
 
 #endif

@@ -65,7 +65,7 @@ u16 mem_readw(u16 adr) {
 
 void mem_writeb(u16 adr, u8 val) {
     if(adr < 0x8000) {
-        mbc_control(adr, val);
+        mbc.control_func(adr, val);
     }
     else if(adr >= 0x8000 && adr < 0xE000) { // Common memory accesses
         *mem_direct_map(adr) = val;
