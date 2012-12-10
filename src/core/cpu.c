@@ -17,11 +17,12 @@ void cpu_reset() {
     HL = 0x014D;
     SP = 0xFFFE;
     PC = 0x0100;
+
+    cpu.ime = 0x00;
+    cpu.ifs = 0x00;
 }
 
 bool cpu_emulate(uint cycles) {
-
-
     u8 op = FETCHB;
 	op_chunk *c = op_chunk_map[op];
 	if(c == NULL) {

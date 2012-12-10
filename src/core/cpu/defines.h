@@ -45,13 +45,13 @@
     #define FC (F&FCBIT)
 
     #define FZZ(b) ((b) == 0 ? FZBIT : 0)
-    #define FHC(b1, b2)
-    #define FHB(b1, b2)
-    #define FCC(b1, b2)
-    #define FCB(b1, b2)
     #define FCB0(b) (((b)&0x1)<<4)
     #define FCB7(b) (((b)&0x80)>>3)
 
-
+    #define IF_VBLANK  0x01
+    #define IF_LCDSTAT 0x02
+    #define IF_TIMER   0x04
+    #define IF_SERIAL  0x08
+    #define IF_JOYPAD  0x10
 
 #endif // CPU_DEFINES_H

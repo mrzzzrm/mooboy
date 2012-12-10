@@ -32,6 +32,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="../../src/core/assert.h" />
 		<Unit filename="../../src/core/cpu.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -45,6 +46,33 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../src/core/cpu/ops.h" />
+		<Unit filename="../../src/core/emu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/core/emu.h" />
+		<Unit filename="../../src/core/loader.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/core/loader.h" />
+		<Unit filename="../../src/core/mem.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/core/mem.h" />
+		<Unit filename="../../src/core/mem/io.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/core/mem/io.h" />
+		<Unit filename="../../src/core/mem/mbc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/core/mem/mbc.h" />
+		<Unit filename="../../src/main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/sys/cli/cli.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/sys/sys.h" />
 		<Unit filename="../../src/util/cmd.c">
 			<Option compilerVar="CC" />
 		</Unit>

@@ -298,11 +298,11 @@ void op_stop(op_chunk *c) {
 }
 
 void op_di(op_chunk *c) {
-    // TODO!
+    cpu.ime = 0x00;
 }
 
 void op_ei(op_chunk *c) {
-    // TODO!
+    cpi.ime = 0xFF;
 }
 
 void op_jp(op_chunk *c) {

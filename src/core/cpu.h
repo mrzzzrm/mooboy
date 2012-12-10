@@ -12,6 +12,9 @@
     typedef struct cpu_s {
         reg_t af, bc, de, hl;
         reg_t sp, pc;
+
+        u8 ime;
+        u8 ifs;
     } cpu_t;
 
     extern cpu_t cpu;
