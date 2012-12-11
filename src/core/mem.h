@@ -13,6 +13,7 @@
         u8 (*xbanks)[0x2000]; // Variable number of cartridge-ram
         u8 hram[0x80];
         u8 vbanks[2][0x2000]; // 2nd bank for GBC
+        u8 oam[0xA0];
     } ram_t;
 
     typedef struct rom_s {

@@ -1,7 +1,5 @@
 #include "mbc.h"
 
-mbc_t mbc;
-
 
 static struct {
     u8 mode;
@@ -9,8 +7,14 @@ static struct {
 } mbc1;
 
 static struct {
+    u8 mode;
+} mbc3;
+
+static struct {
     u16 rombank;
 } mbc5;
+
+mbc_t mbc;
 
 
 static void mbc0_control(u16 adr, u8 val) {
@@ -82,6 +86,38 @@ static void mbc5_control(u16 adr, u8 val) {
             mbc5.rombank |= (val&0x01) << 8;
             mbc.rombank = rom.banks[mbc5.rombank];
         break;
+    }
+}
+
+void mbc_set_type(u8 type) {
+    void (*control_funcs)(u16, u8)[] = {mbc0_control, mbc1_control, mbc2_control, mbc3_control, mbc5_control};
+
+    mbc.control_func = control_funcs[type];
+}
+
+u8 mbc_upper_read(u16 adr) {
+    adr -= 0xA000;
+
+    if(mbc.type == 3 && mbc3.mode == 0) {
+        // TODO: RTC
+    }
+    else {
+        return mbc.xrambank[adr];
+    }
+}
+
+void mbc_lower_write(u16 adr, u8 val) {
+    mbc.control_func(adr, val);
+}
+
+void mbc_upper_write(u16 adr, u8 val) {
+    adr -= 0xA000;
+
+    if(mbc.type == 3 && mbc3.mode == 0) {
+        // TODO: RTC
+    }
+    else {
+        mbc.xrambank[adr] = val;
     }
 }
 

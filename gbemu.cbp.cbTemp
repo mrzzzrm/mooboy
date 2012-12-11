@@ -24,40 +24,34 @@
 			<Add option="-Wall" />
 			<Add directory="src" />
 		</Compiler>
-		<Unit filename="src/core/assert.h" />
 		<Unit filename="src/core/cpu.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/cpu.h" />
-		<Unit filename="src/core/cpu/chunks.c">
+		<Unit filename="src/core/cpu_defines.h" />
+		<Unit filename="src/core/cpu_ops.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/core/cpu/chunks.h" />
-		<Unit filename="src/core/cpu/defines.h" />
-		<Unit filename="src/core/cpu/ops.c">
-			<Option compilerVar="CC" />
+		<Unit filename="src/core/cpu_ops.h">
+			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
-		<Unit filename="src/core/cpu/ops.h" />
+		<Unit filename="src/core/cpu_tables.h" />
 		<Unit filename="src/core/emu.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/emu.h" />
-		<Unit filename="src/core/loader.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/core/loader.h" />
 		<Unit filename="src/core/mem.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/mem.h" />
-		<Unit filename="src/core/mem/io.c">
+		<Unit filename="src/core/mem_read.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/core/mem/io.h" />
-		<Unit filename="src/core/mem/mbc.c">
+		<Unit filename="src/core/mem_read.h" />
+		<Unit filename="src/core/mem_write.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/core/mem/mbc.h" />
+		<Unit filename="src/core/mem_write.h" />
 		<Unit filename="src/main.c">
 			<Option compilerVar="CC" />
 		</Unit>
