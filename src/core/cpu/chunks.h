@@ -16,6 +16,7 @@
         u8 sp;
         void (*funcs[5])(op_chunk *c);
         op_arg opl, opr; // Pointers to 8/16 Bit registers
+        u8 mc;
     };
 
     extern op_chunk *op_chunk_map[0xFF];

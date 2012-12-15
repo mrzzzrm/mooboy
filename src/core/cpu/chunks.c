@@ -51,6 +51,7 @@ op_chunk *op_create_chunk(u8 op) {
 	op_chunk *c = malloc(sizeof(op_chunk));
 	c->op = op;
 	c->sp = 0;
+	c->mc = 0;
 
     switch(op) {
         case 0x00: PUSH_FUNC(op_nop); break;
@@ -253,6 +254,7 @@ op_chunk *op_create_chunk(u8 op) {
 op_chunk *op_create_cb_chunk(u8 op) {
     op_chunk *c = malloc(sizeof(op_chunk));
 	c->op = op;
+	c->mc = 0;
 
 	switch(HN) {
         case 0x0: PUSH_FUNC(LN < 8 ? op_rlc  : op_rrc); break;

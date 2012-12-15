@@ -20,9 +20,11 @@ void cpu_reset() {
 
     cpu.ime = 0x00;
     cpu.ifs = 0x00;
+
+    cpu.cc = 0;
 }
 
-bool cpu_emulate(uint cycles) {
+static inline void emulate_op() {
     u8 op = FETCHB;
 	op_chunk *c = op_chunk_map[op];
 	if(c == NULL) {
@@ -31,6 +33,39 @@ bool cpu_emulate(uint cycles) {
 	}
 	c->sp = 0;
 	c->funcs[0](c);
+	cpu.cc += c->mc;
+}
+
+static inline void exec_int(u8 i) {
+    static u16 isr[] = {0x40, 0x48, 0x50, 0x58, 0x60};
+
+    mem_writew(SP, cpu.pc);
+    SP -= 2;
+    cpu.pc = isr[i];
+}
+
+static inline void handle_ints() {
+    if(!cpu.ime)
+        return;
+
+    for(u8 i = 0; i < 5; i++) {
+        if(cpu.ifs & (1 << i)) {
+            cpu.ifs &= ~(1 << i);c
+            cpu.ime = 0;
+            exec_int(i);
+            return;
+        }
+    }
+}
+
+static inline void step_timers() {
+
+}
+
+bool cpu_emulate(uint cycles) {
+    emulate_op();
+    handle_ints();
+    step_timers();
 
     return true;
 }

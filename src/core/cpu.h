@@ -15,6 +15,8 @@
 
         u8 ime;
         u8 ifs;
+
+        u32 cc;
     } cpu_t;
 
     extern cpu_t cpu;

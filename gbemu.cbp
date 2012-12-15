@@ -42,6 +42,15 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/emu.h" />
+		<Unit filename="src/core/io/div.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/io/div.h" />
+		<Unit filename="src/core/io/tima.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/io/tima.h" />
+		<Unit filename="src/core/lcd.h" />
 		<Unit filename="src/core/loader.c">
 			<Option compilerVar="CC" />
 		</Unit>
