@@ -11,6 +11,6 @@
     extern div_t div;
 
     div_reset();
-    div_step(u32 mc);
+    div_step();
 
 #endif

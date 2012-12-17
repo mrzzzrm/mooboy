@@ -11,6 +11,6 @@
     extern tima_t tima;
 
     void tima_reset();
-    void time_step(u32 mc);
+    void time_step();
 
 #endif

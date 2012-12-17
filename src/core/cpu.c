@@ -59,7 +59,8 @@ static inline void handle_ints() {
 }
 
 static inline void step_timers() {
-
+    div_step();
+    tima_step();
 }
 
 bool cpu_emulate(uint cycles) {
