@@ -42,6 +42,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/emu.h" />
+		<Unit filename="src/core/etc/rtc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/etc/rtc.h" />
 		<Unit filename="src/core/io/div.c">
 			<Option compilerVar="CC" />
 		</Unit>

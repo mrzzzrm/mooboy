@@ -1,5 +1,5 @@
 #include "cpu.h"
-
+#include "mbc.h"
 #include "cpu/ops.h"
 #include "cpu/defines.h"
 
@@ -61,6 +61,10 @@ static inline void handle_ints() {
 static inline void step_timers() {
     div_step();
     tima_step();
+
+    if(mbc.type == 3) {
+        rtc_step();
+    }
 }
 
 bool cpu_emulate(uint cycles) {

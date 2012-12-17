@@ -20,9 +20,9 @@
         u8 (*banks)[0x4000];
     } rom_t;
 
-
     extern ram_t ram;
     extern rom_t rom;
+
 
     void mem_init();
     void mem_reset();
