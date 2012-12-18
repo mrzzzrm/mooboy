@@ -17,6 +17,7 @@
         u8 ifs;
 
         u32 cc;
+        u32 mcs_per_second;
     } cpu_t;
 
     extern cpu_t cpu;

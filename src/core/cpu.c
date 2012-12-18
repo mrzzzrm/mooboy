@@ -22,6 +22,7 @@ void cpu_reset() {
     cpu.ifs = 0x00;
 
     cpu.cc = 0;
+    cpu.mcs_per_second = 1048576;
 }
 
 static inline void emulate_op() {

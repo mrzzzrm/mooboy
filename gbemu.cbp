@@ -50,6 +50,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/io/div.h" />
+		<Unit filename="src/core/io/lcd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/io/lcd.h" />
 		<Unit filename="src/core/io/tima.c">
 			<Option compilerVar="CC" />
 		</Unit>

@@ -4,6 +4,7 @@
 rtc_t rtc;
 
 
+
 static void rtc_next_day() {
     u16 d = rtc.dl | ((rtc.dh & 0x01) << 8);
     d++;
@@ -39,7 +40,7 @@ void rtc_reset() {
 
 void rtc_step() {
     u32 mcs = cpu.cc - rtc.last_tick;
-    if(rtc.dh & 0x40 || mcs < MCS_PER_SECOND) { // Halt bit set or next tick not yet reached
+    if(rtc.dh & 0x40 || mcs < cpu.mcs_per_second) { // Halt bit set or next tick not yet reached
         return;
     }
 
