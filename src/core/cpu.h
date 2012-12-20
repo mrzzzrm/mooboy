@@ -5,8 +5,8 @@
     #include "util/defines.h"
 
     typedef union reg_s {
-        byte b[2];
-        word w;
+        u8 b[2];
+        u16 w;
     } reg_t;
 
     typedef struct cpu_s {

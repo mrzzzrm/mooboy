@@ -32,7 +32,7 @@ const char *sys_get_rompath() {
 }
 
 void sys_sleep(time_t ticks) {
-    usleep(ticks*1000);
+    //usleep(ticks*1000);
 }
 
 void sys_error() {

@@ -101,6 +101,7 @@ u8 mbc_upper_read(u16 adr) {
 
     if(mbc.type == 3 && mbc3.mode == 0) {
         // TODO: RTC
+        return 0;
     }
     else {
         return mbc.xrambank[adr];

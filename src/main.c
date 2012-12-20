@@ -30,10 +30,12 @@ void load_romfile() {
     if((rompath = sys_get_rompath()) == NULL) {
         error();
     }
+    printf("Loading ROM: %s\n", rompath);
     if((romdata = io_load_binary(rompath, &romsize)) == NULL) {
         err_set(ERR_ROM_NOT_FOUND);
         error();
     }
+    printf("Firing emu with romdata (size=%i)\n", romsize);
     if(!emu_load(romdata, romsize)) {
         error();
     }

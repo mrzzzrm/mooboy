@@ -1,4 +1,7 @@
 #include "cpu.h"
+#include "io/divt.h"
+#include "io/tima.h"
+#include "etc/rtc.h"
 #include "mem/mbc.h"
 #include "cpu/ops.h"
 #include "cpu/defines.h"
@@ -29,6 +32,7 @@ static inline void emulate_op() {
     u8 op = FETCHB;
 	op_chunk *c = op_chunk_map[op];
 	if(c == NULL) {
+	    printf("  First-Time-Decoding of %X\n", op);
 		op_chunk_map[op] = op_create_chunk(op);
 		c = op_chunk_map[op];
 	}

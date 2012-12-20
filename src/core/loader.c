@@ -1,5 +1,5 @@
 #include "loader.h"
-#include "assert.h"
+#include "_assert.h"
 #include "mem.h"
 #include "mem/mbc.h"
 
@@ -67,7 +67,7 @@ static void init_mbc(u8 ref) {
 
 static void init_rombanks(u8 ref, u8 *data, u32 datasize) {
     mbc.romsize = rom_bankcount(ref);
-        assert_corrupt(mbc.romsize == 0, "Unknown romsize ref");
+        assert_corrupt(mbc.romsize != 0, "Unknown romsize ref");
         assert_corrupt(mbc.romsize * 0x4000 == datasize, "Datasize doesn't match rom-internally specified size");
     rom.banks = realloc(rom.banks, mbc.romsize * sizeof(*rom.banks));
     memcpy(rom.banks, data, datasize);

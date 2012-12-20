@@ -10,7 +10,7 @@
 
     extern divt_t divt;
 
-    divt_reset();
-    divt_step();
+    void divt_reset();
+    void divt_step();
 
 #endif

@@ -1,6 +1,6 @@
 #include "io.h"
 #include "io/lcd.h"
-#include "assert.h"
+#include "_assert.h"
 #include "util/defines.h"
 
 u8 io_read(u16 adr) {
@@ -36,6 +36,8 @@ u8 io_read(u16 adr) {
         default:
             assert_corrupt(0, "Illegal or unknown IO register write access");
     }
+
+    return 0; // Avoids warnings;
 }
 
 void io_write(u16 adr, u8 val) {

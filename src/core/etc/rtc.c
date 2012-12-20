@@ -17,7 +17,7 @@ static void rtc_next_day() {
 static void rtc_tick(u8 r) {
     static u8 *regs[] = {&rtc.s, &rtc.m, &rtc.h};
     if(r < 3) {
-        *regs[r]++;
+        (*regs[r])++;
         if(*regs[r] > 59) {
             *regs[r] = 0;
             rtc_tick(*regs[r+1]);

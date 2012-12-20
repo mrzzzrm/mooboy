@@ -25,7 +25,7 @@
 			<Add option="-Wall" />
 			<Add directory="src" />
 		</Compiler>
-		<Unit filename="src/core/assert.h" />
+		<Unit filename="src/core/_assert.h" />
 		<Unit filename="src/core/cpu.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -50,7 +50,6 @@
 		<Unit filename="src/core/io/divt.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/core/io/divt.h" />
 		<Unit filename="src/core/io/divt.h" />
 		<Unit filename="src/core/io/lcd.c">
 			<Option compilerVar="CC" />
