@@ -1,9 +1,6 @@
 #include "mem.h"
 #include "cpu.h"
 #include <assert.h>
-#include "mem_write.h"
-#include "mem_read.h"
-
 
 ram_t ram;
 rom_t rom;
@@ -26,8 +23,8 @@ u8 mem_readb(u16 adr) {
         case 0x8: case 0x9:                     return mbc.vrambank[adr - 0x8000];    break;
         case 0xA: case 0xB:                     return mbc_upper_read(adr);           break;
         case 0xC:                               return &ram.ibanks[0][adr - 0xC0000]; break;
-        case 0xD:                               return mbc.rambank[adr - 0xC000];     break;
-        case 0xE:                               assert(0); /* Typically not used? */  break;
+        case 0xD:                               return mbc.irambank[adr - 0xC000];     break;
+        case 0xE:                               assert(0, ""); /* Typically not used? */  break;
 
         case 0xF:
             if(adr >= 0xFE00 && adr < 0xFEA0) { // Sprite attributes
@@ -59,8 +56,8 @@ void mem_writeb(u16 adr, u8 val) {
         case 0x4: case 0x5: case 0x6: case 0x7: mbc_lower_write(adr, val);              break;
         case 0x8: case 0x9:                     mbc.vrambank[adr - 0x8000] = val;       break;
         case 0xA: case 0xB:                     mbc_upper_write(adr, val);              break;
-        case 0xC: case 0xD:                     mbc.rambank[adr - 0xC000] = (mbc.type == 2) ? (val & 0x0F) : val;  break;
-        case 0xE:                               assert(0); /* Typically not used? */    break;
+        case 0xC: case 0xD:                     mbc.irambank[adr - 0xC000] = (mbc.type == 2) ? (val & 0x0F) : val;  break;
+        case 0xE:                               assert(0, ""); /* Typically not used? */    break;
 
         case 0xF:
             if(adr >= 0xFE00 && adr < 0xFEA0) { // Sprite attributes

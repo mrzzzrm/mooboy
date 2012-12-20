@@ -1,6 +1,8 @@
 #ifndef MEM_MBC_H
 #define MEM_MBC_H
 
+    #include "util/defines.h"
+
     typedef struct mbc_s {
         uint type;
 

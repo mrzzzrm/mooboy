@@ -1,5 +1,8 @@
 #include "tima.h"
 #include "cpu.h"
+#include "cpu/defines.h"
+
+tima_t tima;
 
 static u16 mcs_per_tick[] = {1024, 16, 64, 256};
 
@@ -10,7 +13,7 @@ void tima_reset() {
     tima.last_mc = 0;
 }
 
-void time_step() {
+void tima_step() {
     if(!(tima.creg & 0x04))
         return;
 
@@ -20,6 +23,6 @@ void time_step() {
         tima.ticks++;
         tima.last_mc = mcs - per_tick;
 
-        cpu.ifs |= IFLAG_TIMER;
+        cpu.ifs |= IF_TIMER;
     }
 }

@@ -1,6 +1,8 @@
 #ifndef IO_TIMA_H
 #define IO_TIMA_H
 
+    #include "util/defines.h"
+
     typedef struct tima_s {
         u8 ticks;
         u8 mod;
@@ -11,6 +13,6 @@
     extern tima_t tima;
 
     void tima_reset();
-    void time_step();
+    void tima_step();
 
 #endif

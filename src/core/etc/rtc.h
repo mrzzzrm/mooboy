@@ -1,6 +1,8 @@
 #ifndef ETC_RTC_H
 #define ETC_RTC_H
 
+    #include <util/defines.h>
+
     typedef struct {
         u8 s, m, h;
         u8 dl, dh;

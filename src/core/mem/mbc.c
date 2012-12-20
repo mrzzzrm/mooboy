@@ -1,4 +1,5 @@
 #include "mbc.h"
+#include "mem.h"
 
 
 static struct {
@@ -37,7 +38,7 @@ static void mbc1_control(u16 adr, u8 val) {
                 mbc.rombank = rom.banks[mbc1.rombank];
             }
             else { // Cartridge RAM bits
-                mbc.xrambank = ram.xbank[val & 0x03];
+                mbc.xrambank = ram.xbanks[val & 0x03];
             }
         break;
         case 0x6: case 0x7: // RAM or ROM banking mode
@@ -68,7 +69,7 @@ static void mbc3_control(u16 adr, u8 val) {
         case 4: case 5: // TODO: Select RAM bank or RTC register
         break;
         case 6: case 7: // TODO: Latch Clock Data
-        break
+        break;
     }
 }
 
@@ -90,7 +91,7 @@ static void mbc5_control(u16 adr, u8 val) {
 }
 
 void mbc_set_type(u8 type) {
-    void (*control_funcs)(u16, u8)[] = {mbc0_control, mbc1_control, mbc2_control, mbc3_control, mbc5_control};
+    void (*control_funcs[])(u16, u8) = {mbc0_control, mbc1_control, mbc2_control, mbc3_control, mbc5_control};
 
     mbc.control_func = control_funcs[type];
 }

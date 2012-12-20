@@ -1,5 +1,6 @@
-#include "include.h"
+#include "loader.h"
 #include "assert.h"
+#include "mem.h"
 #include "mem/mbc.h"
 
 static u8 rom_bankcount(u8 ref) {
@@ -46,13 +47,15 @@ static void init_mbc(u8 ref) {
     }
     else if(hn == 0x01) {
         switch(ln) {
-            case 0: case 1: case 2: case 3:
+            case 0x0: case 0x1: case 0x2:
+            case 0x3:
                 mbc_set_type(3);
             break;
-            case 5: case 6: case 7:
+            case 0x5: case 0x6: case 0x7:
                 mbc_set_type(4);
             break;
-            case 9: case 0xA: case 0xB: case 0xC: case 0xC: case 0xD: case 0xE:
+            case 0x9: case 0xA: case 0xB:
+            case 0xC: case 0xD: case 0xE:
                 mbc_set_type(5);
             break;
         }
@@ -62,7 +65,7 @@ static void init_mbc(u8 ref) {
     }
 }
 
-static void init_rombanks(u8 ref) {
+static void init_rombanks(u8 ref, u8 *data, u32 datasize) {
     mbc.romsize = rom_bankcount(ref);
         assert_corrupt(mbc.romsize == 0, "Unknown romsize ref");
         assert_corrupt(mbc.romsize * 0x4000 == datasize, "Datasize doesn't match rom-internally specified size");
@@ -91,7 +94,7 @@ bool load_rom(u8 *data, uint datasize) {
     assert_corrupt(datasize > 0x014F, "ROM too small for header");
 
     init_mbc(data[0x0147]);
-    init_rombanks(data[0x0148]);
+    init_rombanks(data[0x0148], data, datasize);
     init_xrambanks(data[0x0149]);
 
     return true;

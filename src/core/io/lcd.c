@@ -2,7 +2,6 @@
 
 lcd_t lcd;
 
-
 void lcd_reset() {
     lcd.lcdc = 0;
     lcd.stat = 0;
@@ -15,4 +14,16 @@ void lcd_reset() {
     lcd.bgp = 0;
     lcd.obp0 = 0;
     lcd.obp1 = 0;
+}
+
+void lcd_dma(u8 v) {
+
+}
+
+void lcd_control(u8 v) {
+
+}
+
+void lcd_stat(u8 v) {
+
 }

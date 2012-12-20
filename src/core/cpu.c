@@ -1,5 +1,5 @@
 #include "cpu.h"
-#include "mbc.h"
+#include "mem/mbc.h"
 #include "cpu/ops.h"
 #include "cpu/defines.h"
 
@@ -40,18 +40,19 @@ static inline void emulate_op() {
 static inline void exec_int(u8 i) {
     static u16 isr[] = {0x40, 0x48, 0x50, 0x58, 0x60};
 
-    mem_writew(SP, cpu.pc);
+    mem_writew(SP, PC);
     SP -= 2;
-    cpu.pc = isr[i];
+    PC = isr[i];
 }
 
 static inline void handle_ints() {
     if(!cpu.ime)
         return;
 
-    for(u8 i = 0; i < 5; i++) {
+    u8 i;
+    for(i = 0; i < 5; i++) {
         if(cpu.ifs & (1 << i)) {
-            cpu.ifs &= ~(1 << i);c
+            cpu.ifs &= ~(1 << i);
             cpu.ime = 0;
             exec_int(i);
             return;
@@ -60,7 +61,7 @@ static inline void handle_ints() {
 }
 
 static inline void step_timers() {
-    div_step();
+    divt_step();
     tima_step();
 
     if(mbc.type == 3) {

@@ -22,7 +22,7 @@ void error() {
     sys_error();
 }
 
-void load_rom() {
+void load_romfile() {
     const char *rompath;
     u8 *romdata;
     size_t romsize;
@@ -44,7 +44,7 @@ int main(int argc, const char **argv) {
     init(argc, argv);
     while(sys_running()) {
         if(sys_new_rom()) {
-            load_rom();
+            load_romfile();
         }
         if(!emu_run()) {
             error();

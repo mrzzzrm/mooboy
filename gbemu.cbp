@@ -14,6 +14,7 @@
 				<Option parameters="--rom ./rom/tetris.gb" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add directory="src/core" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -46,10 +47,11 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/etc/rtc.h" />
-		<Unit filename="src/core/io/div.c">
+		<Unit filename="src/core/io/divt.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/core/io/div.h" />
+		<Unit filename="src/core/io/divt.h" />
+		<Unit filename="src/core/io/divt.h" />
 		<Unit filename="src/core/io/lcd.c">
 			<Option compilerVar="CC" />
 		</Unit>

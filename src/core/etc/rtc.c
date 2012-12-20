@@ -33,7 +33,7 @@ void rtc_reset() {
     rtc.m = 0;
     rtc.h = 0;
     rtc.dl = 0;
-    rtc.hl = 0;
+    rtc.dh = 0;
     rtc.mapped = 0;
     rtc.last_tick = 0;
 }

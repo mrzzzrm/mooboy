@@ -1,5 +1,7 @@
+#ifndef IO_LCD_H
 #define IO_LCD_H
-#define IO_LCD_H
+
+    #include "util/defines.h"
 
     typedef struct {
         u8 lcdc;
@@ -17,5 +19,7 @@
     void lcd_reset();
 
     void lcd_dma(u8 v);
+    void lcd_control(u8 v);
+    void lcd_stat(u8 v);
 
 #endif
