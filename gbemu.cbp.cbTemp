@@ -20,17 +20,6 @@
 					<Add option="-s" />
 				</Linker>
 			</Target>
-			<Target title="cli_debug">
-				<Option output="build/bin/cli_debug/gbemu" prefix_auto="1" extension_auto="1" />
-				<Option object_output="build/bin/cli_debug/" />
-				<Option type="1" />
-				<Option compiler="gcc" />
-				<Option parameters="--rom ./rom/tetris.gb" />
-				<Compiler>
-					<Add option="-g" />
-					<Add directory="src/core" />
-				</Compiler>
-			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />

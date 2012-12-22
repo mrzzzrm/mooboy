@@ -5,7 +5,7 @@
 #include "defines.h"
 
 
-#define PUSH_FUNC(f) c->funcs[c->sp++] = (f)
+#define PUSH_FUNC(f) {fprintf(stderr, "    Pushing func\n"); c->funcs[c->sp++] = (f);}
 
 op_chunk *op_chunk_map[0xFF];
 op_chunk *op_cb_chunk_map[0xFF];
@@ -65,6 +65,8 @@ op_chunk *op_create_chunk(u8 op) {
         case 0xC3:
             PUSH_FUNC(op_opl_iw);
             PUSH_FUNC(op_jp);
+            printf("    a: %p %p\n", op_opl_iw, op_jp);
+            printf("    b: %p %p\n", c->funcs[0], c->funcs[1]);
         break;
         case 0xC9: PUSH_FUNC(op_ret); break;
         case 0xCB: PUSH_FUNC(op_cb); break;
@@ -85,14 +87,14 @@ op_chunk *op_create_chunk(u8 op) {
         break;
 
         default:
-            switch((op&0xC0)>>6) {
+            switch((op&0xC0)>>6) { // (11)XX XXXX
                 case 0x00:
-                    switch(op & 0x07) {
-                        case 0x00:
+                    switch(op & 0x07) { // 00XX X(111)
+                        case 0x00: // 00XX X000
                             PUSH_FUNC(op_opl_ib);
                             PUSH_FUNC(op_jr);
                         break;
-                        case 0x01:
+                        case 0x01: // 00XX X001
                             if(op & 0x08) {
                                 c->opl.w = &HL;
                                 c->opr.w = WREG_SP((op&0x30) >> 4);
@@ -104,15 +106,15 @@ op_chunk *op_create_chunk(u8 op) {
                                 PUSH_FUNC(op_ld_w);
                             }
                         break;
-                        case 0x02:
-                            if(op & 0x20) {
-                                switch((op&0x18)>>3) {
-                                    case 0x00: case 0x02:
+                        case 0x02: // 00XX X010
+                            if(op & 0x20) { // 00(1)X X010
+                                switch((op&0x18)>>3) { // 001(1 1)010
+                                    case 0x00: case 0x02: // 0010 0010 or 0011 0010
                                         c->opr.b = &A;
                                         c->opl.w = &HL;
                                         PUSH_FUNC(op_opl_memcall);
                                     break;
-                                    case 0x01: case 0x03:
+                                    case 0x01: case 0x03: // 0010 1010 or 0011 1010
                                         c->opr.w = &HL;
                                         c->opl.b = &A;
                                         PUSH_FUNC(op_opr_memread);
@@ -135,13 +137,17 @@ op_chunk *op_create_chunk(u8 op) {
                             c->opl.w = WREG_SP((op&0x30)>>4);
                             PUSH_FUNC(op&0x80 ? op_dec_w : op_inc_w);
                         break;
-                        case 0x05:
+                        case 0x04:
                             chunk_opl_stdb(c, (op&38)>>3);
                             PUSH_FUNC(op_inc_b);
+                        case 0x05:
+                            chunk_opl_stdb(c, (op&38)>>3);
+                            PUSH_FUNC(op_dec_b);
                         break;
                         case 0x06:
                             chunk_opl_stdb(c, (op&38)>>3);
-                            PUSH_FUNC(op_dec_b);
+                            PUSH_FUNC(op_opr_ib);
+                            PUSH_FUNC(op_ld_b);
                         break;
                         case 0x07:
                             c->opl.b = &A;
