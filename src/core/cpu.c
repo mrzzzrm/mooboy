@@ -37,7 +37,7 @@ static inline void emulate_op() {
 		c = op_chunk_map[op];
 	}
 	c->sp = 0;
-	c->funcs[0](c);
+	c->funcs[c->sp++](c);
 	cpu.cc += c->mc;
 }
 

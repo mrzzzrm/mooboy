@@ -30,8 +30,7 @@ void op_opl_memcall(op_chunk *c) {
     xc.opl.b = &static_byte;
     xc.op = c->op;
     xc.opr = c->opr;
-    c->sp++;
-    c->funcs[c->sp](&xc);
+    c->funcs[c->sp++](&xc);
     mem_writeb(OPLW, static_byte);
 }
 
@@ -39,8 +38,7 @@ void op_opl_ib(op_chunk *c) {
     fprintf(stderr, "  _opl_ib()\n");
     static_byte = mem_readb(PC++);
     c->opl.b = &static_byte;
-    c->sp++;
-    c->funcs[c->sp](c);
+    c->funcs[c->sp++](c);
 }
 
 void op_opl_iw(op_chunk *c) {
@@ -48,10 +46,7 @@ void op_opl_iw(op_chunk *c) {
     static_word = mem_readw(PC);
     PC += 2;
     c->opl.w = &static_word;
-    c->sp++;
-    fprintf(stderr, "c: %p\n", c->funcs[c->sp]);
-    fprintf(stderr, "w: %x\n", static_word);
-    c->funcs[c->sp](c);
+    c->funcs[c->sp++](c);
     fprintf(stderr, "  <<_opl_iw()\n");
 }
 
@@ -62,8 +57,7 @@ void op_opl_addio(op_chunk *c) {
     xc.opl.w = &static_word;
     xc.op = c->op;
     xc.opr = c->opr;
-    c->sp++;
-    c->funcs[c->sp](&xc);
+    c->funcs[c->sp++](&xc);
 }
 
 void op_opr_memread(op_chunk *c) {
@@ -74,16 +68,14 @@ void op_opr_memread(op_chunk *c) {
     xc.opr.b = &static_byte;
     xc.op = c->op;
     xc.opl = c->opl;
-    c->sp++;
-    c->funcs[c->sp](&xc);
+    c->funcs[c->sp++](&xc);
 }
 
 void op_opr_ib(op_chunk *c) {
     fprintf(stderr, "  _opr_ib()\n");
     static_byte = mem_readb(PC++);
     c->opr.b = &static_byte;
-    c->sp++;
-    c->funcs[c->sp](c);
+    c->funcs[c->sp++](c);
 }
 
 void op_opr_iw(op_chunk *c) {
@@ -91,8 +83,7 @@ void op_opr_iw(op_chunk *c) {
     static_word = mem_readw(PC);
     PC += 2;
     c->opr.w = &static_word;
-    c->sp++;
-    c->funcs[c->sp](c);
+    c->funcs[c->sp++](c);
 }
 
 void op_opr_addio(op_chunk *c) {
@@ -102,8 +93,7 @@ void op_opr_addio(op_chunk *c) {
     xc.opr.w = &static_word;
     xc.op = c->op;
     xc.opl = c->opl;
-    c->sp++;
-    c->funcs[c->sp](&xc);
+    c->funcs[c->sp++](&xc);
 }
 
 void op_null(op_chunk *c) {
