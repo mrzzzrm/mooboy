@@ -3,6 +3,9 @@
 #include "debug.h"
 #include "loader.h"
 
+bool verbose;
+u16 debug_limit;
+
 static void emu_reset() {
     mem_reset();
     cpu_reset();
@@ -26,18 +29,42 @@ bool emu_load(u8 *data, size_t size) {
     return true;
 }
 
+static void debug_console() {
+    if(verbose) {
+        char str[256];
+        gets(str);
+        fflush(stdin);
+        if(str[0] == '\n') {
+            return;
+        }
+        else {
+            verbose = false;
+            debug_limit = strtol(str, NULL, 16);
+        }
+    }
+    else {
+        if(PC >= debug_limit)
+            verbose = true;
+    }
+}
+
 bool emu_run() {
+    verbose = 1;
     printf("Starting emulation\n");
     for(;;) {
-        printf("Emulating opcode @ PC=%X\n", PC);
-        debug_print_cpu_state();
-        printf("{\n");
-        debug_before();
+        if(verbose) {
+            printf("Emulating opcode @ PC=%X\n", PC);
+            debug_print_cpu_state();
+            printf("{\n");
+            debug_before();
+        }
         cpu_emulate(1);
-        debug_after();
-        debug_print_diff();
-        printf("}\n");
-        getchar();
+        if(verbose) {
+            debug_after();
+            debug_print_diff();
+            printf("}\n");
+        }
+        debug_console();
     }
     return true;
 }

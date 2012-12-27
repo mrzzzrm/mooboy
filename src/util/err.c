@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-static int errno;
+static int __errno;
 
 static const char *msg[] = {
   "No Error set",
@@ -16,14 +16,14 @@ static const char *msg[] = {
 
 void err_set(int new_errno) {
   assert(new_errno < sizeof(msg));
-  errno = new_errno;
+  __errno = new_errno;
 }
 
 void err_clear() {
-    errno = 0;
+    __errno = 0;
 }
 
 const char *err_msg() {
-    return msg[errno];
+    return msg[__errno];
 }
 
