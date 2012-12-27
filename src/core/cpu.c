@@ -28,18 +28,6 @@ void cpu_reset() {
     cpu.mcs_per_second = 1048576;
 }
 
-static inline void emulate_op() {
-    u8 op = FETCHB;
-	op_chunk *c = op_chunk_map[op];
-	if(c == NULL) {
-	    printf("  First-Time-Decoding of %X\n", op);
-		op_chunk_map[op] = op_create_chunk(op);
-		c = op_chunk_map[op];
-	}
-	c->sp = 0;
-	c->funcs[c->sp++](c);
-	cpu.cc += c->mc;
-}
 
 static inline void exec_int(u8 i) {
     static u16 isr[] = {0x40, 0x48, 0x50, 0x58, 0x60};
@@ -73,10 +61,22 @@ static inline void step_timers() {
     }
 }
 
+void cpu_exec(u8 op) {
+	op_chunk *c = op_chunk_map[op];
+	if(c == NULL) {
+		op_chunk_map[op] = op_create_chunk(op);
+		c = op_chunk_map[op];
+	}
+	c->sp = 0;
+	c->funcs[c->sp++](c);
+	cpu.cc += c->mc;
+}
+
 bool cpu_emulate(uint cycles) {
-    emulate_op();
+    cpu_exec(FETCHB);
     handle_ints();
     step_timers();
 
     return true;
 }
+

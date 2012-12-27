@@ -10,48 +10,50 @@ static u8 static_byte;
 static u16 static_word;
 
 static void push(u16 w) {
-    fprintf(stderr, "  _push(%X)\n", w);
+    //fprintf(stderr, "  _push(%X)\n", w);
     mem_writew(SP, w);
     SP -= 2;
 }
 
 static u16 pop() {
-    fprintf(stderr, "  _pop()\n");
+    //fprintf(stderr, "  _pop()\n");
     u16 r = mem_readw(SP);
     SP += 2;
     return r;
 }
 
 void op_opl_memcall(op_chunk *c) {
-    fprintf(stderr, "  _opl_memcall()\n");
+    //fprintf(stderr, "  _opl_memcall()\n");
     op_chunk xc;
+    u16 adr = OPLW;
 
-    static_byte = mem_readb(OPLW);
+    static_byte = mem_readb(adr);
     xc.opl.b = &static_byte;
     xc.op = c->op;
     xc.opr = c->opr;
     c->funcs[c->sp++](&xc);
-    mem_writeb(OPLW, static_byte);
+    //printf("[%X] (= %X) = %X\n", OPLW,  mem_readb(adr), static_byte);
+    mem_writeb(adr, static_byte);
 }
 
 void op_opl_ib(op_chunk *c) {
-    fprintf(stderr, "  _opl_ib()\n");
+    //fprintf(stderr, "  _opl_ib()\n");
     static_byte = mem_readb(PC++);
     c->opl.b = &static_byte;
     c->funcs[c->sp++](c);
 }
 
 void op_opl_iw(op_chunk *c) {
-    fprintf(stderr, "  _opl_iw() %i\n", c->sp);
+    //fprintf(stderr, "  _opl_iw() %i\n", c->sp);
     static_word = mem_readw(PC);
     PC += 2;
     c->opl.w = &static_word;
     c->funcs[c->sp++](c);
-    fprintf(stderr, "  <<_opl_iw()\n");
+    //fprintf(stderr, "  <<_opl_iw()\n");
 }
 
 void op_opl_addio(op_chunk *c) {
-    fprintf(stderr, "  _opl_addio()\n");
+    //fprintf(stderr, "  _opl_addio()\n");
     op_chunk xc;
     static_word = (u16)OPLB + 0xFF00;
     xc.opl.w = &static_word;
@@ -61,7 +63,7 @@ void op_opl_addio(op_chunk *c) {
 }
 
 void op_opr_memread(op_chunk *c) {
-    fprintf(stderr, "  _opr_memread()\n");
+    //fprintf(stderr, "  _opr_memread()\n");
     op_chunk xc;
 
     static_byte = mem_readb(OPLW);
@@ -72,14 +74,14 @@ void op_opr_memread(op_chunk *c) {
 }
 
 void op_opr_ib(op_chunk *c) {
-    fprintf(stderr, "  _opr_ib()\n");
+    //fprintf(stderr, "  _opr_ib()\n");
     static_byte = mem_readb(PC++);
     c->opr.b = &static_byte;
     c->funcs[c->sp++](c);
 }
 
 void op_opr_iw(op_chunk *c) {
-    fprintf(stderr, "  _opr_iw()\n");
+    //fprintf(stderr, "  _opr_iw()\n");
     static_word = mem_readw(PC);
     PC += 2;
     c->opr.w = &static_word;
@@ -87,7 +89,7 @@ void op_opr_iw(op_chunk *c) {
 }
 
 void op_opr_addio(op_chunk *c) {
-    fprintf(stderr, "  _opr_addio()\n");
+    //fprintf(stderr, "  _opr_addio()\n");
     op_chunk xc;
     static_word = (u16)OPRB + 0xFF00;
     xc.opr.w = &static_word;
@@ -113,7 +115,8 @@ void op_ld_w(op_chunk *c) {
 void op_ldx(op_chunk *c) {
     fprintf(stderr, "  LDX n, b\n");
     OPLB = OPRB;
-    HL = (c->op & 0x10) ? HL + 1 : HL - 1;
+
+    HL = (c->op & 0x10) ? HL - 1 : HL + 1;
 }
 
 void op_ldhl_spi(op_chunk *c) {
@@ -123,8 +126,8 @@ void op_ldhl_spi(op_chunk *c) {
 }
 
 void op_ld_imsp(op_chunk *c)  {
-    fprintf(stderr, "  LD (i), SP\n");
     mem_writew(mem_readw(PC), SP);
+    fprintf(stderr, "  LD (i), SP\n");
     PC += 2;
 }
 
@@ -143,49 +146,63 @@ void op_pop(op_chunk *c)  {
 void op_add_b(op_chunk *c) {
     fprintf(stderr, "  ADD b\n");
     u16 r = (u16)OPLB + (u16)OPRB;
-    F = FZZ((u8)r) | (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) | (FCBIT & (r >> 4));
+    F = FZZ((u8)r) |
+        (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) |
+        (FCBIT & (r >> 4));
     OPLB = (u8)r;
 }
 
 void op_add_w(op_chunk *c) {
     fprintf(stderr, "  ADD w\n");
     u32 r = (u32)OPLW + (u32)OPRW;
-    F = FZZ((u16)r) | (FHBIT & ((OPLB ^ OPRB ^ r) >> 7)) | (FCBIT & (r >> 12));
+    F = FZZ((u16)r) |
+        (FHBIT & ((OPLB ^ OPRB ^ r) >> 7)) |
+        (FCBIT & (r >> 12));
     OPLW = (u16)r;
 }
 
 void op_adc(op_chunk *c) {
     fprintf(stderr, "  ADC b\n");
     u16 r = (u16)OPLB + (u16)OPRB + (u16)FC;
-    F = FZZ((u8)r) | (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) | (FCBIT & (r >> 4));
+    F = FZZ((u8)r) |
+        (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) |
+        (FCBIT & (r >> 4));
     OPLB = (u8)r;
 }
 
 void op_sub(op_chunk *c) {
     fprintf(stderr, "  SUB b\n");
     u16 r = (u16)OPLB - (u16)OPRB;
-    F = FZZ((u8)r) | FNBIT | (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) | (FCBIT & (r >> 4));
+    F = FZZ((u8)r) |
+        FNBIT |
+        (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) |
+        (FCBIT & (r >> 4));
     OPLB = (u8)r;
 }
 
 void op_sbc(op_chunk *c) {
     fprintf(stderr, "  SBC b\n");
     u16 r = (u16)OPLB - (u16)OPRB - (u16)FC;
-    F = FZZ((u8)r) | FNBIT | (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) | (FCBIT & (r >> 4));
+    F = FZZ((u8)r) |
+        FNBIT |
+        (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) |
+        (FCBIT & (r >> 4));
     OPLB = (u8)r;
 }
 
 void op_inc_b(op_chunk *c) {
     fprintf(stderr, "  INC b\n");
-    u8 r = OPLB + 1;
-    F = FZZ((u8)r) | (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) | FC;
+    u16 r = (u16)OPLB + 1;
+    F = FZZ((u8)r) |
+        (FHBIT & ((OPLB ^ r) << 1)) |
+        (FCBIT & (r >> 4));
     OPLB = r;
 }
 
 void op_dec_b(op_chunk *c) {
     fprintf(stderr, "  DEC b\n");
     u8 r = OPLB - 1;
-    F = FZZ((u8)r) | (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) | FC;
+    F = FZZ((u8)r) | FNBIT | (FHBIT & ((OPLB ^ r) << 1)) | (FCBIT & (r >> 4));
     OPLB = r;
 }
 
@@ -370,13 +387,13 @@ void op_jp(op_chunk *c) {
 }
 
 void op_jr(op_chunk *c) {
-    fprintf(stderr, "  JR\n");
+    fprintf(stderr, "  JR %i\n", (int)((s8)OPLB));
     switch(c->op) {
-        case 0x18: cpu.pc.w += (s16)OPLW - 0x80; break;
-        case 0x20: if(!FZ) PC = OPLW; break;
-        case 0x28: if(FZ)  PC = OPLW; break;
-        case 0x30: if(!FC) PC = OPLW; break;
-        case 0x38: if(FC)  PC = OPLW; break;
+        case 0x18: cpu.pc.w += (s8)OPLB; break;
+        case 0x20: if(!FZ) PC += (s8)OPLB; break;
+        case 0x28: if(FZ)  PC += (s8)OPLB; break;
+        case 0x30: if(!FC) PC += (s8)OPLB; break;
+        case 0x38: if(FC)  PC += (s8)OPLB; break;
     }
 }
 

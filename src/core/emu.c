@@ -1,5 +1,6 @@
 #include "emu.h"
 #include "cpu/defines.h"
+#include "debug.h"
 #include "loader.h"
 
 static void emu_reset() {
@@ -28,9 +29,15 @@ bool emu_load(u8 *data, size_t size) {
 bool emu_run() {
     printf("Starting emulation\n");
     for(;;) {
-        printf("Emulating opcode\n\tPC=%X\n{\n", PC);
+        printf("Emulating opcode @ PC=%X\n", PC);
+        debug_print_cpu_state();
+        printf("{\n");
+        debug_before();
         cpu_emulate(1);
+        debug_after();
+        debug_print_diff();
         printf("}\n");
+        getchar();
     }
     return true;
 }

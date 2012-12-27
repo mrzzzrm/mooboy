@@ -15,6 +15,7 @@
 				<Compiler>
 					<Add option="-O2" />
 					<Add directory="src/core" />
+					<Add directory="debug" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -36,6 +37,10 @@
 			<Add option="-Wall" />
 			<Add directory="src" />
 		</Compiler>
+		<Unit filename="debug/debug.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="debug/debug.h" />
 		<Unit filename="src/core/_assert.h" />
 		<Unit filename="src/core/cpu.c">
 			<Option compilerVar="CC" />

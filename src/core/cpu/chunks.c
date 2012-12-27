@@ -5,7 +5,7 @@
 #include "defines.h"
 
 
-#define PUSH_FUNC(f) {fprintf(stderr, "    Pushing func\n"); c->funcs[c->sp++] = (f);}
+#define PUSH_FUNC(f) {c->funcs[c->sp++] = (f);}
 
 op_chunk *op_chunk_map[0xFF];
 op_chunk *op_cb_chunk_map[0xFF];
@@ -65,8 +65,6 @@ op_chunk *op_create_chunk(u8 op) {
         case 0xC3:
             PUSH_FUNC(op_opl_iw);
             PUSH_FUNC(op_jp);
-            printf("    a: %p %p\n", op_opl_iw, op_jp);
-            printf("    b: %p %p\n", c->funcs[0], c->funcs[1]);
         break;
         case 0xC9: PUSH_FUNC(op_ret); break;
         case 0xCB: PUSH_FUNC(op_cb); break;
@@ -138,14 +136,14 @@ op_chunk *op_create_chunk(u8 op) {
                             PUSH_FUNC(op&0x80 ? op_dec_w : op_inc_w);
                         break;
                         case 0x04:
-                            chunk_opl_stdb(c, (op&38)>>3);
+                            chunk_opl_stdb(c, (op&0x38)>>3);
                             PUSH_FUNC(op_inc_b);
                         case 0x05:
-                            chunk_opl_stdb(c, (op&38)>>3);
+                            chunk_opl_stdb(c, (op&0x38)>>3);
                             PUSH_FUNC(op_dec_b);
                         break;
                         case 0x06:
-                            chunk_opl_stdb(c, (op&38)>>3);
+                            chunk_opl_stdb(c, (op&0x38)>>3);
                             PUSH_FUNC(op_opr_ib);
                             PUSH_FUNC(op_ld_b);
                         break;
