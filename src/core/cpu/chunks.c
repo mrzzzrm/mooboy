@@ -173,8 +173,8 @@ op_chunk *op_create_chunk(u8 op) {
                     chunk_opr_stdb(c, op & 0x07);
                     chunk_func_alu(c, (op & 0x38) >> 3);
                 break;
-                case 0x03:
-                    switch(op & 0x03) {
+                case 0x03: // 11XX XXXX
+                    switch(op & 0x07) { // 11XX X(111)
                         case 0x01:
                             c->opl.w = WREG_AF((op&0x30)>>4);
                             PUSH_FUNC(op_pop);
@@ -194,8 +194,8 @@ op_chunk *op_create_chunk(u8 op) {
                         break;
                         case 0x07: PUSH_FUNC(op_rst); break;
 
-                        default:
-                            if((op & 0xE0) == 0xC0) {
+                        default: // 11XX X000 or 11XX X010 or 11XX X011
+                            if((op & 0xE0) == 0xC0) { // 110X X0XX
                                 if(op & 0x02) {
                                     PUSH_FUNC(op_opl_iw);
                                     PUSH_FUNC(op_jp);
@@ -204,7 +204,7 @@ op_chunk *op_create_chunk(u8 op) {
                                     PUSH_FUNC(op_ret);
                                 }
                             }
-                            else {
+                            else { // 111X X000 or 111X X010 or 111X X011
                                 if(op & 0x10) {
                                     c->opl.b = &A;
                                 }

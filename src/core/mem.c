@@ -18,7 +18,8 @@ void mem_reset() {
 }
 
 u8 mem_readb(u16 adr) {
-    //fprintf(stderr, "  Reading ");
+    fprintf(stderr, "  Reading [%.4X]\n", adr);
+
     switch(adr>>12) {
         case 0x0: case 0x1: case 0x2: case 0x3: //fprintf(stderr, "ROM 0 [%X]=%X\n", adr, rom.banks[0][adr]);
                                                 return rom.banks[0][adr];           break;
@@ -76,6 +77,7 @@ void mem_writeb(u16 adr, u8 val) {
     //fprintf(stderr, "  Writing ");
 
     // Mirroring
+    fprintf(stderr, "  Write [%.4X] = %.2X\n", adr, val);
 
     switch(adr>>12) {
         case 0x0: case 0x1: case 0x2: case 0x3:
@@ -103,7 +105,6 @@ void mem_writeb(u16 adr, u8 val) {
                 assert_corrupt(0, "Invalid access to locked memory location");
             }
             else if(adr >= 0xFF00 && adr < 0xFF80) { // IO Registers
-                //fprintf(stderr, "IO\n");
                 return io_write(adr, val);
             }
             else if(adr >= 0xFF80 && adr < 0xFFFE) { // HiRAM
