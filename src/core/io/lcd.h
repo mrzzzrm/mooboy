@@ -21,5 +21,6 @@
     void lcd_dma(u8 v);
     void lcd_control(u8 v);
     void lcd_stat(u8 v);
+    void lcd_drawl();
 
 #endif

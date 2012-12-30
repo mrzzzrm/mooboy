@@ -1,5 +1,6 @@
 #include "emu.h"
 #include "cpu/defines.h"
+#include "io/lcd.h"
 #include "debug.h"
 #include "loader.h"
 
@@ -65,6 +66,14 @@ bool emu_run() {
             printf("}\n");
         }
         debug_console();
+
+        SDL_FillRect(NULL, 0, SDL_GetVideoSurface());
+        unsigned int l;
+        for(l = 0; l < 144; l++) {
+            lcd.ly = l;
+            lcd_drawl();
+        }
+        SDL_Flip(SDL_GetVideoSurface());
     }
     return true;
 }
