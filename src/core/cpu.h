@@ -14,7 +14,7 @@
         reg_t sp, pc;
 
         u8 ime;
-        u8 ifs;
+        u8 irq;
 
         u32 cc;
         u32 mcs_per_second;
@@ -25,6 +25,6 @@
     void cpu_init();
     void cpu_reset();
     void cpu_exec(u8 op);
-    bool cpu_emulate(uint cycles); // Ḿachine cycles
+    u8 cpu_step(); // Ḿachine cycles
 
 #endif // CPU_H

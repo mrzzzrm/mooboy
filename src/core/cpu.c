@@ -22,7 +22,7 @@ void cpu_reset() {
     PC = 0x0100;
 
     cpu.ime = 0x00;
-    cpu.ifs = 0x00;
+    cpu.irq = 0x00;
 
     cpu.cc = 0;
     cpu.mcs_per_second = 1048576;
@@ -43,8 +43,8 @@ static inline void handle_ints() {
 
     u8 i;
     for(i = 0; i < 5; i++) {
-        if(cpu.ifs & (1 << i)) {
-            cpu.ifs &= ~(1 << i);
+        if(cpu.irq & (1 << i)) {
+            cpu.irq &= ~(1 << i);
             cpu.ime = 0;
             exec_int(i);
             return;
@@ -69,14 +69,14 @@ void cpu_exec(u8 op) {
 	}
 	c->sp = 0;
 	c->funcs[c->sp++](c);
-	cpu.cc += c->mc;
+	cpu.cc += 2;// TODO: c->mc;
 }
 
-bool cpu_emulate(uint cycles) {
+u8 cpu_step() {
     cpu_exec(FETCHB);
     handle_ints();
     step_timers();
 
-    return true;
+    return 2; // TODO, cause this is crap
 }
 

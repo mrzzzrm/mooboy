@@ -17,6 +17,7 @@
     extern lcd_t lcd;
 
     void lcd_reset();
+    void lcd_step();
 
     void lcd_dma(u8 v);
     void lcd_control(u8 v);

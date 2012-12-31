@@ -23,6 +23,6 @@ void tima_step() {
         tima.ticks++;
         tima.last_mc = mcs - per_tick;
 
-        cpu.ifs |= IF_TIMER;
+        cpu.irq |= IF_TIMER;
     }
 }

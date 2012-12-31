@@ -12,6 +12,11 @@ static void emu_reset() {
     cpu_reset();
 }
 
+static void emu_step() {
+    cpu_step();
+    lcd_step();
+}
+
 void emu_init() {
 
 }
@@ -29,6 +34,8 @@ bool emu_load(u8 *data, size_t size) {
 
     return true;
 }
+
+
 
 static void debug_console() {
     if(verbose) {
@@ -59,7 +66,7 @@ bool emu_run() {
             printf("{\n");
             debug_before();
         }
-        cpu_emulate(1);
+        emu_step();
         if(verbose) {
             debug_after();
             debug_print_diff();
@@ -67,13 +74,6 @@ bool emu_run() {
         }
         debug_console();
 
-        SDL_FillRect(NULL, 0, SDL_GetVideoSurface());
-        unsigned int l;
-        for(l = 0; l < 144; l++) {
-            lcd.ly = l;
-            lcd_drawl();
-        }
-        SDL_Flip(SDL_GetVideoSurface());
     }
     return true;
 }
