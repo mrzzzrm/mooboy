@@ -4,7 +4,7 @@
     #include "util/defines.h"
 
     typedef struct {
-        u8 lcdc;
+        u8 c;
         u8 stat;
         u8 scx, scy;
         u8 ly;

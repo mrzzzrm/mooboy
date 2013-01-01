@@ -4,7 +4,7 @@
     #include "util/defines.h"
 
     typedef struct {
-        u8* data;
+        u8* lines[144];
         unsigned int w, h;
         unsigned int poffset;
         unsigned int psize;

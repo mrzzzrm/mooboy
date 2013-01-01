@@ -1,5 +1,7 @@
 #include "lcd.h"
+#include "fb.h"
 #include "cpu.h"
+#include "mem.h"
 #include "cpu/defines.h"
 #include "util/defines.h"
 
@@ -11,6 +13,11 @@
 #define DUR_SCANLINE 114
 #define DUR_VBLANK 1140
 
+#define SIF_HBLANK 0x08
+#define SIF_VBLANK 0x10
+#define SIF_OAM    0x20
+#define SIF_LYC    0x40
+
 #define STAT_MODE       (lcd.stat & 0x03)
 #define STAT_CFLAG      (lcd.stat & 0x04)
 #define STAT_HBLANK_IRQ (lcd.stat & 0x08)
@@ -21,8 +28,67 @@
 #define STAT_SET_MODE(m)  {lcd.stat ^= lcd.stat&0x03; lcd.stat |= (m);}
 #define STAT_SET_CFLAG(c) (lcd.stat ^= (~lcd.stat)&(c<<2))
 
+#define LCDC_DISPLAY_ENABLE_BIT 0x80;
+#define LCDC_BG_ENABLE_BIT 0x00;
+
+#define LCD_WIDTH 160
+#define LCD_HEIGHT 144
+
+#define TILE_WIDTH 8
+#define TILE_HEIGHT 8
+#define TILE_BYTES 16
+#define TILE_LINE_BYTES 2
+
+
 lcd_t lcd;
 
+static void draw_line(u8 *data, u8 bytes, s16 x) {
+    unsigned int b;
+    for(b = 0; b < bytes; b++) {
+        fb.lines[lcd.ly][x + v]
+    }
+}
+
+static void draw_tile_line(u8 tile, u8 tile_line, s16 x) {
+    u8 *tptr, *lptr;
+
+    if(lcd.c & LCD_TILE_DATA_BIT) {
+        tptr = &mbc.vrambank[0x0000 + tile*TILE_BYTES];
+    }
+    else {
+        tptr = &mbc.vrambank[0x1000 + (s8)tile*TILE_BYTES];
+    }
+
+    lptr = &tptr[tile_line * TILE_LINE_BYTES];
+    draw_line(lptr, TILE_LINE_BYTES, x)
+}
+
+static u8 bg_tile_at(u8 bg_x, u8 bg_y) {
+    u8 tx, ty;
+
+    tx = bg_x / TILE_WIDTH;
+    ty = bg_y / TILE_HEIGHT;
+
+    if(lcd.c & LCDC_BG_TILE_MAP_BIT) {
+        return mbc.vrambank[0x1C00 + ty*32 + tx];
+    }
+    else {
+        return mbc.vrambank[0x1800 + ty*32 + tx];
+    }
+}
+
+static void refresh_bg() {
+    s16 lcd_x;
+    u16 bg_y, tile_line;
+
+    bg_y = lcd.scy + lcd.ly;
+    tile_line = bg_y % TILE_HEIGHT;
+
+    for(lcd_x = -(lcd.scx % 8); lcd_x >= LCD_WIDTH; lcd_x += 8) {
+        u8 tile = bg_tile_at(lcd.scx + lcd_x, bg_y);
+        draw_tile_line(tile, tile_line, lcd_x);
+    }
+}
 
 static u8 step_mode(u8 m1) {
     u16 fc = cpu.cc % DUR_FULL_REFRESH;
@@ -43,7 +109,12 @@ static u8 step_mode(u8 m1) {
 }
 
 static void refresh_line() {
+    if(lcd.c & LCDC_BG_ENABLE_BIT) refresh_bg();
+}
 
+static inline void stat_irq(u8 flag) {
+    if(lcd.stat & flag)
+        cpu.irq |= IF_LCDSTAT;
 }
 
 void lcd_reset() {
@@ -71,23 +142,36 @@ void lcd_step() {
         switch(m1) {
             case 0x00:
                 if(m2 == 0x01) { // VBlank IRQ
-
+                    cpu.irq |= IF_VBLANK;
+                    stat_irq(SIF_VBLANK);
                 }
-                else { // OAM IRQ
-
+                else  {// OAM IRQ
+                    stat_irq(SIF_OAM);
                 }
             break;
             case 0x01: // OAM IRQ
+                stat_irq(SIF_OAM);
             break;
             case 0x02: // Nothing?
             break;
             case 0x03: // HBlank IRQ
+                stat_irq(SIF_HBLANK);
             break;
         }
 
         if(m2 == 0x02) {
-            refresh_line();
+            if(lcd.c & LCDC_DISPLAY_ENABLE_BIT) {
+                refresh_line();
+            }
         }
+    }
+
+    if(lcd.ly == lcd.lyc) {
+        stat_irq(SIF_LYC);
+        STAT_SET_CFLAG(1);
+    }
+    else {
+        STAT_SET_CFLAG(0);
     }
 }
 
