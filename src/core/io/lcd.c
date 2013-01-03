@@ -42,6 +42,12 @@
 
 lcd_t lcd;
 
+static void swap_fb() {
+    u8 **tmp = lcd.clean_fb;
+    lcd.clean_fb = lcd.working_fb;
+    lcd.working_fb = tmp;
+}
+
 static void draw_line(u8 *data, u8 bytes, s16 x) {
     unsigned int b;
     for(b = 0; b < bytes; b++) {
@@ -129,6 +135,10 @@ void lcd_reset() {
     lcd.bgp = 0;
     lcd.obp0 = 0;
     lcd.obp1 = 0;
+
+    memset(lcd.fb, 0x00, sizeof(lcd.fb));
+    lcd.clean_fb = lcd.fb[0];
+    lcd.working_fb = lcd.fb[1];
 }
 
 void lcd_step() {
@@ -151,6 +161,7 @@ void lcd_step() {
             break;
             case 0x01: // OAM IRQ
                 stat_irq(SIF_OAM);
+                swap_fb();
             break;
             case 0x02: // Nothing?
             break;
@@ -176,14 +187,22 @@ void lcd_step() {
 }
 
 void lcd_dma(u8 v) {
+    u8 b;
+    u16 src;
 
+    src = v<<8;
+    for(src = ((u16)v)<<8, b = 0; b < 0x9F; b++, src++) {
+        mem.oam[b] = mem_readb(src);
+    }
 }
 
+/* Just direct writing? */
 void lcd_control(u8 v) {
-
+    lcd.c = v;
 }
 
+/* Just direct writing? */
 void lcd_stat(u8 v) {
-
+    lcd.stat = v;
 }
 
