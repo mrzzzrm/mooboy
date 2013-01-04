@@ -29,8 +29,9 @@
 #define STAT_SET_MODE(m)  {lcd.stat ^= lcd.stat&0x03; lcd.stat |= (m);}
 #define STAT_SET_CFLAG(c) (lcd.stat ^= (~lcd.stat)&(c<<2))
 
-#define LCDC_DISPLAY_ENABLE_BIT 0x80;
-#define LCDC_BG_ENABLE_BIT 0x00;
+#define LCDC_DISPLAY_ENABLE_BIT 0x80
+#define LCDC_BG_ENABLE_BIT 0x00
+#define LCDC_WND_ENABLE_BIT 0x20
 
 #define LCD_WIDTH 160
 #define LCD_HEIGHT 144
@@ -59,8 +60,10 @@ static void swap_fb() {
 
 
 static void draw_line() {
-    if(lcd.c & LCDC_BG_ENABLE_BIT) lcd_render_bg_line();
-    if(lcd.c & LCDC_WND_ENABLE_BIT) lcd_render_wnd_line();
+    if(lcd.c & LCDC_BG_ENABLE_BIT)
+        lcd_render_bg_line();
+    if(lcd.c & LCDC_WND_ENABLE_BIT)
+        lcd_render_wnd_line();
 }
 
 static u8 step_mode(u8 m1) {
@@ -87,7 +90,7 @@ static inline void stat_irq(u8 flag) {
 }
 
 void lcd_reset() {
-    lcd.lcdc = 0x91;
+    lcd.c = 0x91;
     lcd.stat = 0;
     lcd.scx = 0;
     lcd.scy = 0;
@@ -155,17 +158,7 @@ void lcd_dma(u8 v) {
 
     src = v<<8;
     for(src = ((u16)v)<<8, b = 0; b < 0x9F; b++, src++) {
-        mem.oam[b] = mem_readb(src);
+        ram.oam[b] = mem_readb(src);
     }
-}
-
-/* Just direct writing? */
-void lcd_control(u8 v) {
-    lcd.c = v;
-}
-
-/* Just direct writing? */
-void lcd_stat(u8 v) {
-    lcd.stat = v;
 }
 

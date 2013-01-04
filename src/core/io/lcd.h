@@ -14,8 +14,8 @@
         /* TODO: CGB registers */
 
         u8 fb[2][144][160];
-        u8 *clean_fb;
-        u8 *working_fb;
+        u8 **clean_fb;
+        u8 **working_fb;
     } lcd_t;
 
     extern lcd_t lcd;
@@ -24,8 +24,5 @@
     void lcd_step();
 
     void lcd_dma(u8 v);
-    void lcd_control(u8 v);
-    void lcd_stat(u8 v);
-    void lcd_drawl();
 
 #endif

@@ -1,11 +1,23 @@
 #include "maps.h"
-#include "lcd.h"
+#include "io/lcd.h"
 #include "mem.h"
 
+#define LCD_WIDTH 160
+
+#define MAP_WIDTH 256
+#define TILE_WIDTH 32
+#define MAP_COLUMNS 32
+#define MAP_ROWS 32
+#define TILE_COLUMNS
+
 #define LCDC_TILE_DATA_BIT 0x10
+#define LCDC_BG_MAP_BIT 0x04
+
 #define PIXEL_PER_BYTE 4
 
-static render_tile_line_seg(u8 tile, u8 pixel_x, u8 pixel_y, u8 lcd_x) {
+#define min(a, b) ((a) < (b) ? (a) : (b))
+
+static u8 render_tile_line_seg(u8 tile, u8 pixel_x, u8 pixel_y, u8 lcd_x) {
     u8 *tile_pixels;
     u8 p, tx;
 
@@ -14,8 +26,9 @@ static render_tile_line_seg(u8 tile, u8 pixel_x, u8 pixel_y, u8 lcd_x) {
     else
         tile_pixels = &mbc.vrambank[0x0000 + ((u16)tile << 8)];
 
-    for(p = pixel_y * TILE_WIDTH + pixel_x, x = pixel_x; x < TILE_WIDTH && lcd_x < LCD_WIDTH; x++, p++, lcd_x++) {
-        lcd.working_fb[lcd.ly][lcd_x] = tile_pixels[p / PIXEL_PER_BYTE] & (0x03 << (p % PIXEL_PER_BYTE));
+    for(p = pixel_y * TILE_WIDTH + pixel_x, tx = pixel_x; tx < TILE_WIDTH && lcd_x < LCD_WIDTH; tx++, p++, lcd_x++) {
+        lcd.working_fb[lcd.ly][lcd_x]
+         = tile_pixels[p / PIXEL_PER_BYTE] & (0x03 << (p % PIXEL_PER_BYTE));
     }
 
     return lcd_x;
@@ -25,10 +38,10 @@ static void render_map_line_seg(u8 *map, u8 map_x, u8 map_y, u8 lcd_x, u8 count)
     u8 col, row;
     u8 pixel_x, pixel_y;
 
-    col = map_x / TILE_COLUMNS;
-    row = map_y / TILE_ROWS;
-    pixel_x = map_x % TILE_COLUMNS;
-    pixel_y = map_y % TILE_ROWS;
+    col = map_x / MAP_COLUMNS;
+    row = map_y / MAP_ROWS;
+    pixel_x = map_x % MAP_COLUMNS;
+    pixel_y = map_y % MAP_ROWS;
 
     lcd_x = render_tile_line_seg(map[row * TILE_COLUMNS + col], pixel_x, pixel_y, lcd_x);
 
@@ -52,8 +65,8 @@ void lcd_render_bg_line() {
 
     render_map_line_seg(map, map_x, map_y, 0, count);
 
-    if(pixels_wrap > 0) {
-        render_map_line_seg(map, 0, map_y, count, pixels_wrap);
+    if(count_wrap > 0) {
+        render_map_line_seg(map, 0, map_y, count, count_wrap);
     }
 }
 

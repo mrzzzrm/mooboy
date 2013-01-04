@@ -7,7 +7,7 @@ u8 io_read(u16 adr) {
     u8 r = adr -  0xFF00;
 
     switch(r) {
-        case 0x40: return lcd.lcdc; break;
+        case 0x40: return lcd.c; break;
         case 0x41: return lcd.stat; break;
         case 0x42: return lcd.scy; break;
         case 0x43: return lcd.scx; break;
@@ -44,8 +44,8 @@ void io_write(u16 adr, u8 val) {
     u8 r = adr -  0xFF00;
 
     switch(r) {
-        case 0x40: lcd_control(val); break;
-        case 0x41: lcd_stat(val & 0xF8); break;
+        case 0x40: lcd.c = val; break;
+        case 0x41: lcd.stat = val; break;
         case 0x42: lcd.scy = val; break;
         case 0x43: lcd.scx = val; break;
         case 0x44: assert(0); break;
