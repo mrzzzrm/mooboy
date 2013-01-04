@@ -4,6 +4,7 @@
 #include "mem.h"
 #include "cpu/defines.h"
 #include "util/defines.h"
+#include "lcd/maps.h"
 
 #define DUR_FULL_REFRESH 17556
 #define DUR_MODE_0 51
@@ -39,6 +40,14 @@
 #define TILE_BYTES 16
 #define TILE_LINE_BYTES 2
 
+#define TILES_INDEX_SIGNED 0
+#define TILES_INDEX_UNSIGNED 1
+
+#define MAP_WIDTH 256
+#define MAP_HEIGHT 256
+#define MAP_COLUMNS 32
+#define MAP_ROWS 32
+
 
 lcd_t lcd;
 
@@ -48,52 +57,10 @@ static void swap_fb() {
     lcd.working_fb = tmp;
 }
 
-static void draw_line(u8 *data, u8 bytes, s16 x) {
-    unsigned int b;
-    for(b = 0; b < bytes; b++) {
-        fb.lines[lcd.ly][x + v]
-    }
-}
 
-static void draw_tile_line(u8 tile, u8 tile_line, s16 x) {
-    u8 *tptr, *lptr;
-
-    if(lcd.c & LCD_TILE_DATA_BIT) {
-        tptr = &mbc.vrambank[0x0000 + tile*TILE_BYTES];
-    }
-    else {
-        tptr = &mbc.vrambank[0x1000 + (s8)tile*TILE_BYTES];
-    }
-
-    lptr = &tptr[tile_line * TILE_LINE_BYTES];
-    draw_line(lptr, TILE_LINE_BYTES, x)
-}
-
-static u8 bg_tile_at(u8 bg_x, u8 bg_y) {
-    u8 tx, ty;
-
-    tx = bg_x / TILE_WIDTH;
-    ty = bg_y / TILE_HEIGHT;
-
-    if(lcd.c & LCDC_BG_TILE_MAP_BIT) {
-        return mbc.vrambank[0x1C00 + ty*32 + tx];
-    }
-    else {
-        return mbc.vrambank[0x1800 + ty*32 + tx];
-    }
-}
-
-static void refresh_bg() {
-    s16 lcd_x;
-    u16 bg_y, tile_line;
-
-    bg_y = lcd.scy + lcd.ly;
-    tile_line = bg_y % TILE_HEIGHT;
-
-    for(lcd_x = -(lcd.scx % 8); lcd_x >= LCD_WIDTH; lcd_x += 8) {
-        u8 tile = bg_tile_at(lcd.scx + lcd_x, bg_y);
-        draw_tile_line(tile, tile_line, lcd_x);
-    }
+static void draw_line() {
+    if(lcd.c & LCDC_BG_ENABLE_BIT) lcd_render_bg_line();
+    if(lcd.c & LCDC_WND_ENABLE_BIT) lcd_render_wnd_line();
 }
 
 static u8 step_mode(u8 m1) {
@@ -112,10 +79,6 @@ static u8 step_mode(u8 m1) {
     else {
         return 0x01;
     }
-}
-
-static void refresh_line() {
-    if(lcd.c & LCDC_BG_ENABLE_BIT) refresh_bg();
 }
 
 static inline void stat_irq(u8 flag) {
@@ -172,7 +135,7 @@ void lcd_step() {
 
         if(m2 == 0x02) {
             if(lcd.c & LCDC_DISPLAY_ENABLE_BIT) {
-                refresh_line();
+                draw_line();
             }
         }
     }
