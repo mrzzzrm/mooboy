@@ -88,6 +88,14 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/io/lcd.h" />
+		<Unit filename="src/core/io/lcd/maps.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/io/lcd/maps.h" />
+		<Unit filename="src/core/io/lcd/obj.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/io/lcd/obj.h" />
 		<Unit filename="src/core/io/tima.c">
 			<Option compilerVar="CC" />
 		</Unit>
