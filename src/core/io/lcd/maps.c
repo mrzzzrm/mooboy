@@ -27,8 +27,7 @@ static u8 render_tile_line_seg(u8 tile, u8 pixel_x, u8 pixel_y, u8 lcd_x) {
         tile_pixels = &mbc.vrambank[0x0000 + ((u16)tile << 8)];
 
     for(p = pixel_y * TILE_WIDTH + pixel_x, tx = pixel_x; tx < TILE_WIDTH && lcd_x < LCD_WIDTH; tx++, p++, lcd_x++) {
-        lcd.working_fb[lcd.ly][lcd_x]
-         = tile_pixels[p / PIXEL_PER_BYTE] & (0x03 << (p % PIXEL_PER_BYTE));
+        lcd.working_fb[lcd.ly*LCD_WIDTH + lcd_x] = tile_pixels[p / PIXEL_PER_BYTE] & (0x03 << (p % PIXEL_PER_BYTE));
     }
 
     return lcd_x;

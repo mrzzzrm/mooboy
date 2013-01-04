@@ -1,6 +1,9 @@
 #include "debug.h"
 #include "cpu.h"
+#include "io/lcd.h"
 #include "cpu/defines.h"
+
+dbg_t dbg;
 
 static cpu_t cpu_before, cpu_after;
 static ram_t ram_before, ram_after;
@@ -29,14 +32,53 @@ static void cpu_print_diff_flag(u8 b, u8 a, const char *name) {
     }
 }
 
+void debug_init() {
+    dbg.verbose = DBG_VLVL_NORMAL;
+    dbg.mode = DBG_TRACE;
+    dbg.cursor = 0;
+}
+
+
+
+void debug_console() {
+    char str[256];
+
+    if(dbg.mode == DBG_CURSOR) {
+        if(cpu.pc.w == dbg.cursor) {
+            dbg.mode = DBG_TRACE;
+            dbg.verbose = DBG_VLVL_NORMAL;
+            return;
+        }
+        else {
+            return;
+        }
+    }
+
+
+    gets(str);
+    fflush(stdin);
+
+    if(str[0] == 'c') {
+        dbg.mode = DBG_CURSOR;
+        dbg.cursor = strtol(&str[2], NULL, 16);
+        dbg.verbose = DBG_VLVL_MIN;
+    }
+    if(str[0] == 'v') {
+        dbg.verbose = strtol(&str[2], NULL, 10);
+        debug_console();
+        return;
+    }
+}
+
+
 void debug_print_cpu_state() {
     fprintf(stderr, "[");
-    fprintf(stderr, "A:%.2X B:%.2X C:%X D:%.2X E:%.2X H:%.2X L:%.2X F:", (int)A, (int)B, (int)C, (int)D, (int)E, (int)H, (int)L);
+    fprintf(stderr, "PC:%.4X AF:%.2X%.2X BC:%.2X%.2X DE:%.2X%.2X HL:%.2X%.2X SP:%.4X F:", (int)PC, (int)A, (int)F, (int)B, (int)C, (int)D, (int)E, (int)H, (int)L, (int)SP);
     int b;
-    for(b = 7; b >= 0; b--) {
+    for(b = 7; b >= 4; b--) {
         fprintf(stderr, "%i", (1<<b)&F?1:0);
     }
-    fprintf(stderr, "]\n");
+    fprintf(stderr, " \n LC:%.2X LS:%.2X LY:%.2X CC: %.8X]\n", lcd.c, lcd.stat, lcd.ly, cpu.cc);
 }
 
 void debug_before() {
@@ -66,6 +108,8 @@ void debug_cpu_after() {
 void debug_cpu_print_diff() {
     if(cpu_after.pc.w - 1 == cpu_before.pc.w)
         cpu_before.pc = cpu_after.pc;
+
+    cpu_before.cc = cpu_after.cc;
     if(memcmp(&cpu_before, &cpu_after, sizeof(cpu_t)) == 0)
         return;
 

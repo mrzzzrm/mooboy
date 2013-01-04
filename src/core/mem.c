@@ -1,6 +1,7 @@
 #include "mem.h"
 #include "mem/io.h"
 #include "cpu.h"
+#include "debug.h"
 #include "_assert.h"
 
 ram_t ram;
@@ -18,7 +19,7 @@ void mem_reset() {
 }
 
 u8 mem_readb(u16 adr) {
-    fprintf(stderr, "  Reading [%.4X]\n", adr);
+    if(dbg.verbose >= DBG_VLVL_MAX) fprintf(stderr, "  Reading [%.4X]\n", adr);
 
     switch(adr>>12) {
         case 0x0: case 0x1: case 0x2: case 0x3: //fprintf(stderr, "ROM 0 [%X]=%X\n", adr, rom.banks[0][adr]);
@@ -77,7 +78,7 @@ void mem_writeb(u16 adr, u8 val) {
     //fprintf(stderr, "  Writing ");
 
     // Mirroring
-    fprintf(stderr, "  Write [%.4X] = %.2X\n", adr, val);
+    if(dbg.verbose >= DBG_VLVL_MAX) fprintf(stderr, "  Write [%.4X] = %.2X\n", adr, val);
 
     switch(adr>>12) {
         case 0x0: case 0x1: case 0x2: case 0x3:

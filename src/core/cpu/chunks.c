@@ -215,12 +215,12 @@ op_chunk *op_create_chunk(u8 op) {
                                 switch(op & 0x0F) {
                                     case 0x00:
                                         if(op & 0x10) {
-                                            PUSH_FUNC(op_opr_ib);
-                                            PUSH_FUNC(op_opr_addio);
-                                        }
-                                        else {
                                             PUSH_FUNC(op_opl_ib);
                                             PUSH_FUNC(op_opl_addio);
+                                        }
+                                        else {
+                                            PUSH_FUNC(op_opr_ib);
+                                            PUSH_FUNC(op_opr_addio);
                                         }
                                     break;
                                     case 0x02:
