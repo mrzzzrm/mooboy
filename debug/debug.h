@@ -1,6 +1,28 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
+    typedef struct {
+        int verbose;
+        int mode;
+
+        int cursor;
+    } dbg_t;
+
+    extern dbg_t dbg;
+
+    #define DBG_TRACE 0
+    #define DBG_IRQ 1
+    #define DBG_CURSOR 2
+
+    #define DBG_VLVL_NONE 0
+    #define DBG_VLVL_MIN 1
+    #define DBG_VLVL_NORMAL 2
+    #define DBG_VLVL_MAX 3
+
+    void debug_init();
+
+    void debug_console();
+
     void debug_print_cpu_state();
 
     void debug_before();

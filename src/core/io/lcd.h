@@ -13,9 +13,9 @@
         u8 bgp, obp0, obp1;
         /* TODO: CGB registers */
 
-        u8 fb[2][144][160];
-        u8 **clean_fb;
-        u8 **working_fb;
+        u8 fb[2][144*160];
+        u8 *clean_fb;
+        u8 *working_fb;
     } lcd_t;
 
     extern lcd_t lcd;

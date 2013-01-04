@@ -5,6 +5,7 @@
 #include "cpu/defines.h"
 #include "util/defines.h"
 #include "lcd/maps.h"
+#include "debug.h"
 
 #define DUR_FULL_REFRESH 17556
 #define DUR_MODE_0 51
@@ -53,7 +54,7 @@
 lcd_t lcd;
 
 static void swap_fb() {
-    u8 **tmp = lcd.clean_fb;
+    u8 *tmp = lcd.clean_fb;
     lcd.clean_fb = lcd.working_fb;
     lcd.working_fb = tmp;
 }
@@ -91,7 +92,7 @@ static inline void stat_irq(u8 flag) {
 
 void lcd_reset() {
     lcd.c = 0x91;
-    lcd.stat = 0;
+    lcd.stat = 0x82;
     lcd.scx = 0;
     lcd.scy = 0;
     lcd.ly = 0;
@@ -115,6 +116,8 @@ void lcd_step() {
     STAT_SET_MODE(m2);
 
     if(m1 != m2) {
+
+        if(dbg.verbose >= DBG_VLVL_MIN) fprintf(stderr, "  LCD Mode %i => %i\n", m1, m2);
         switch(m1) {
             case 0x00:
                 if(m2 == 0x01) { // VBlank IRQ
