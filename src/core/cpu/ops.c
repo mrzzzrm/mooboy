@@ -317,7 +317,8 @@ void op_cb(op_chunk *c) {
     }
 
     cbc->sp = 0;
-    cbc->funcs[0](cbc);
+    cbc->funcs[cbc->sp++](cbc);
+    cpu->cc += cbc->mcs;
 }
 
 void op_swap(op_chunk *c) {

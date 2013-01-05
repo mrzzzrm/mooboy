@@ -6,7 +6,7 @@
 
 
 #define VAR_MCS() {c->mcs = (0);}
-#define MCS(mcs) {c->mcs = (mcs);}
+#define MCS(_mcs) {c->mcs = (_mcs);}
 #define PUSH_FUNC(f) {c->funcs[c->sp++] = (f);}
 
 op_chunk *op_chunk_map[0xFF];
@@ -15,6 +15,7 @@ op_chunk *op_cb_chunk_map[0xFF];
 static u8 *bregv[] = {&B, &C, &D, &E, &H, &L, NULL, &A};
 static u16 *wregv_sp[] = {&BC, &DE, &HL, &SP};
 static u16 *wregv_af[] = {&BC, &DE, &HL, &AF};
+
 
 static void chunk_opl_stdb(op_chunk *c, u8 b) {
     if(b == 0x06) {
@@ -53,7 +54,7 @@ op_chunk *op_create_chunk(u8 op) {
 	op_chunk *c = malloc(sizeof(op_chunk));
 	c->op = op;
 	c->sp = 0;
-	c->mc = 1;
+	MCS(1); // Default
 
     switch(op) {
         case 0x00: PUSH_FUNC(op_nop); break;
@@ -70,7 +71,7 @@ op_chunk *op_create_chunk(u8 op) {
             VAR_MCS();
         break;
         case 0xC9: PUSH_FUNC(op_ret); VAR_MCS(); break;
-        case 0xCB: PUSH_FUNC(op_cb); break;
+        case 0xCB: PUSH_FUNC(op_cb);  VAR_MCS(); break;
         case 0xCD:
             PUSH_FUNC(op_opl_iw);
             PUSH_FUNC(op_call);
@@ -91,7 +92,7 @@ op_chunk *op_create_chunk(u8 op) {
 
         default:
             switch((op&0xC0)>>6) { // (11)XX XXXX
-                case 0x00:
+                case 0x00: // 00XX XXXX
                     switch(op & 0x07) { // 00XX X(111)
                         case 0x00: // 00XX X000
                             PUSH_FUNC(op_opl_ib);
@@ -138,7 +139,7 @@ op_chunk *op_create_chunk(u8 op) {
                                 else { // 000X 0010
                                     c->opl.w = WREG_SP((op&0x10)>>4);
                                     c->opr.b = &A;
-                                    PUSH_FUNC(op_opr_memcall);
+                                    PUSH_FUNC(op_opl_memcall);
                                 }
                                 PUSH_FUNC(op_ld_b);
                                 MCS(2);
@@ -149,23 +150,24 @@ op_chunk *op_create_chunk(u8 op) {
                             PUSH_FUNC(op&0x80 ? op_dec_w : op_inc_w);
                             MCS(2);
                         break;
-                        case 0x04:
+                        case 0x04: // 00XX X100
                             chunk_opl_stdb(c, (op&0x38)>>3);
                             PUSH_FUNC(op_inc_b);
                             if(c->opl.w == &HL)
                                 MCS(3);
-                        case 0x05:
+                        case 0x05: // 00XX X101
                             chunk_opl_stdb(c, (op&0x38)>>3);
                             PUSH_FUNC(op_dec_b);
                             if(c->opl.w == &HL)
                                 MCS(3);
                         break;
-                        case 0x06:
+                        case 0x06: // 00XX X110
                             chunk_opl_stdb(c, (op&0x38)>>3);
                             PUSH_FUNC(op_opr_ib);
                             PUSH_FUNC(op_ld_b);
+                            MCS(2);
                         break;
-                        case 0x07:
+                        case 0x07: // 00XX X111
                             c->opl.b = &A;
                             if(op&0x10) {
                                 PUSH_FUNC(op&0x80 ? op_rr : op_rl);
@@ -176,51 +178,63 @@ op_chunk *op_create_chunk(u8 op) {
                         break;
                     }
                 break;
-                case 0x01:
-                    if(op == 0x76) {
+                case 0x01: // 01XX XXXX
+                    if(op == 0x76) { // 0111 0110
                         PUSH_FUNC(op_halt);
                     }
-                    else {
+                    else { // 01XX XXXX except 0111 0110
                         chunk_opr_stdb(c, op & 0x07);
                         chunk_opl_stdb(c, (op & 0x38)>>3);
                         PUSH_FUNC(op_ld_b);
+                        if(c->opl.w == &HL || c->opr.w == &HL)
+                            MCS(2);
                     }
                 break;
-                case 0x02:
+                case 0x02: // 10XX XXXX
                     c->opl.b = &A;
                     chunk_opr_stdb(c, op & 0x07);
                     chunk_func_alu(c, (op & 0x38) >> 3);
+                    if(c->opr.w == &HL)
+                        MCS(2);
                 break;
                 case 0x03: // 11XX XXXX
                     switch(op & 0x07) { // 11XX X(111)
-                        case 0x01:
+                        case 0x01: // 11XX X001
                             c->opl.w = WREG_AF((op&0x30)>>4);
                             PUSH_FUNC(op_pop);
+                            MCS(3);
                         break;
-                        case 0x04:
+                        case 0x04: // 11XX X100
                             PUSH_FUNC(op_opl_iw);
                             PUSH_FUNC(op_call);
+                            VAR_MCS();
                         break;
-                        case 0x05:
+                        case 0x05: // 11XX X101
                             c->opl.w = WREG_AF((op&0x30)>>4);
                             PUSH_FUNC(op_push);
+                            MCS(4);
                         break;
-                        case 0x06:
+                        case 0x06: // 11XX X110
                             c->opl.b = &A;
                             PUSH_FUNC(op_opr_ib);
                             chunk_func_alu(c, (op&0x38)>>3);
+                            MCS(2);
                         break;
-                        case 0x07: PUSH_FUNC(op_rst); break;
+                        case 0x07: // 11XX X111
+                            PUSH_FUNC(op_rst);
+                            MCS(4);
+                        break;
 
                         default: // 11XX X000 or 11XX X010 or 11XX X011
                             if((op & 0xE0) == 0xC0) { // 110X X0XX
-                                if(op & 0x02) {
+                                if(op & 0x02) { // 110X X01X
                                     PUSH_FUNC(op_opl_iw);
                                     PUSH_FUNC(op_jp);
                                 }
-                                else {
+                                else { // 110X X00X
                                     PUSH_FUNC(op_ret);
                                 }
+                                MCS(0);
                             }
                             else {  // 111X X000 or 111X X010 or 111X X011
                                     // These are the IO access ops
@@ -241,6 +255,7 @@ op_chunk *op_create_chunk(u8 op) {
                                             PUSH_FUNC(op_opl_ib);
                                             PUSH_FUNC(op_opl_addio);
                                         }
+                                        MCS(3);
                                     break;
                                     case 0x02:
                                         if(op & 0x10) {
@@ -251,6 +266,7 @@ op_chunk *op_create_chunk(u8 op) {
                                             c->opl.b = &C;
                                             PUSH_FUNC(op_opl_addio);
                                         }
+                                        MCS(2);
                                     break;
                                     case 0x0A:
                                         if(op & 0x10) {
@@ -259,6 +275,7 @@ op_chunk *op_create_chunk(u8 op) {
                                         else {
                                             PUSH_FUNC(op_opl_iw);
                                         }
+                                        MCS(4);
                                     break;
                                 }
 
@@ -275,8 +292,6 @@ op_chunk *op_create_chunk(u8 op) {
             }
     }
 
-
-
 	return c;
 }
 
@@ -284,7 +299,6 @@ op_chunk *op_create_chunk(u8 op) {
 op_chunk *op_create_cb_chunk(u8 op) {
     op_chunk *c = malloc(sizeof(op_chunk));
 	c->op = op;
-	c->mc = 0;
 
 	switch(HN) {
         case 0x0: PUSH_FUNC(LN < 8 ? op_rlc  : op_rrc); break;
@@ -301,6 +315,9 @@ op_chunk *op_create_cb_chunk(u8 op) {
             chunk_opl_stdb(c, op & 0x07);
             c->i = (op & 0x38)>>3;
     }
+
+    MCS(c->opl.w == &HL ? 4 : 2);
+
     return c;
 }
 
