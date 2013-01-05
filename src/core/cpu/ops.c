@@ -25,14 +25,14 @@ static u16 pop() {
 
 void op_opl_memcall(op_chunk *c) {
     if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opl_memcall()\n");
-    op_chunk xc;
+    op_chunk xc = *c;
     u16 adr = OPLW;
 
     static_byte = mem_readb(adr);
     xc.opl.b = &static_byte;
     xc.op = c->op;
     xc.opr = c->opr;
-    c->funcs[c->sp++](&xc);
+    c->funcs[xc.sp++](&xc);
     //printf("[%X] (= %X) = %X\n", OPLW,  mem_readb(adr), static_byte);
     mem_writeb(adr, static_byte);
 }
@@ -55,23 +55,23 @@ void op_opl_iw(op_chunk *c) {
 
 void op_opl_addio(op_chunk *c) {
     if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opl_addio()\n");
-    op_chunk xc;
+    op_chunk xc = *c;
     static_word = (u16)OPLB + 0xFF00;
     xc.opl.w = &static_word;
     xc.op = c->op;
     xc.opr = c->opr;
-    c->funcs[c->sp++](&xc);
+    c->funcs[xc.sp++](&xc);
 }
 
 void op_opr_memread(op_chunk *c) {
     if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opr_memread()\n");
-    op_chunk xc;
+    op_chunk xc = *c;
 
     static_byte = mem_readb(OPLW);
     xc.opr.b = &static_byte;
     xc.op = c->op;
     xc.opl = c->opl;
-    c->funcs[c->sp++](&xc);
+    c->funcs[xc.sp++](&xc);
 }
 
 void op_opr_ib(op_chunk *c) {
@@ -91,12 +91,12 @@ void op_opr_iw(op_chunk *c) {
 
 void op_opr_addio(op_chunk *c) {
     if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opr_addio()\n");
-    op_chunk xc;
+    op_chunk xc = *c;
     static_word = (u16)OPRB + 0xFF00;
     xc.opr.w = &static_word;
     xc.op = c->op;
     xc.opl = c->opl;
-    c->funcs[c->sp++](&xc);
+    c->funcs[xc.sp++](&xc);
 }
 
 void op_null(op_chunk *c) {

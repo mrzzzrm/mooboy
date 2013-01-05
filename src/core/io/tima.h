@@ -6,7 +6,7 @@
     typedef struct tima_s {
         u8 ticks;
         u8 mod;
-        u8 creg;
+        u8 c;
         u32 last_mc;
     } tima_t;
 

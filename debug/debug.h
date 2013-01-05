@@ -4,6 +4,7 @@
     typedef struct {
         int verbose;
         int mode;
+        int state_lvl;
 
         int cursor;
     } dbg_t;

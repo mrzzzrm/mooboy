@@ -2,6 +2,8 @@
 #include "cpu.h"
 #include "io/lcd.h"
 #include "cpu/defines.h"
+#include <assert.h>
+#include <stdio.h>
 
 dbg_t dbg;
 
@@ -32,13 +34,32 @@ static void cpu_print_diff_flag(u8 b, u8 a, const char *name) {
     }
 }
 
+static void write_fb(FILE *f, u8 *fb) {
+    unsigned int x, y;
+    for(y = 0; y < 144; y++) {
+        for(x = 0; x < 160; x++) {
+            fprintf(f, "%i", fb[y*160 + x]);
+        }
+        fprintf(f, "\n");
+    }
+}
+
+static void write_fbs() {
+    FILE *f = fopen("fbs.txt", "w");
+    assert(f != NULL);
+
+    fprintf(f, "Clean-FB:\n"); write_fb(f, lcd.clean_fb);
+    fprintf(f, "Working-FB:\n"); write_fb(f, lcd.working_fb);
+
+    fclose(f);
+}
+
 void debug_init() {
     dbg.verbose = DBG_VLVL_NORMAL;
     dbg.mode = DBG_TRACE;
     dbg.cursor = 0;
+    dbg.state_lvl = 0;
 }
-
-
 
 void debug_console() {
     char str[256];
@@ -46,27 +67,48 @@ void debug_console() {
     if(dbg.mode == DBG_CURSOR) {
         if(cpu.pc.w == dbg.cursor) {
             dbg.mode = DBG_TRACE;
-            dbg.verbose = DBG_VLVL_NORMAL;
-            return;
         }
         else {
             return;
         }
     }
 
+    for(;;) {
+        fprintf(stderr,"PC=%.4X: ", cpu.pc.w);
+        gets(str);
+        fflush(stdin);
 
-    gets(str);
-    fflush(stdin);
+        if(!isalnum(*str))
+            break;
 
-    if(str[0] == 'c') {
-        dbg.mode = DBG_CURSOR;
-        dbg.cursor = strtol(&str[2], NULL, 16);
-        dbg.verbose = DBG_VLVL_MIN;
-    }
-    if(str[0] == 'v') {
-        dbg.verbose = strtol(&str[2], NULL, 10);
-        debug_console();
-        return;
+        if(str[0] == 'c') {
+            dbg.mode = DBG_CURSOR;
+            dbg.cursor = strtol(&str[2], NULL, 16);
+            break;
+        }
+        if(str[0] == 'v') {
+            dbg.verbose = strtol(&str[2], NULL, 10);
+            continue;
+        }
+        if(str[0] == 's') {
+            if(str[1] == '=') {
+                dbg.state_lvl = strtol(&str[2], NULL, 10);
+            }
+            else {
+                debug_print_cpu_state();
+            }
+            continue;
+        }
+        if(str[0] == 'f') {
+            write_fbs();
+            continue;
+        }
+        if(str[0] == 'r') {
+            write_fbs();
+            u16 adr = strtol(&str[2], NULL, 16);
+            fprintf(stderr, "%.2X\n", mem_readb(adr));
+            continue;
+        }
     }
 }
 
@@ -78,7 +120,10 @@ void debug_print_cpu_state() {
     for(b = 7; b >= 4; b--) {
         fprintf(stderr, "%i", (1<<b)&F?1:0);
     }
-    fprintf(stderr, " \n LC:%.2X LS:%.2X LY:%.2X CC: %.8X]\n", lcd.c, lcd.stat, lcd.ly, cpu.cc);
+    if(dbg.state_lvl > 0)
+        fprintf(stderr, " \n LC:%.2X LS:%.2X LY:%.2X CC: %.8X]\n", lcd.c, lcd.stat, lcd.ly, cpu.cc);
+    else
+        fprintf(stderr, "]\n");
 }
 
 void debug_before() {
@@ -140,7 +185,7 @@ static void ram_print_i_diff() {
     for(bank = 0; bank < 8; bank++) {
         for(byte = 0; byte < 0x1000; byte++) {
             if(ram_before.ibanks[bank][byte] != ram_after.ibanks[bank][byte]) {
-                fprintf(stderr, "    IRAM[%i][%.4X] %.2X=>%.2X", bank, byte, ram_before.ibanks[bank][byte], ram_after.ibanks[bank][byte]);
+                fprintf(stderr, "    IRAM[%i][%.4X] %.2X=>%.2X\n", bank, byte, ram_before.ibanks[bank][byte], ram_after.ibanks[bank][byte]);
             }
         }
     }
@@ -151,7 +196,7 @@ static void ram_print_h_diff() {
 
     for(byte = 0; byte < 0x80; byte++) {
         if(ram_before.hram[byte] != ram_after.hram[byte]) {
-            fprintf(stderr, "    HRAM[%.2X] %.2X=>%.2X", byte, ram_before.hram[byte], ram_after.hram[byte]);
+            fprintf(stderr, "    HRAM[%.2X] %.2X=>%.2X\n", byte, ram_before.hram[byte], ram_after.hram[byte]);
         }
     }
 }
@@ -162,7 +207,7 @@ static void ram_print_v_diff() {
     for(bank = 0; bank < 2; bank++) {
         for(byte = 0; byte < 0x2000; byte++) {
             if(ram_before.vbanks[bank][byte] != ram_after.vbanks[bank][byte]) {
-                fprintf(stderr, "    VRAM[%i][%.4X] %.2X=>%.2X", bank, byte, ram_before.vbanks[bank][byte], ram_after.vbanks[bank][byte]);
+                fprintf(stderr, "    VRAM[%i][%.4X] %.2X=>%.2X\n", bank, byte, ram_before.vbanks[bank][byte], ram_after.vbanks[bank][byte]);
             }
         }
     }
@@ -173,7 +218,7 @@ static void ram_print_oam_diff() {
 
     for(byte = 0; byte < 0xA0; byte++) {
         if(ram_before.oam[byte] != ram_after.oam[byte]) {
-            fprintf(stderr, "    OAM[%.2X] %.2X=>%.2X", byte, ram_before.oam[byte], ram_after.oam[byte]);
+            fprintf(stderr, "    OAM[%.2X] %.2X=>%.2X\n", byte, ram_before.oam[byte], ram_after.oam[byte]);
         }
     }
 }

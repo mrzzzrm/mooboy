@@ -69,7 +69,7 @@ void cpu_exec(u8 op) {
 	}
 	c->sp = 0;
 	c->funcs[c->sp++](c);
-	cpu.cc += 2;// TODO: c->mc;
+	cpu.cc += c->mcs;
 }
 
 u8 cpu_step() {
