@@ -3,6 +3,7 @@
 #include "io/lcd.h"
 #include "cpu/defines.h"
 #include <assert.h>
+#include <ctype.h>
 #include <stdio.h>
 
 dbg_t dbg;
@@ -104,7 +105,7 @@ void debug_console() {
 
     for(;;) {
         fprintf(stderr,"PC=%.4X: ", cpu.pc.w);
-        gets(str);
+        assert(gets(str) != NULL);
         fflush(stdin);
 
         if(!isalnum(*str))

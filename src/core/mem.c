@@ -45,7 +45,7 @@ u8 mem_readb(u16 adr) {
                 return ram.oam[adr - 0xFE00];
             }
             else if(adr >= 0xFEA0 && adr < 0xFF00) { // Locked
-                assert_corrupt(0, "Invalid access to locked memory location\n");
+                //assert_corrupt(0, "Invalid access to locked memory location\n");
             }
             else if(adr >= 0xFF00 && adr < 0xFF80) { // IO Registers
                 //fprintf(stderr, "IO");
@@ -57,7 +57,7 @@ u8 mem_readb(u16 adr) {
             }
             else {
                 //fprintf(stderr, "IME\n");
-                return cpu.ime;
+                return cpu.ie;
             }
         break;
 
@@ -103,7 +103,7 @@ void mem_writeb(u16 adr, u8 val) {
                 ram.oam[adr - 0xFE00] = val;
             }
             else if(adr >= 0xFEA0 && adr < 0xFF00) { // Locked
-                assert_corrupt(0, "Invalid access to locked memory location");
+                //assert_corrupt(0, "Invalid access to locked memory location");
             }
             else if(adr >= 0xFF00 && adr < 0xFF80) { // IO Registers
                 return io_write(adr, val);
@@ -114,7 +114,7 @@ void mem_writeb(u16 adr, u8 val) {
             }
             else {
                 //fprintf(stderr, "IME\n");
-                cpu.ime = val;
+                cpu.ie = val;
             }
         break;
 

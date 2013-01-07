@@ -8,7 +8,7 @@
 #include "io/tima.h"
 
 u8 io_read(u16 adr) {
-    u8 r = adr -  0xFF00;
+    u8 r = adr &  0x00FF;
 
     switch(r) {
         /* TODO: Joypad */
@@ -81,8 +81,13 @@ u8 io_read(u16 adr) {
 }
 
 void io_write(u16 adr, u8 val) {
-    u8 r = adr -  0xFF00;
+    u8 r = adr & 0x00FF;
     switch(r) {
+        /* TODO: Joypad */
+        case 0x00: break;
+        case 0x01: break;
+        case 0x02: break;
+
         case 0x04: divt.ticks = 0x00; break;
         case 0x05: tima.ticks = 0x00; break;
         case 0x06: tima.mod = val; break;

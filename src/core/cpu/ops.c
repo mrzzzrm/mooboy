@@ -64,13 +64,11 @@ void op_opl_addio(op_chunk *c) {
 }
 
 void op_opr_memread(op_chunk *c) {
-    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opr_memread() ADR = %.4X", OPLW);
+    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opr_memread() ADR = %.4X", OPRW);
     op_chunk xc = *c;
 
-    static_byte = mem_readb(OPLW); if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, " B = %.4X\n", static_byte);
+    static_byte = mem_readb(OPRW); if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, " B = %.4X\n", static_byte);
     xc.opr.b = &static_byte;
-    xc.op = c->op;
-    xc.opl = c->opl;
     c->funcs[xc.sp++](&xc);
 }
 
@@ -94,8 +92,6 @@ void op_opr_addio(op_chunk *c) {
     op_chunk xc = *c;
     static_word = (u16)OPRB + 0xFF00;if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, " ADR = %.4X\n", static_word);
     xc.opr.w = &static_word;
-    xc.op = c->op;
-    xc.opl = c->opl;
     c->funcs[xc.sp++](&xc);
 }
 
@@ -366,12 +362,15 @@ void op_stop(op_chunk *c) {
 
 void op_di(op_chunk *c) {
     if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  DI\n");
-    cpu.ime = 0x00;
+    if(cpu.ime != IME_OFF)
+        cpu.ime = IME_DOWN;
+
 }
 
 void op_ei(op_chunk *c) {
     if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  EI\n");
-    cpu.ime = 0xFF;
+    if(cpu.ime != IME_ON)
+        cpu.ime = IME_UP;
 }
 
 void op_jp(op_chunk *c) {

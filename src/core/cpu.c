@@ -24,6 +24,7 @@ void cpu_reset() {
 
     cpu.ime = 0x00;
     cpu.irq = 0x00;
+    cpu.ie = 0x00;
 
     cpu.cc = 0;
     cpu.mcs_per_second = 1048576;
@@ -39,12 +40,16 @@ static inline void exec_int(u8 i) {
 }
 
 static inline void handle_ints() {
-    if(!cpu.ime)
-        return;
-    fprintf(stderr, "IME: %i\n", cpu.ime);
+    switch(cpu.ime) {
+        case IME_ON: break;
+        case IME_UP: cpu.ime = IME_ON; return;
+        case IME_DOWN: cpu.ime = IME_OFF; return;
+        case IME_OFF: return;
+    }
+
     u8 i;
     for(i = 0; i < 5; i++) {
-        if(cpu.irq & (1 << i)) {
+        if(cpu.irq & cpu.ie & (1 << i)) {
             cpu.irq &= ~(1 << i);
             cpu.ime = 0;
             exec_int(i);

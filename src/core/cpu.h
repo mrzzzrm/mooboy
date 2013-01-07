@@ -15,6 +15,7 @@
 
         u8 ime;
         u8 irq;
+        u8 ie;
 
         u32 cc;
         u32 mcs_per_second;

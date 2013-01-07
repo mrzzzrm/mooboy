@@ -54,4 +54,9 @@
     #define IF_SERIAL  0x08
     #define IF_JOYPAD  0x10
 
+    #define IME_ON 3
+    #define IME_UP 2
+    #define IME_DOWN 1
+    #define IME_OFF 0
+
 #endif // CPU_DEFINES_H
