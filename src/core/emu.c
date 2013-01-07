@@ -41,7 +41,12 @@ bool emu_run() {
 
     for(;;) {
         debug_console();
-        if(dbg.verbose) {
+
+        if(dbg.verbose == DBG_VLVL_PC_ONLY) {
+            fprintf(stderr,"PC=%.4X\n", cpu.pc.w);
+        }
+
+        if(dbg.verbose >= DBG_VLVL_MIN) {
             debug_print_cpu_state();
             if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "{\n");
         }
@@ -50,7 +55,7 @@ bool emu_run() {
         emu_step();
         debug_after();
 
-        if(dbg.verbose) {
+        if(dbg.verbose >= DBG_VLVL_MIN) {
             if(dbg.verbose >= DBG_VLVL_NORMAL) debug_print_diff();
             if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "}\n");
         }

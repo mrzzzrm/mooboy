@@ -3,6 +3,7 @@
 #include "cpu.h"
 #include "_assert.h"
 #include "util/defines.h"
+#include "debug.h"
 #include "io/divt.h"
 #include "io/tima.h"
 
@@ -140,6 +141,7 @@ void io_write(u16 adr, u8 val) {
 
         default:
             fprintf(stderr, "Write to %.4X\n", adr);
+            debug_print_cpu_state();
             assert_corrupt(0, "Illegal or unknown IO register write access");
     }
 }

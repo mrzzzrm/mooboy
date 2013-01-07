@@ -54,6 +54,34 @@ static void write_fbs() {
     fclose(f);
 }
 
+static void dump_oam(FILE *f) {
+    unsigned int s, ss;
+    for(s = 0, ss = 0; s < 40; s++, ss+=4) {
+        fprintf(f, "  Sprite %i Y=%i X=%i Tile=%.2X Attributes=%.2X\n", s, (int)ram.oam[ss], (int)ram.oam[ss+1], (int)ram.oam[ss+2], (int)ram.oam[ss+3]);
+    }
+}
+
+static void dump_vram(FILE *f) {
+    unsigned int x, y;
+    for(y = 0; y < 256; y++) {
+        fprintf(f, "  ");
+        for(x = 0; x < 32; x++) {
+            fprintf(f, "%X ", ram.vbanks[0][y*32+x]);
+        }
+        fprintf(f, "\n");
+    }
+}
+
+static void dump_video() {
+    FILE *f = fopen("video.txt", "w");
+    assert(f != NULL);
+
+    fprintf(f, "OAM:\n"); dump_oam(f);
+    fprintf(f, "VRAM:\n"); dump_vram(f);
+
+    fclose(f);
+}
+
 void debug_init() {
     dbg.verbose = DBG_VLVL_NORMAL;
     dbg.mode = DBG_TRACE;
@@ -63,6 +91,7 @@ void debug_init() {
 
 void debug_console() {
     char str[256];
+
 
     if(dbg.mode == DBG_CURSOR) {
         if(cpu.pc.w == dbg.cursor) {
@@ -107,6 +136,10 @@ void debug_console() {
             write_fbs();
             u16 adr = strtol(&str[2], NULL, 16);
             fprintf(stderr, "%.2X\n", mem_readb(adr));
+            continue;
+        }
+        if(str[0] == 'd' && str[1] == 'v') {
+            dump_video();
             continue;
         }
     }

@@ -16,9 +16,10 @@
     #define DBG_CURSOR 2
 
     #define DBG_VLVL_NONE 0
-    #define DBG_VLVL_MIN 1
-    #define DBG_VLVL_NORMAL 2
-    #define DBG_VLVL_MAX 3
+    #define DBG_VLVL_PC_ONLY 1
+    #define DBG_VLVL_MIN 2
+    #define DBG_VLVL_NORMAL 3
+    #define DBG_VLVL_MAX 4
 
     void debug_init();
 

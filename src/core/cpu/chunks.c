@@ -60,7 +60,7 @@ op_chunk *op_create_chunk(u8 op) {
         case 0x00: PUSH_FUNC(op_nop); break;
         case 0x08: PUSH_FUNC(op_ld_imsp); MCS(5); break;
         case 0x10: PUSH_FUNC(op_stop); break;
-        case 0x18: PUSH_FUNC(op_jr); MCS(2); break;
+        case 0x18: PUSH_FUNC(op_opl_ib); PUSH_FUNC(op_jr); MCS(2); break;
         case 0x27: PUSH_FUNC(op_daa); break;
         case 0x2F: PUSH_FUNC(op_cpl); break;
         case 0x37: PUSH_FUNC(op_scf); break;
@@ -71,13 +71,13 @@ op_chunk *op_create_chunk(u8 op) {
             VAR_MCS();
         break;
         case 0xC9: PUSH_FUNC(op_ret); VAR_MCS(); break;
-        case 0xCB: PUSH_FUNC(op_cb);  VAR_MCS(); break;
+        case 0xCB: PUSH_FUNC(op_cb); break;
         case 0xCD:
             PUSH_FUNC(op_opl_iw);
             PUSH_FUNC(op_call);
             MCS(6);
         break;
-        case 0xD9: PUSH_FUNC(op_reti); VAR_MCS(); break;
+        case 0xD9: PUSH_FUNC(op_reti); MCS(4); break;
         case 0xE8: PUSH_FUNC(op_add_spi); MCS(4); break;
         case 0xE9: PUSH_FUNC(op_jp); break;
         case 0xF3: PUSH_FUNC(op_di); break;
@@ -299,6 +299,14 @@ op_chunk *op_create_chunk(u8 op) {
 op_chunk *op_create_cb_chunk(u8 op) {
     op_chunk *c = malloc(sizeof(op_chunk));
 	c->op = op;
+	c->sp = 0;
+
+    if(HN <= 3) {
+        chunk_opl_stdb(c, op & 0x07);
+    }
+    else {
+        chunk_opr_stdb(c, op & 0x07);
+    }
 
 	switch(HN) {
         case 0x0: PUSH_FUNC(LN < 8 ? op_rlc  : op_rrc); break;
@@ -312,11 +320,15 @@ op_chunk *op_create_cb_chunk(u8 op) {
                 case 0x02: PUSH_FUNC(op_res); break;
                 case 0x03: PUSH_FUNC(op_set); break;
             }
-            chunk_opl_stdb(c, op & 0x07);
-            c->i = (op & 0x38)>>3;
+            c->opl.d = (op & 0x38)>>3;
     }
 
-    MCS(c->opl.w == &HL ? 4 : 2);
+    if(HN <= 3) {
+        MCS(c->opl.w == &HL ? 4 : 2);
+    }
+    else {
+        MCS(c->opr.w == &HL ? 4 : 2);
+    }
 
     return c;
 }

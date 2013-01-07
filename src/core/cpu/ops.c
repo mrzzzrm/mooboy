@@ -6,25 +6,26 @@
 #include "chunks.h"
 #include "debug.h"
 
+#define CPU_MCS(mcs) cpu.cc += (mcs)
 
 static u8 static_byte;
 static u16 static_word;
 
 static void push(u16 w) {
-    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _push(%X)\n", w);
-    mem_writew(SP, w);
+    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _push(%X) SP => %.4X\n", w, SP);
     SP -= 2;
+    mem_writew(SP, w);
 }
 
 static u16 pop() {
-    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _pop()\n");
+    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _pop() SP => %.4X\n", SP);
     u16 r = mem_readw(SP);
     SP += 2;
     return r;
 }
 
 void op_opl_memcall(op_chunk *c) {
-    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opl_memcall()\n");
+    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opl_memcall() ADR = %.4X\n", OPLW);
     op_chunk xc = *c;
     u16 adr = OPLW;
 
@@ -38,23 +39,22 @@ void op_opl_memcall(op_chunk *c) {
 }
 
 void op_opl_ib(op_chunk *c) {
-    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opl_ib()\n");
-    static_byte = mem_readb(PC++);
+    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opl_ib()");
+    static_byte = mem_readb(PC++);if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, " B = %.2X\n", static_byte);
     c->opl.b = &static_byte;
     c->funcs[c->sp++](c);
 }
 
 void op_opl_iw(op_chunk *c) {
-    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opl_iw() %i\n", c->sp);
-    static_word = mem_readw(PC);
+    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opl_iw()");
+    static_word = mem_readw(PC); if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, " W = %.4X\n", static_word);
     PC += 2;
     c->opl.w = &static_word;
     c->funcs[c->sp++](c);
-    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  <<_opl_iw()\n");
 }
 
 void op_opl_addio(op_chunk *c) {
-    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opl_addio()\n");
+    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opl_addio() ADR = %.4X\n", (u16)OPLB + 0xFF00);
     op_chunk xc = *c;
     static_word = (u16)OPLB + 0xFF00;
     xc.opl.w = &static_word;
@@ -64,10 +64,10 @@ void op_opl_addio(op_chunk *c) {
 }
 
 void op_opr_memread(op_chunk *c) {
-    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opr_memread()\n");
+    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opr_memread() ADR = %.4X", OPLW);
     op_chunk xc = *c;
 
-    static_byte = mem_readb(OPLW);
+    static_byte = mem_readb(OPLW); if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, " B = %.4X\n", static_byte);
     xc.opr.b = &static_byte;
     xc.op = c->op;
     xc.opl = c->opl;
@@ -75,24 +75,24 @@ void op_opr_memread(op_chunk *c) {
 }
 
 void op_opr_ib(op_chunk *c) {
-    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opr_ib()\n");
-    static_byte = mem_readb(PC++);
+    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opr_ib()");
+    static_byte = mem_readb(PC++);if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, " B = %.2X\n", static_byte);
     c->opr.b = &static_byte;
     c->funcs[c->sp++](c);
 }
 
 void op_opr_iw(op_chunk *c) {
-    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opr_iw()\n");
-    static_word = mem_readw(PC);
+    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opr_iw()");
+    static_word = mem_readw(PC);if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, " W = %.4X\n", static_word);
     PC += 2;
     c->opr.w = &static_word;
     c->funcs[c->sp++](c);
 }
 
 void op_opr_addio(op_chunk *c) {
-    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opr_addio()\n");
+    if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  _opr_addio()");
     op_chunk xc = *c;
-    static_word = (u16)OPRB + 0xFF00;
+    static_word = (u16)OPRB + 0xFF00;if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, " ADR = %.4X\n", static_word);
     xc.opr.w = &static_word;
     xc.op = c->op;
     xc.opl = c->opl;
@@ -134,14 +134,12 @@ void op_ld_imsp(op_chunk *c)  {
 
 void op_push(op_chunk *c)  {
     if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  PUSH SP\n");
-    mem_writew(SP, OPLW);
-    SP -= 2;
+    push(OPLW);
 }
 
 void op_pop(op_chunk *c)  {
     if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  POP SP\n");
-    OPLW = mem_readw(SP);
-    SP += 2;
+    OPLW = pop();
 }
 
 void op_add_b(op_chunk *c) {
@@ -318,7 +316,7 @@ void op_cb(op_chunk *c) {
 
     cbc->sp = 0;
     cbc->funcs[cbc->sp++](cbc);
-    cpu->cc += cbc->mcs;
+    cpu.cc += cbc->mcs;
 }
 
 void op_swap(op_chunk *c) {
@@ -380,16 +378,19 @@ void op_jp(op_chunk *c) {
     if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  JP\n");
     switch(c->op) {
         case 0xC3: PC = OPLW; break;
-        case 0xE9: PC = HL; break;
+        case 0xE9: PC = HL; CPU_MCS(1); return;
         case 0xC2: if(!FZ) PC = OPLW; break;
         case 0xCA: if(FZ)  PC = OPLW; break;
         case 0xD2: if(!FC) PC = OPLW; break;
         case 0xDA: if(FC)  PC = OPLW; break;
     }
+    CPU_MCS(PC == OPLW ? 4 : 3);
 }
 
 void op_jr(op_chunk *c) {
     if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  JR %i\n", (int)((s8)OPLB));
+    u16 _pc = PC;
+
     switch(c->op) {
         case 0x18: cpu.pc.w += (s8)OPLB; break;
         case 0x20: if(!FZ) PC += (s8)OPLB; break;
@@ -397,17 +398,21 @@ void op_jr(op_chunk *c) {
         case 0x30: if(!FC) PC += (s8)OPLB; break;
         case 0x38: if(FC)  PC += (s8)OPLB; break;
     }
+    CPU_MCS(_pc == PC ? 2 : 3);
 }
 
 void op_call(op_chunk *c) {
     if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  CALL\n");
+    u16 _pc = PC;
+
     switch(c->op) {
-        case 0xCD: push(PC+2); PC = OPLW; break;
-        case 0xC4: if(!FZ) push(PC+2); PC = OPLW; break;
-        case 0xCC: if(FZ)  push(PC+2); PC = OPLW; break;
-        case 0xD4: if(!FC) push(PC+2); PC = OPLW; break;
-        case 0xDC: if(FC)  push(PC+2); PC = OPLW; break;
+        case 0xCD: push(PC); PC = OPLW; break;
+        case 0xC4: if(!FZ) push(PC); PC = OPLW; break;
+        case 0xCC: if(FZ)  push(PC); PC = OPLW; break;
+        case 0xD4: if(!FC) push(PC); PC = OPLW; break;
+        case 0xDC: if(FC)  push(PC); PC = OPLW; break;
     }
+    CPU_MCS(_pc == PC ? 3 : 6);
 }
 
 void op_rst(op_chunk *c) {
@@ -418,13 +423,16 @@ void op_rst(op_chunk *c) {
 
 void op_ret(op_chunk *c) {
     if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  RET\n");
+    u16 _pc = PC;
+
     switch(c->op) {
-        case 0xC9: PC = pop(); break;
+        case 0xC9: PC = pop(); CPU_MCS(4); return;
         case 0xC0: if(!FZ) PC = pop(); break;
         case 0xC8: if(FZ)  PC = pop(); break;
         case 0xD0: if(!FC) PC = pop(); break;
         case 0xD8: if(FC)  PC = pop(); break;
     }
+    CPU_MCS(_pc == PC ? 2 : 5);
 }
 
 void op_reti(op_chunk *c) {

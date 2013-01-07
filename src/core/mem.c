@@ -19,7 +19,7 @@ void mem_reset() {
 }
 
 u8 mem_readb(u16 adr) {
-    if(dbg.verbose >= DBG_VLVL_MAX) fprintf(stderr, "  Reading [%.4X]\n", adr);
+    if(dbg.verbose >= DBG_VLVL_MAX) fprintf(stderr, "  Reading [%.4X]=%.2X\n", adr, rom.banks[0][adr]);
 
     switch(adr>>12) {
         case 0x0: case 0x1: case 0x2: case 0x3: //fprintf(stderr, "ROM 0 [%X]=%X\n", adr, rom.banks[0][adr]);
@@ -127,7 +127,7 @@ void mem_writeb(u16 adr, u8 val) {
 }
 
 void mem_writew(u16 adr, u16 val) {
-    mem_writeb(adr, (val&0xFF00) >> 8);
-    mem_writeb(adr + 1, val&0x00FF);
+    mem_writeb(adr, val&0x00FF);
+    mem_writeb(adr + 1, (val&0xFF00) >> 8);
 }
 
