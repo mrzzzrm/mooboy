@@ -147,7 +147,7 @@ op_chunk *op_create_chunk(u8 op) {
                         break;
                         case 0x03: // 00XX X011
                             c->opl.w = WREG_SP((op&0x30)>>4);
-                            PUSH_FUNC(op&0x80 ? op_dec_w : op_inc_w);
+                            PUSH_FUNC(op&0x08 ? op_dec_w : op_inc_w);
                             MCS(2);
                         break;
                         case 0x04: // 00XX X100

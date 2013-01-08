@@ -52,7 +52,7 @@ u8 io_read(u16 adr) {
         case 0x43: return lcd.scx; break;
         case 0x44: return lcd.ly; break;
         case 0x45: return lcd.lyc; break;
-        case 0x46: assert(0); break;
+        case 0x46: return 0x00; break;
         case 0x47: return lcd.bgp; break;
         case 0x48: return lcd.obp0; break;
         case 0x49: return lcd.obp1; break;
