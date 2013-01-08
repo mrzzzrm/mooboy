@@ -71,13 +71,9 @@ u8 io_read(u16 adr) {
         case 0x69: assert(0); break;
         case 0x6A: assert(0); break;
         case 0x6B: assert(0); break;
-
-        default:
-            fprintf(stderr, "Read from %.4X\n", adr);
-            assert_corrupt(0, "Illegal or unknown IO register write access");
     }
 
-    return 0; // Avoids warnings;
+    return 0xFF; // Avoids warnings;
 }
 
 void io_write(u16 adr, u8 val) {
@@ -143,10 +139,5 @@ void io_write(u16 adr, u8 val) {
         case 0x69: assert(0); break;
         case 0x6A: assert(0); break;
         case 0x6B: assert(0); break;
-
-        default:
-            fprintf(stderr, "Write to %.4X\n", adr);
-            debug_print_cpu_state();
-            assert_corrupt(0, "Illegal or unknown IO register write access");
     }
 }

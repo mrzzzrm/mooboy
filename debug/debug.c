@@ -11,6 +11,35 @@ dbg_t dbg;
 static cpu_t cpu_before, cpu_after;
 static ram_t ram_before, ram_after;
 
+typedef struct {
+    cpu_t cpu;
+} trace_node_t;
+
+typedef struct {
+    int size;
+    trace_node_t **nodes;
+} trace_t;
+
+static trace_t trace = {0, NULL};
+
+
+static void trace_update() {
+    trace.nodes = realloc(trace.nodes, (++trace.size) * sizeof(*trace.nodes));
+    trace.nodes[trace.size-1] = malloc(sizeof(**trace.nodes));
+    trace.nodes[trace.size-1]->cpu = cpu;
+}
+
+static void dump_trace(int lvl) {
+    unsigned int n;
+    FILE *f;
+
+    f = fopen("trace.txt", "w");
+    for(n = 0; n < trace.size; n++) {
+        fprintf(f, "PC=%.4X\n", trace.nodes[n]->cpu.pc.w);
+    }
+    fclose(f);
+}
+
 static void print_bits8(u8 v) {
     int b;
     for(b = 7; b >= 0; b--) {
@@ -44,6 +73,7 @@ static void write_fb(FILE *f, u8 *fb) {
         fprintf(f, "\n");
     }
 }
+
 
 static void write_fbs() {
     FILE *f = fopen("fbs.txt", "w");
@@ -93,9 +123,13 @@ void debug_init() {
 void debug_console() {
     char str[256];
 
+    trace_update();
 
-    if(dbg.mode == DBG_CURSOR) {
-        if(cpu.pc.w == dbg.cursor) {
+    if(dbg.mode == DBG_CURSOR_EQ || dbg.mode == DBG_CURSOR_GE) {
+        if(dbg.mode == DBG_CURSOR_EQ && cpu.pc.w == dbg.cursor) {
+            dbg.mode = DBG_TRACE;
+        }
+        else if(dbg.mode == DBG_CURSOR_GE && cpu.pc.w >= dbg.cursor) {
             dbg.mode = DBG_TRACE;
         }
         else {
@@ -112,7 +146,10 @@ void debug_console() {
             break;
 
         if(str[0] == 'c') {
-            dbg.mode = DBG_CURSOR;
+            if(str[0] == '=')
+                dbg.mode = DBG_CURSOR_EQ;
+            else
+                dbg.mode = DBG_CURSOR_GE;
             dbg.cursor = strtol(&str[2], NULL, 16);
             break;
         }
@@ -139,8 +176,17 @@ void debug_console() {
             fprintf(stderr, "%.2X\n", mem_readb(adr));
             continue;
         }
-        if(str[0] == 'd' && str[1] == 'v') {
-            dump_video();
+        if(str[0] == 'd') {
+            switch(str[1]) {
+                case 'v': dump_video(); break;
+                case 't':
+                    if(str[2] == '=')
+                        dump_trace(strtol(&str[3], NULL, 10));
+                    else
+                        dump_trace(0);
+                break;
+            }
+
             continue;
         }
     }

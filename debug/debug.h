@@ -13,7 +13,8 @@
 
     #define DBG_TRACE 0
     #define DBG_IRQ 1
-    #define DBG_CURSOR 2
+    #define DBG_CURSOR_EQ 2
+    #define DBG_CURSOR_GE 3
 
     #define DBG_VLVL_NONE 0
     #define DBG_VLVL_PC_ONLY 1
