@@ -11,6 +11,33 @@ dbg_t dbg;
 static cpu_t cpu_before, cpu_after;
 static ram_t ram_before, ram_after;
 
+#define RUN_FOREVER 0
+#define RUN_TRACE 1
+#define RUN_UNTIL_CURSOR_EQ 2
+#define RUN_UNTIL_CURSOR_GE 3
+#define RUN_UNTIL_CURSOR_SE 4
+#define RUN_UNTIL_REGISTER 5
+#define RUN_UNTIL_MEMORY 6
+#define RUN_UNTIL_IO 7
+#define RUN_UNTIL_SYMBOL 8
+#define RUN_UNTIL_JUMP 9
+
+#define MONITOR_NONE 0x01
+#define MONITOR_REGISTER 0x02
+#define MONITOR_MEMORY 0x04
+#define MONITOR_IO 0x08
+#define MONITOR_SYMBOL 0x10
+#define MONITOR_INTERRUPT 0x10
+#define MONITOR_OP 0x10
+
+#define SYMBOL_DMA 0x01
+#define SYMBOL_IRQ 0x02
+#define SYMBOL_IEXEC 0x04
+#define SYMBOL_MEMORY 0x08
+#define SYMBOL_IO 0x10
+#define SYMBOL_OP 0x20
+
+
 typedef struct {
     cpu_t cpu;
 } trace_node_t;

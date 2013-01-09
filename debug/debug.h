@@ -5,24 +5,29 @@
 
     typedef struct {
         int verbose;
-        int mode;
-        int state_lvl;
 
-        int cursor;
+        struct {
+            int mode;
+            u32 mem;
+            u32 from, to;
+            u32 reg;
+            u32 sym;
+        } run;
+
+        struct {
+            int mode;
+            u32 mem;
+            u32 from, to;
+            u32 reg;
+            u32 sym;
+            u32 ops;
+            u32 io;
+        } monitor;
+
+        int v;
     } dbg_t;
 
     extern dbg_t dbg;
-
-    #define DBG_TRACE 0
-    #define DBG_IRQ 1
-    #define DBG_CURSOR_EQ 2
-    #define DBG_CURSOR_GE 3
-
-    #define DBG_VLVL_NONE 0
-    #define DBG_VLVL_PC_ONLY 1
-    #define DBG_VLVL_MIN 2
-    #define DBG_VLVL_NORMAL 3
-    #define DBG_VLVL_MAX 4
 
     void debug_init();
 
@@ -40,9 +45,6 @@
     void debug_sym_ie(u8 f);
     void debug_sym_jmp(u16 adr);
     void debug_sym_ram(u16 adr, u8 val);
-    void debug_sym_vram(u16 adr, u8 val);
-    void debug_sym_xram(u16 adr, u8 val);
-    void debug_sym_hram(u16 adr, u8 val);
     void debug_sym_io(u8 r, u8 val);
 
     /* OPS */
@@ -51,21 +53,35 @@
 
     /*
         Debugging console:
-            r - Run
-            c[=;<;>]XXXX - Run to or relative to cursor
+            Run until
+            r - forever
+            rt - Run tracing
+            rc[=;<;>]XXXX - Run to or relative to cursor
+            rr - cpu register changes
+            rm - memory (range) changes
+            rio - io reg changes
+            rs - symbol is called
+            rj - run to next jump
 
-            mr=R - Monitor CPU-register(s)
-            mm=XXXX-[XXXX] - Monitor memory
-            ms=S - Monitor symbol
+            Monitor (log)
+            [!]m - Do not monitor
+            mr=R - CPU-register(s)
+            mm=XXXX-[XXXX] - memory
+            mio=XX - io register
+            ms=S - symbol
+            mi=I - interrupts
+            mop[=op] - opcodes
 
-            d - Dump everything
-            dm - Dump memory
-            dr - Dump Registers
-            dio - Dump io registers
-            df - Dump framebuffer
-            dv - Dump video
+            Dump
+            d - everything
+            dm - memory
+            dr - CPU Registers
+            dio - io registers
+            df - framebuffer
+            dv - video
 
-            j - run to next jump (excl jr)
+            v[=0;1;pc] Additional Verbosing on/off/pc only
+
     */
 
 
