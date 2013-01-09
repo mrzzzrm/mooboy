@@ -120,7 +120,7 @@ void lcd_step() {
     STAT_SET_MODE(m2);
 
     if(m1 != m2) {
-        if(dbg.verbose >= DBG_VLVL_MIN) fprintf(stderr, "  LCD Mode %i => %i\n", m1, m2);
+        //debug_sym_lcd_mode_change(m1, m2);
         switch(m1) {
             case 0x00:
                 if(m2 == 0x01) { // VBlank IRQ
@@ -162,11 +162,8 @@ void lcd_dma(u8 v) {
     u8 b;
     u16 src;
 
-    fprintf(stderr, "DMA: %X\n", (int)v);
-
     for(src = ((u16)v)<<8, b = 0; b < 0x9F; b++, src++) {
         ram.oam[b] = mem_readb(src);
-        fprintf(stderr, "  Writing %.2X from %.4X\n", (int)mem_readb(src), (int)src);
     }
 }
 

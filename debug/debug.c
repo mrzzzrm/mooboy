@@ -64,7 +64,7 @@ static void cpu_print_diff_flag(u8 b, u8 a, const char *name) {
     }
 }
 
-static void write_fb(FILE *f, u8 *fb) {
+static void dump_fb(FILE *f, u8 *fb) {
     unsigned int x, y;
     for(y = 0; y < 144; y++) {
         for(x = 0; x < 160; x++) {
@@ -75,12 +75,12 @@ static void write_fb(FILE *f, u8 *fb) {
 }
 
 
-static void write_fbs() {
+static void dump_fbs() {
     FILE *f = fopen("fbs.txt", "w");
     assert(f != NULL);
 
-    fprintf(f, "Clean-FB:\n"); write_fb(f, lcd.clean_fb);
-    fprintf(f, "Working-FB:\n"); write_fb(f, lcd.working_fb);
+    fprintf(f, "Clean-FB:\n"); dump_fb(f, lcd.clean_fb);
+    fprintf(f, "Working-FB:\n"); dump_fb(f, lcd.working_fb);
 
     fclose(f);
 }
@@ -146,7 +146,7 @@ void debug_console() {
             break;
 
         if(str[0] == 'c') {
-            if(str[0] == '=')
+            if(str[1] == '=')
                 dbg.mode = DBG_CURSOR_EQ;
             else
                 dbg.mode = DBG_CURSOR_GE;
@@ -166,12 +166,7 @@ void debug_console() {
             }
             continue;
         }
-        if(str[0] == 'f') {
-            write_fbs();
-            continue;
-        }
         if(str[0] == 'r') {
-            write_fbs();
             u16 adr = strtol(&str[2], NULL, 16);
             fprintf(stderr, "%.2X\n", mem_readb(adr));
             continue;
@@ -184,6 +179,9 @@ void debug_console() {
                         dump_trace(strtol(&str[3], NULL, 10));
                     else
                         dump_trace(0);
+                break;
+                case'f':
+                    dump_fbs();
                 break;
             }
 
@@ -206,31 +204,15 @@ void debug_print_cpu_state() {
         fprintf(stderr, "]\n");
 }
 
-void debug_before() {
-    debug_cpu_before();
-    debug_ram_before();
-}
-
-void debug_after() {
-    debug_cpu_after();
-    debug_ram_after();
-}
-
-void debug_print_diff() {
-    debug_cpu_print_diff();
-    debug_ram_print_diff();
-}
-
-
-void debug_cpu_before() {
+static void debug_cpu_before() {
     cpu_before = cpu;
 }
 
-void debug_cpu_after() {
+static void debug_cpu_after() {
     cpu_after = cpu;
 }
 
-void debug_cpu_print_diff() {
+static void debug_cpu_print_diff() {
     if(cpu_after.pc.w - 1 == cpu_before.pc.w)
         cpu_before.pc = cpu_after.pc;
 
@@ -250,11 +232,11 @@ void debug_cpu_print_diff() {
     cpu_print_diff_w(cpu_before.pc.w, cpu_after.pc.w, "PC");
 }
 
-void debug_ram_before() {
+static void debug_ram_before() {
     ram_before = ram;
 }
 
-void debug_ram_after() {
+static void debug_ram_after() {
     ram_after = ram;
 }
 
@@ -303,8 +285,7 @@ static void ram_print_oam_diff() {
     }
 }
 
-
-void debug_ram_print_diff() {
+static void debug_ram_print_diff() {
     if(memcmp(&ram_before, &ram_after, sizeof(ram_t)) == 0)
         return;
 
@@ -313,5 +294,20 @@ void debug_ram_print_diff() {
     ram_print_h_diff();
     ram_print_v_diff();
     ram_print_oam_diff();
+}
+
+void debug_before() {
+    debug_cpu_before();
+    debug_ram_before();
+}
+
+void debug_after() {
+    debug_cpu_after();
+    debug_ram_after();
+}
+
+void debug_print_diff() {
+    debug_cpu_print_diff();
+    debug_ram_print_diff();
 }
 

@@ -244,12 +244,11 @@ void op_cp(op_chunk *c) {
 
 void op_daa(op_chunk *c) {
     if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  DAA\n");
-
 }
 
 void op_cpl(op_chunk *c) {
     if(dbg.verbose >= DBG_VLVL_NORMAL) fprintf(stderr, "  CPL\n");
-    OPLB ^= 0xFF;
+    A ^= 0xFF;
     F = FNBIT | FHBIT;
 }
 
