@@ -109,14 +109,22 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/mem/mbc.h" />
-		<Unit filename="src/core/mem/mbc3/rtc.c">
+		<Unit filename="src/core/mem/mbc/rtc.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/core/mem/mbc3/rtc.h" />
+		<Unit filename="src/core/mem/mbc/rtc.h" />
 		<Unit filename="src/debug/debug.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/debug/debug.h" />
+		<Unit filename="src/debug/monitor.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/debug/monitor.h" />
+		<Unit filename="src/debug/run.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/debug/run.h" />
 		<Unit filename="src/main.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -125,8 +133,13 @@
 		</Unit>
 		<Unit filename="src/sys/sdl/sdl.c">
 			<Option compilerVar="CC" />
+			<Option target="cli_debug" />
+			<Option target="sdl_release" />
 		</Unit>
-		<Unit filename="src/sys/sdl/sdl.h" />
+		<Unit filename="src/sys/sdl/sdl.h">
+			<Option target="cli_debug" />
+			<Option target="sdl_release" />
+		</Unit>
 		<Unit filename="src/sys/sdl/vid/vid.h" />
 		<Unit filename="src/sys/sys.h" />
 		<Unit filename="src/util/cmd.c">

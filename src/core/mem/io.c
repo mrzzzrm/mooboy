@@ -3,7 +3,7 @@
 #include "cpu.h"
 #include "_assert.h"
 #include "util/defines.h"
-#include "debug.h"
+#include "debug/debug.h"
 #include "io/divt.h"
 #include "io/tima.h"
 
@@ -60,17 +60,17 @@ u8 io_read(u16 adr) {
         case 0x4B: return lcd.wx; break;
 
         /* TODO: CGB Mode */
-        case 0x51: assert(0); break;
-        case 0x52: assert(0); break;
-        case 0x53: assert(0); break;
-        case 0x55: assert(0); break;
-        case 0x54: assert(0); break;
+        case 0x51: break;
+        case 0x52: break;
+        case 0x53: break;
+        case 0x55: break;
+        case 0x54: break;
 
         /* TODO: CGB Mode */
-        case 0x68: assert(0); break;
-        case 0x69: assert(0); break;
-        case 0x6A: assert(0); break;
-        case 0x6B: assert(0); break;
+        case 0x68: break;
+        case 0x69: break;
+        case 0x6A: break;
+        case 0x6B: break;
     }
 
     return 0xFF; // Avoids warnings;

@@ -5,7 +5,7 @@
 #include "cpu/defines.h"
 #include "util/defines.h"
 #include "lcd/maps.h"
-#include "debug.h"
+#include "debug/debug.h"
 
 #define DUR_FULL_REFRESH 17556
 #define DUR_MODE_0 51

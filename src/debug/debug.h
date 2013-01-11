@@ -5,10 +5,11 @@
 
     typedef struct {
         int verbose;
+        int console;
 
         struct {
             int mode;
-            u32 mem;
+            u32 cursor;
             u32 from, to;
             u32 reg;
             u32 sym;
@@ -23,11 +24,10 @@
             u32 ops;
             u32 io;
         } monitor;
-
-        int v;
     } dbg_t;
 
     extern dbg_t dbg;
+    extern u8 mem_before[0xFFFF+1], mem_after[0xFFFF+1];
 
     void debug_init();
 

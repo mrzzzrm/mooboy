@@ -76,6 +76,7 @@ static void init_rombanks(u8 ref, u8 *data, u32 datasize) {
 static void init_xrambanks(u8 ref) {
     switch(ref) {
         case 0x00:
+            ram.xbanks = realloc(ram.xbanks, sizeof(*ram.xbanks) * 1);
         break;
         case 0x01: case 0x02:
             mbc.ramsize = 1;

@@ -1,11 +1,11 @@
 #include "cpu.h"
-#include "io/divt.h"
-#include "io/tima.h"
-#include "etc/rtc.h"
+#include "mem/io/divt.h"
+#include "mem/io/tima.h"
+#include "mem/mbc/rtc.h"
 #include "mem/mbc.h"
 #include "cpu/ops.h"
 #include "cpu/defines.h"
-#include "debug.h"
+#include "debug/debug.h"
 
 cpu_t cpu;
 
@@ -68,21 +68,14 @@ static inline void step_timers() {
 }
 
 void cpu_exec(u8 op) {
-    if(dbg.verbose >= DBG_VLVL_MAX) fprintf(stderr, "Exec: %.2X\n", op);
 	op_chunk *c = op_chunk_map[op];
-    if(dbg.verbose >= DBG_VLVL_MAX) fprintf(stderr, "1\n");
 	if(c == NULL) {
-        if(dbg.verbose >= DBG_VLVL_MAX) fprintf(stderr, "2\n");
 		op_chunk_map[op] = op_create_chunk(op);
 		c = op_chunk_map[op];
 	}
-    if(dbg.verbose >= DBG_VLVL_MAX) fprintf(stderr, "3\n");
 	c->sp = 0;
-    if(dbg.verbose >= DBG_VLVL_MAX) fprintf(stderr, "4\n");
 	c->funcs[c->sp++](c);
-    if(dbg.verbose >= DBG_VLVL_MAX) fprintf(stderr, "5\n");
 	cpu.cc += c->mcs;
-    if(dbg.verbose >= DBG_VLVL_MAX) fprintf(stderr, "6\n");
 }
 
 u8 cpu_step() {

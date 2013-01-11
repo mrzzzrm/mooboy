@@ -1,7 +1,8 @@
 #include "debug.h"
 #include "cpu.h"
-#include "io/lcd.h"
+#include "mem/io/lcd.h"
 #include "cpu/defines.h"
+#include "run.h"
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -15,20 +16,20 @@ static ram_t ram_before, ram_after;
 #define RUN_TRACE 1
 #define RUN_UNTIL_CURSOR_EQ 2
 #define RUN_UNTIL_CURSOR_GE 3
-#define RUN_UNTIL_CURSOR_SE 4
+#define RUN_UNTIL_CURSOR_LE 4
 #define RUN_UNTIL_REGISTER 5
 #define RUN_UNTIL_MEMORY 6
 #define RUN_UNTIL_IO 7
 #define RUN_UNTIL_SYMBOL 8
 #define RUN_UNTIL_JUMP 9
 
-#define MONITOR_NONE 0x01
 #define MONITOR_REGISTER 0x02
-#define MONITOR_MEMORY 0x04
-#define MONITOR_IO 0x08
-#define MONITOR_SYMBOL 0x10
-#define MONITOR_INTERRUPT 0x10
-#define MONITOR_OP 0x10
+#define MONITOR_MEMORY_CELL 0x04
+#define MONITOR_MEMORY_RANGE 0x08
+#define MONITOR_IO 0x10
+#define MONITOR_SYMBOL 0x20
+#define MONITOR_INTERRUPT 0x40
+#define MONITOR_OP 0x80
 
 #define SYMBOL_DMA 0x01
 #define SYMBOL_IRQ 0x02
@@ -37,6 +38,10 @@ static ram_t ram_before, ram_after;
 #define SYMBOL_IO 0x10
 #define SYMBOL_OP 0x20
 
+#define BEGEQ(s1, s2) strcmp((s1),(s2)) == 0
+
+
+u8 mem_before[0xFFFF+1], mem_after[0xFFFF+1];
 
 typedef struct {
     cpu_t cpu;
@@ -49,6 +54,22 @@ typedef struct {
 
 static trace_t trace = {0, NULL};
 
+static int begeq(const char *sstr, const char *lstr) {
+    if(strlen(lstr) < strlen(sstr))
+        return false;
+    return memcmp(sstr, lstr, strlen(sstr)) == 0;
+}
+
+static int streq(const char *sstr, const char *lstr) {
+    return strcmp(sstr, lstr) == 0;
+}
+
+static void snap_mem(u8 *mem) {
+    unsigned int i;
+    for(i = 0; i <= 0xFFFF; i++) {
+        mem[i] = mem_readb(i);
+    }
+}
 
 static void trace_update() {
     trace.nodes = realloc(trace.nodes, (++trace.size) * sizeof(*trace.nodes));
@@ -140,95 +161,104 @@ static void dump_video() {
     fclose(f);
 }
 
+static void handle_cmd(const char *str) {
+    if(begeq("rc", str)) {
+        switch(str[2]) {
+            case '=': dbg.run.mode = RUN_UNTIL_CURSOR_EQ; break;
+            case '>': dbg.run.mode = RUN_UNTIL_CURSOR_GE; break;
+            case '<': dbg.run.mode = RUN_UNTIL_CURSOR_LE; break;
+        }
+        dbg.run.cursor = strtol(&str[3], NULL, 16);
+        dbg.console = 0;
+    }
+    else if(streq("r", str)) {
+        dbg.run.mode = RUN_FOREVER;
+        dbg.console = 0;
+    }
+    else if(begeq("mm", str)) {
+        char *end;
+        dbg.monitor.mem = strtol(&str[3], &end, 16);
+        dbg.monitor.mode &= ~(MONITOR_MEMORY_RANGE | MONITOR_MEMORY_CELL);
+        if(end[0] == '-') {
+            dbg.monitor.from = dbg.monitor.mem;
+            dbg.monitor.to = strtol(&end[1], NULL, 16);
+            dbg.monitor.mode |= MONITOR_MEMORY_RANGE;
+        }
+        else {
+            dbg.monitor.mode |= MONITOR_MEMORY_CELL;
+        }
+    }
+    else if(begeq("mem", str)) {
+        u16 mem, from, to, adr;
+        char *end;
+        from = to = mem = strtol(&str[4], &end, 16);
+        if(end[0] == '-') {
+            dbg.monitor.from = dbg.monitor.mem;
+            dbg.monitor.to = strtol(&end[1], NULL, 16);
+        }
+        for(adr = from; adr <= to; adr++) {
+            fprintf(stderr, "%.4X: %.2X\n", adr, mem_readb(adr));
+        }
+    }
+    else {
+        fprintf(stderr, "Unknown cmd\n");
+    }
+}
+
+static void to_trace() {
+    dbg.run.mode = RUN_TRACE;
+    dbg.console = 1;
+}
+
 void debug_init() {
-    dbg.verbose = DBG_VLVL_NORMAL;
-    dbg.mode = DBG_TRACE;
-    dbg.cursor = 0;
-    dbg.state_lvl = 0;
+    dbg.verbose = 1;
+    dbg.console = 1;
+    dbg.run.mode = RUN_TRACE;
+    dbg.monitor.mode = 0x00;
+    snap_mem(mem_before);
+    snap_mem(mem_after);
 }
 
 void debug_console() {
     char str[256];
 
-    trace_update();
+    do {
+        switch(dbg.run.mode) {
+            case RUN_UNTIL_CURSOR_EQ: if(PC == dbg.run.cursor) to_trace(); break;
+            case RUN_UNTIL_CURSOR_GE: if(PC >= dbg.run.cursor) to_trace(); break;
+            case RUN_UNTIL_CURSOR_LE: if(PC <= dbg.run.cursor) to_trace(); break;
+        }
 
-    if(dbg.mode == DBG_CURSOR_EQ || dbg.mode == DBG_CURSOR_GE) {
-        if(dbg.mode == DBG_CURSOR_EQ && cpu.pc.w == dbg.cursor) {
-            dbg.mode = DBG_TRACE;
-        }
-        else if(dbg.mode == DBG_CURSOR_GE && cpu.pc.w >= dbg.cursor) {
-            dbg.mode = DBG_TRACE;
-        }
-        else {
-            return;
-        }
-    }
+        if(dbg.monitor.mode & MONITOR_MEMORY_CELL)
+            monitor_cell(dbg.monitor.mem);
+        if(dbg.monitor.mode & MONITOR_MEMORY_RANGE)
+            monitor_range(dbg.monitor.from, dbg.monitor.to);
 
-    for(;;) {
-        fprintf(stderr,"PC=%.4X: ", cpu.pc.w);
-        assert(gets(str) != NULL);
-        fflush(stdin);
+        if(dbg.console) {
+            fprintf(stderr, "%.4X: ", PC);
+            assert(gets(str) != NULL);
+            fflush(stdin);
 
-        if(!isalnum(*str))
-            break;
-
-        if(str[0] == 'c') {
-            if(str[1] == '=')
-                dbg.mode = DBG_CURSOR_EQ;
-            else
-                dbg.mode = DBG_CURSOR_GE;
-            dbg.cursor = strtol(&str[2], NULL, 16);
-            break;
-        }
-        if(str[0] == 'v') {
-            dbg.verbose = strtol(&str[2], NULL, 10);
-            continue;
-        }
-        if(str[0] == 's') {
-            if(str[1] == '=') {
-                dbg.state_lvl = strtol(&str[2], NULL, 10);
-            }
-            else {
-                debug_print_cpu_state();
-            }
-            continue;
-        }
-        if(str[0] == 'r') {
-            u16 adr = strtol(&str[2], NULL, 16);
-            fprintf(stderr, "%.2X\n", mem_readb(adr));
-            continue;
-        }
-        if(str[0] == 'd') {
-            switch(str[1]) {
-                case 'v': dump_video(); break;
-                case 't':
-                    if(str[2] == '=')
-                        dump_trace(strtol(&str[3], NULL, 10));
-                    else
-                        dump_trace(0);
+            if(!isalnum(*str))
                 break;
-                case'f':
-                    dump_fbs();
-                break;
-            }
 
-            continue;
+            handle_cmd(str);
         }
-    }
+    } while(dbg.console);
 }
 
 
 void debug_print_cpu_state() {
-    fprintf(stderr, "[");
-    fprintf(stderr, "PC:%.4X AF:%.2X%.2X BC:%.2X%.2X DE:%.2X%.2X HL:%.2X%.2X SP:%.4X F:", (int)PC, (int)A, (int)F, (int)B, (int)C, (int)D, (int)E, (int)H, (int)L, (int)SP);
-    int b;
-    for(b = 7; b >= 4; b--) {
-        fprintf(stderr, "%i", (1<<b)&F?1:0);
-    }
-    if(dbg.state_lvl > 0)
-        fprintf(stderr, " \n LC:%.2X LS:%.2X LY:%.2X CC: %.8X]\n", lcd.c, lcd.stat, lcd.ly, cpu.cc);
-    else
-        fprintf(stderr, "]\n");
+//    fprintf(stderr, "[");
+//    fprintf(stderr, "PC:%.4X AF:%.2X%.2X BC:%.2X%.2X DE:%.2X%.2X HL:%.2X%.2X SP:%.4X F:", (int)PC, (int)A, (int)F, (int)B, (int)C, (int)D, (int)E, (int)H, (int)L, (int)SP);
+//    int b;
+//    for(b = 7; b >= 4; b--) {
+//        fprintf(stderr, "%i", (1<<b)&F?1:0);
+//    }
+//    if(dbg.state_lvl > 0)
+//        fprintf(stderr, " \n LC:%.2X LS:%.2X LY:%.2X CC: %.8X]\n", lcd.c, lcd.stat, lcd.ly, cpu.cc);
+//    e  lse
+//        fprintf(stderr, "]\n");
 }
 
 static void debug_cpu_before() {
@@ -324,13 +354,11 @@ static void debug_ram_print_diff() {
 }
 
 void debug_before() {
-    debug_cpu_before();
-    debug_ram_before();
+    snap_mem(mem_before);
 }
 
 void debug_after() {
-    debug_cpu_after();
-    debug_ram_after();
+    snap_mem(mem_after);
 }
 
 void debug_print_diff() {

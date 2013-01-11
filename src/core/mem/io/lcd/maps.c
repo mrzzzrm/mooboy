@@ -1,6 +1,6 @@
 #include "maps.h"
-#include "io/lcd.h"
 #include "mem.h"
+#include "mem/io/lcd.h"
 
 #define LCD_WIDTH 160
 

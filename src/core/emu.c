@@ -1,7 +1,7 @@
 #include "emu.h"
 #include "cpu/defines.h"
-#include "io/lcd.h"
-#include "debug.h"
+#include "mem/io/lcd.h"
+#include "debug/debug.h"
 #include "loader.h"
 
 
