@@ -18,7 +18,7 @@ static void emu_step() {
 }
 
 void emu_init() {
-
+    cpu_init();
 }
 
 void emu_close() {

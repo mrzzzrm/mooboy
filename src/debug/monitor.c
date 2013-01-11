@@ -6,7 +6,7 @@
 
 void monitor_cell(u16 adr) {
     if(dbg.before.mem[adr] != dbg.after.mem[adr])
-        fprintf(stderr, "%.4X: [%.4X] %.2X => %.2X\n", dbg.before.cpu.pc.w, adr, dbg.before.mem[adr], dbg.after.mem[adr]);
+        fprintf(stderr, "%.4X %s: [%.4X] %.2X => %.2X\n", dbg.before.cpu.pc.w, disasm(cpu.pc.w), adr, dbg.before.mem[adr], dbg.after.mem[adr]);
 }
 
 void monitor_range(u16 from, u16 to) {

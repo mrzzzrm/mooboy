@@ -10,8 +10,7 @@
 cpu_t cpu;
 
 void cpu_init() {
-    memset(op_chunk_map, 0, 0xFF);
-    memset(op_cb_chunk_map, 0, 0xFF);
+    op_create_chunks();
 }
 
 void cpu_reset() {
@@ -69,10 +68,6 @@ static inline void step_timers(u8 mcs) {
 
 u8 cpu_exec(u8 op) {
 	op_chunk *c = op_chunk_map[op];
-	if(c == NULL) {
-		op_chunk_map[op] = op_create_chunk(op);
-		c = op_chunk_map[op];
-	}
 	c->sp = 0;
 	c->funcs[c->sp++](c);
 	cpu.cc += c->mcs;

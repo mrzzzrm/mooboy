@@ -9,8 +9,8 @@
 #define MCS(_mcs) {c->mcs = (_mcs);}
 #define PUSH_FUNC(f) {c->funcs[c->sp++] = (f);}
 
-op_chunk *op_chunk_map[0xFF];
-op_chunk *op_cb_chunk_map[0xFF];
+op_chunk *op_chunk_map[0x100];
+op_chunk *op_cb_chunk_map[0x100];
 
 static u8 *bregv[] = {&B, &C, &D, &E, &H, &L, NULL, &A};
 static u16 *wregv_sp[] = {&BC, &DE, &HL, &SP};
@@ -52,6 +52,7 @@ static void chunk_func_alu(op_chunk *c, u8 b) {
 
 op_chunk *op_create_chunk(u8 op) {
 	op_chunk *c = malloc(sizeof(op_chunk));
+	memset(c, 0x00, sizeof(*c));
 	c->op = op;
 	c->sp = 0;
 	MCS(1); // Default
@@ -298,6 +299,7 @@ op_chunk *op_create_chunk(u8 op) {
 
 op_chunk *op_create_cb_chunk(u8 op) {
     op_chunk *c = malloc(sizeof(op_chunk));
+	memset(c, 0x00, sizeof(*c));
 	c->op = op;
 	c->sp = 0;
 
@@ -332,4 +334,14 @@ op_chunk *op_create_cb_chunk(u8 op) {
 
     return c;
 }
+
+
+void op_create_chunks() {
+    unsigned int b;
+    for(b = 0; b <= 0xFF; b++) {
+        op_chunk_map[b] = op_create_chunk(b);
+        op_cb_chunk_map[b] = op_create_cb_chunk(b);
+    }
+}
+
 

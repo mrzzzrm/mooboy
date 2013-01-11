@@ -4,7 +4,6 @@
     #include "util/defines.h"
     #include "chunks.h"
 
-
     // Prefunctions
     void op_opl_memcall(op_chunk *c);
     void op_opl_ib(op_chunk *c);
@@ -47,7 +46,6 @@
     void op_or(op_chunk *c);
     void op_cp(op_chunk *c);
     void op_cpl(op_chunk *c);
-    void op_daa(op_chunk *c);
 
     // Rotates and Shifts
     void op_rl(op_chunk *c);
@@ -62,7 +60,6 @@
     void op_cb(op_chunk *c);
     void op_swap(op_chunk *c);
     void op_daa(op_chunk *c);
-    void op_cpl(op_chunk *c);
 
     // Singlebit Operations
     void op_bit(op_chunk *c);

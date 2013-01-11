@@ -15,13 +15,14 @@
         u8 i, b; // Only used for prefix CB; immediate and bit index
         u8 sp;
         void (*funcs[5])(op_chunk *c);
-        op_arg opl, opr; // Pointers to 8/16 Bit registers
+        op_arg opl, opr; // Pointers to 8/16 Bit memory locations
         u8 mcs;
     };
 
-    extern op_chunk *op_chunk_map[0xFF];
-    extern op_chunk *op_cb_chunk_map[0xFF];
+    extern op_chunk *op_chunk_map[0x100];
+    extern op_chunk *op_cb_chunk_map[0x100];
 
+    void op_create_chunks();
     op_chunk *op_create_chunk(u8 op);
     op_chunk *op_create_cb_chunk(u8 op);
 

@@ -1,5 +1,6 @@
 #include "debug.h"
 #include "monitor.h"
+#include "disasm.h"
 #include "cpu.h"
 #include "mem/io/lcd.h"
 #include "cpu/defines.h"
@@ -154,6 +155,20 @@ static void dump_video() {
     fclose(f);
 }
 
+static void dump_disasm() {
+    unsigned int i;
+
+    FILE *f = fopen("disasm.txt", "w");
+    assert(f != NULL);
+
+    for(i = 0; i <= 0xFFFF; i++) {
+        fprintf(f, "%.4X %s\n", i, disasm(i));
+    }
+
+    fclose(f);
+}
+
+
 static void handle_cmd(const char *str) {
     if(begeq("rc", str)) {
         switch(str[2]) {
@@ -201,6 +216,9 @@ static void handle_cmd(const char *str) {
             fprintf(stderr, "%.4X: %.2X\n", adr, mem_readb(adr));
         }
     }
+    else if(begeq("dasm", str)) {
+        dump_disasm();
+    }
     else {
         fprintf(stderr, "Unknown cmd\n");
     }
@@ -236,7 +254,7 @@ void debug_console() {
             monitor_range(dbg.monitor.from, dbg.monitor.to);
 
         if(dbg.console) {
-            fprintf(stderr, "%.4X: ", PC);
+            fprintf(stderr, "%.4X %s: ", PC, disasm(cpu.pc.w));
             assert(gets(str) != NULL);
             fflush(stdin);
 
@@ -247,7 +265,6 @@ void debug_console() {
         }
     } while(dbg.console);
 }
-
 
 void debug_print_cpu_state() {
 //    fprintf(stderr, "[");

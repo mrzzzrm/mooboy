@@ -305,9 +305,6 @@ void op_cb(op_chunk *c) {
     //if(dbg.verbose) fprintf(stderr, "  CB\n");
     u8 cbop = FETCHB;
     op_chunk *cbc = op_cb_chunk_map[cbop];
-    if(cbc == NULL) {
-        cbc = op_cb_chunk_map[cbop] = op_create_cb_chunk(cbop);
-    }
 
     cbc->sp = 0;
     cbc->funcs[cbc->sp++](cbc);
