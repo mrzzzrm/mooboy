@@ -1,4 +1,5 @@
 #include "debug.h"
+#include "monitor.h"
 #include "cpu.h"
 #include "mem/io/lcd.h"
 #include "cpu/defines.h"
@@ -27,16 +28,8 @@ static ram_t ram_before, ram_after;
 #define MONITOR_MEMORY_CELL 0x04
 #define MONITOR_MEMORY_RANGE 0x08
 #define MONITOR_IO 0x10
-#define MONITOR_SYMBOL 0x20
 #define MONITOR_INTERRUPT 0x40
 #define MONITOR_OP 0x80
-
-#define SYMBOL_DMA 0x01
-#define SYMBOL_IRQ 0x02
-#define SYMBOL_IEXEC 0x04
-#define SYMBOL_MEMORY 0x08
-#define SYMBOL_IO 0x10
-#define SYMBOL_OP 0x20
 
 #define BEGEQ(s1, s2) strcmp((s1),(s2)) == 0
 
@@ -188,6 +181,14 @@ static void handle_cmd(const char *str) {
             dbg.monitor.mode |= MONITOR_MEMORY_CELL;
         }
     }
+    else if(begeq("ms", str)) {
+        if(streq("dma", &str[3])) {
+            dbg.monitor.sym |= MONITOR_SYM_DMA;
+        }
+        else {
+            fprintf(stderr, "Unknown sym\n");
+        }
+    }
     else if(begeq("mem", str)) {
         u16 mem, from, to, adr;
         char *end;
@@ -262,7 +263,6 @@ void debug_print_cpu_state() {
 }
 
 static void debug_cpu_before() {
-    cpu_before = cpu;
 }
 
 static void debug_cpu_after() {
@@ -354,11 +354,13 @@ static void debug_ram_print_diff() {
 }
 
 void debug_before() {
-    snap_mem(mem_before);
+    snap_mem(dbg.before.mem);
+    dbg.before.cpu = cpu;
 }
 
 void debug_after() {
-    snap_mem(mem_after);
+    snap_mem(dbg.after.mem);
+    dbg.after.cpu = cpu;
 }
 
 void debug_print_diff() {

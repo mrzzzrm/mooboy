@@ -1,6 +1,7 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
+    #include "cpu.h"
     #include "util/defines.h"
 
     typedef struct {
@@ -24,10 +25,15 @@
             u32 ops;
             u32 io;
         } monitor;
+
+        struct {
+            cpu_t cpu;
+            u8 mem[0xFFFF+1];
+        } after, before;
+
     } dbg_t;
 
     extern dbg_t dbg;
-    extern u8 mem_before[0xFFFF+1], mem_after[0xFFFF+1];
 
     void debug_init();
 

@@ -5,12 +5,12 @@
 
     typedef struct {
         u8 ticks;
-        u32 last_mc;
+        u32 cc;
     } divt_t;
 
     extern divt_t divt;
 
     void divt_reset();
-    void divt_step();
+    void divt_step(u8 mcs);
 
 #endif

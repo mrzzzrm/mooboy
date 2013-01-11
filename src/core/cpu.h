@@ -25,7 +25,7 @@
 
     void cpu_init();
     void cpu_reset();
-    void cpu_exec(u8 op);
+    u8 cpu_exec(u8 op);
     u8 cpu_step(); // Ḿachine cycles
 
 #endif // CPU_H

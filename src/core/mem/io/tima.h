@@ -7,12 +7,12 @@
         u8 ticks;
         u8 mod;
         u8 c;
-        u32 last_mc;
+        u32 cc;
     } tima_t;
 
     extern tima_t tima;
 
     void tima_reset();
-    void tima_step();
+    void tima_step(u8 mcs);
 
 #endif

@@ -58,16 +58,16 @@ static inline void handle_ints() {
     }
 }
 
-static inline void step_timers() {
-    divt_step();
-    tima_step();
+static inline void step_timers(u8 mcs) {
+    divt_step(mcs);
+    tima_step(mcs);
 
     if(mbc.type == 3) {
-        rtc_step();
+        rtc_step(mcs);
     }
 }
 
-void cpu_exec(u8 op) {
+u8 cpu_exec(u8 op) {
 	op_chunk *c = op_chunk_map[op];
 	if(c == NULL) {
 		op_chunk_map[op] = op_create_chunk(op);
@@ -76,13 +76,17 @@ void cpu_exec(u8 op) {
 	c->sp = 0;
 	c->funcs[c->sp++](c);
 	cpu.cc += c->mcs;
+
+	return c->mcs;
 }
 
 u8 cpu_step() {
-    cpu_exec(FETCHB);
-    handle_ints();
-    step_timers();
+    u8 mcs;
 
-    return 2; // TODO, cause this is crap
+    mcs = cpu_exec(FETCHB);
+    handle_ints();
+    step_timers(mcs);
+
+    return mcs;
 }
 

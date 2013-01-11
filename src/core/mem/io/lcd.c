@@ -162,6 +162,8 @@ void lcd_dma(u8 v) {
     u8 b;
     u16 src;
 
+    debug_sym_dma(v);
+
     for(src = ((u16)v)<<8, b = 0; b < 0x9F; b++, src++) {
         ram.oam[b] = mem_readb(src);
     }
