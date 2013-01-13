@@ -24,6 +24,7 @@ static ram_t ram_before, ram_after;
 #define RUN_UNTIL_IO 7
 #define RUN_UNTIL_SYMBOL 8
 #define RUN_UNTIL_JUMP 9
+#define RUN_CYCLES 10
 
 #define MONITOR_REGISTER 0x02
 #define MONITOR_MEMORY_CELL 0x04
@@ -37,16 +38,12 @@ static ram_t ram_before, ram_after;
 
 u8 mem_before[0xFFFF+1], mem_after[0xFFFF+1];
 
-typedef struct {
-    cpu_t cpu;
-} trace_node_t;
+static struct {
+    char op[18]; int op_set;
+    char opl[18]; int opl_set;
+    char opr[18]; int opr_set;
+} ctrace;
 
-typedef struct {
-    int size;
-    trace_node_t **nodes;
-} trace_t;
-
-static trace_t trace = {0, NULL};
 
 static int begeq(const char *sstr, const char *lstr) {
     if(strlen(lstr) < strlen(sstr))
@@ -59,25 +56,34 @@ static int streq(const char *sstr, const char *lstr) {
 }
 
 static void snap_mem(u8 *mem) {
-    unsigned int i;
-    for(i = 0; i <= 0xFFFF; i++) {
-        mem[i] = mem_readb(i);
+    if(dbg.monitor.mode == MONITOR_MEMORY_CELL) {
+        mem[dbg.monitor.mem] = mem_readb(dbg.monitor.mem);
+    }
+    else {
+        unsigned int i;
+        for(i = dbg.monitor.from; i <= dbg.monitor.to; i++) {
+            mem[i] = mem_readb(i);
+        }
     }
 }
 
-static void trace_update() {
-    trace.nodes = realloc(trace.nodes, (++trace.size) * sizeof(*trace.nodes));
-    trace.nodes[trace.size-1] = malloc(sizeof(**trace.nodes));
-    trace.nodes[trace.size-1]->cpu = cpu;
+static void trace_before() {
+    dbg.trace.data = realloc(dbg.trace.data, (++dbg.trace.size) * sizeof(*dbg.trace.data));
+    memset(&ctrace, 0x00, sizeof(ctrace));
 }
 
-static void dump_trace(int lvl) {
+static void trace_after() {
+    char *str = dbg.trace.data[dbg.trace.size-1];
+    sprintf(str, "%.4X %s %s, %s", dbg.before.cpu.pc.w, ctrace.op, ctrace.opl, ctrace.opr);
+}
+
+static void dump_trace() {
     unsigned int n;
     FILE *f;
 
     f = fopen("trace.txt", "w");
-    for(n = 0; n < trace.size; n++) {
-        fprintf(f, "PC=%.4X\n", trace.nodes[n]->cpu.pc.w);
+    for(n = 0; n < dbg.trace.size; n++) {
+        fprintf(f, "%s\n", dbg.trace.data[n]);
     }
     fclose(f);
 }
@@ -86,23 +92,6 @@ static void print_bits8(u8 v) {
     int b;
     for(b = 7; b >= 0; b--) {
         fprintf(stderr, "%i", (1<<b)&v?1:0);
-    }
-}
-
-static void cpu_print_diff_b(u8 b, u8 a, const char *name) {
-    if(b != a)
-        fprintf(stderr, "    %s: %.2X=>%.2X\n", name, b, a);
-}
-
-static void cpu_print_diff_w(u16 b, u16 a, const char *name) {
-    if(b != a)
-        fprintf(stderr, "    %s: %.4X=>%.4X\n", name, b, a);
-}
-
-static void cpu_print_diff_flag(u8 b, u8 a, const char *name) {
-    if(b != a) {
-        fprintf(stderr, "    %s: ", name);
-        print_bits8(b);fprintf(stderr, "=>");print_bits8(a);fprintf(stderr, "\n");
     }
 }
 
@@ -192,6 +181,11 @@ static void handle_cmd(const char *str) {
         dbg.run.mode = RUN_FOREVER;
         dbg.console = 0;
     }
+    else if(begeq("r", str)) {
+        dbg.run.mode = RUN_CYCLES;
+        dbg.console = 0;
+        dbg.run.cc_end = cpu.cc + strtol(&str[2], NULL, 10);
+    }
     else if(begeq("mm", str)) {
         char *end;
         dbg.monitor.mem = strtol(&str[3], &end, 16);
@@ -218,8 +212,8 @@ static void handle_cmd(const char *str) {
         char *end;
         from = to = mem = strtol(&str[4], &end, 16);
         if(end[0] == '-') {
-            dbg.monitor.from = dbg.monitor.mem;
-            dbg.monitor.to = strtol(&end[1], NULL, 16);
+            from = mem;
+            to = strtol(&end[1], NULL, 16);
         }
         for(adr = from; adr <= to; adr++) {
             fprintf(stderr, "%.4X: %.2X\n", adr, mem_readb(adr));
@@ -230,6 +224,14 @@ static void handle_cmd(const char *str) {
     }
     else if(begeq("s", str)) {
         print_state();
+    }
+    else if(begeq("s", str)) {
+        print_state();
+    }
+    else if(begeq("d", str)) {
+        if(begeq("t", &str[1])) {
+            dump_trace();
+        }
     }
     else {
         fprintf(stderr, "Unknown cmd\n");
@@ -255,6 +257,7 @@ void debug_console() {
 
     do {
         switch(dbg.run.mode) {
+            case RUN_CYCLES: if(cpu.cc >= dbg.run.cc_end) to_trace(); break;
             case RUN_UNTIL_CURSOR_EQ: if(PC == dbg.run.cursor) to_trace(); break;
             case RUN_UNTIL_CURSOR_GE: if(PC >= dbg.run.cursor) to_trace(); break;
             case RUN_UNTIL_CURSOR_LE: if(PC <= dbg.run.cursor) to_trace(); break;
@@ -278,122 +281,80 @@ void debug_console() {
     } while(dbg.console);
 }
 
-void debug_print_cpu_state() {
-//    fprintf(stderr, "[");
-//    fprintf(stderr, "PC:%.4X AF:%.2X%.2X BC:%.2X%.2X DE:%.2X%.2X HL:%.2X%.2X SP:%.4X F:", (int)PC, (int)A, (int)F, (int)B, (int)C, (int)D, (int)E, (int)H, (int)L, (int)SP);
-//    int b;
-//    for(b = 7; b >= 4; b--) {
-//        fprintf(stderr, "%i", (1<<b)&F?1:0);
-//    }
-//    if(dbg.state_lvl > 0)
-//        fprintf(stderr, " \n LC:%.2X LS:%.2X LY:%.2X CC: %.8X]\n", lcd.c, lcd.stat, lcd.ly, cpu.cc);
-//    e  lse
-//        fprintf(stderr, "]\n");
-}
-
-static void debug_cpu_before() {
-}
-
-static void debug_cpu_after() {
-    cpu_after = cpu;
-}
-
-static void debug_cpu_print_diff() {
-    if(cpu_after.pc.w - 1 == cpu_before.pc.w)
-        cpu_before.pc = cpu_after.pc;
-
-    cpu_before.cc = cpu_after.cc;
-    if(memcmp(&cpu_before, &cpu_after, sizeof(cpu_t)) == 0)
-        return;
-
-    fprintf(stderr, "  CPU-Diff \n");
-    cpu_print_diff_b(cpu_before.af.b[1], cpu_after.af.b[1], "A");
-    cpu_print_diff_flag(cpu_before.af.b[0], cpu_after.af.b[0], "F");
-    cpu_print_diff_b(cpu_before.bc.b[1], cpu_after.bc.b[1], "B");
-    cpu_print_diff_b(cpu_before.bc.b[0], cpu_after.bc.b[0], "C");
-    cpu_print_diff_b(cpu_before.de.b[1], cpu_after.de.b[1], "D");
-    cpu_print_diff_b(cpu_before.de.b[0], cpu_after.de.b[0], "E");
-    cpu_print_diff_b(cpu_before.hl.b[1], cpu_after.hl.b[1], "H");
-    cpu_print_diff_b(cpu_before.hl.b[0], cpu_after.hl.b[0], "L");
-    cpu_print_diff_w(cpu_before.pc.w, cpu_after.pc.w, "PC");
-}
-
-static void debug_ram_before() {
-    ram_before = ram;
-}
-
-static void debug_ram_after() {
-    ram_after = ram;
-}
-
-
-static void ram_print_i_diff() {
-    unsigned int bank, byte;
-
-    for(bank = 0; bank < 8; bank++) {
-        for(byte = 0; byte < 0x1000; byte++) {
-            if(ram_before.ibanks[bank][byte] != ram_after.ibanks[bank][byte]) {
-                fprintf(stderr, "    IRAM[%i][%.4X] %.2X=>%.2X\n", bank, byte, ram_before.ibanks[bank][byte], ram_after.ibanks[bank][byte]);
-            }
-        }
-    }
-}
-
-static void ram_print_h_diff() {
-    unsigned int byte;
-
-    for(byte = 0; byte < 0x80; byte++) {
-        if(ram_before.hram[byte] != ram_after.hram[byte]) {
-            fprintf(stderr, "    HRAM[%.2X] %.2X=>%.2X\n", byte, ram_before.hram[byte], ram_after.hram[byte]);
-        }
-    }
-}
-
-static void ram_print_v_diff() {
-    unsigned int bank, byte;
-
-    for(bank = 0; bank < 2; bank++) {
-        for(byte = 0; byte < 0x2000; byte++) {
-            if(ram_before.vbanks[bank][byte] != ram_after.vbanks[bank][byte]) {
-                fprintf(stderr, "    VRAM[%i][%.4X] %.2X=>%.2X\n", bank, byte, ram_before.vbanks[bank][byte], ram_after.vbanks[bank][byte]);
-            }
-        }
-    }
-}
-
-static void ram_print_oam_diff() {
-    unsigned int byte;
-
-    for(byte = 0; byte < 0xA0; byte++) {
-        if(ram_before.oam[byte] != ram_after.oam[byte]) {
-            fprintf(stderr, "    OAM[%.2X] %.2X=>%.2X\n", byte, ram_before.oam[byte], ram_after.oam[byte]);
-        }
-    }
-}
-
-static void debug_ram_print_diff() {
-    if(memcmp(&ram_before, &ram_after, sizeof(ram_t)) == 0)
-        return;
-
-    fprintf(stderr, "  RAM-Diff \n");
-    ram_print_i_diff();
-    ram_print_h_diff();
-    ram_print_v_diff();
-    ram_print_oam_diff();
-}
-
 void debug_before() {
+    trace_before();
     snap_mem(dbg.before.mem);
     dbg.before.cpu = cpu;
 }
 
 void debug_after() {
+    trace_after();
     snap_mem(dbg.after.mem);
     dbg.after.cpu = cpu;
 }
 
-void debug_print_diff() {
-    debug_cpu_print_diff();
-    debug_ram_print_diff();
+void debug_trace_op(const char *name) {
+    strcpy(ctrace.op, name);
 }
+
+static void debug_trace_opx(char *str, void *ptr, int len, int mem) {
+    char buf[sizeof(str)];
+    if(len == 1) {
+             if(ptr == &A) sprintf(buf, "A");
+        else if(ptr == &B) sprintf(buf, "B");
+        else if(ptr == &C) sprintf(buf, "C");
+        else if(ptr == &D) sprintf(buf, "D");
+        else if(ptr == &E) sprintf(buf, "E");
+        else if(ptr == &H) sprintf(buf, "H");
+        else if(ptr == &L) sprintf(buf, "L");
+        else if(ptr == &F) sprintf(buf, "F");
+        else               sprintf(buf, "%.2X", *(u8*)ptr);
+    }
+    else {
+             if(ptr == &AF) sprintf(buf, "AF");
+        else if(ptr == &BC) sprintf(buf, "BC");
+        else if(ptr == &DE) sprintf(buf, "DE");
+        else if(ptr == &HL) sprintf(buf, "HL");
+        else if(ptr == &SP) sprintf(buf, "SP");
+        else                sprintf(buf, "%.4X", *(u16*)ptr);
+    }
+
+    if(mem)
+        sprintf(str, "(%s)", buf);
+    else
+        sprintf(str, "%s", buf);
+}
+
+void debug_trace_opl(void *ptr, int len, int mem) {
+    if(ctrace.opl_set)
+        return;
+
+    debug_trace_opx(ctrace.opl, ptr, len, mem);
+    ctrace.opl_set = 1;
+}
+
+void debug_trace_opr(void *ptr, int len, int mem)  {
+    if(ctrace.opr_set)
+        return;
+
+    debug_trace_opx(ctrace.opr, ptr, len, mem);
+    ctrace.opr_set = 1;
+}
+
+void debug_trace_opl_data(int d) {
+    if(ctrace.opl_set)
+        return;
+
+    sprintf(ctrace.opl, "%i", d);
+    ctrace.opl_set = 1;
+}
+
+void debug_trace_opr_data(int d) {
+    if(ctrace.opr_set)
+        return;
+
+    sprintf(ctrace.opr, "%i", d);
+    ctrace.opr_set = 1;
+}
+
 

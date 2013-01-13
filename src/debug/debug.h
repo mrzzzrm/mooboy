@@ -14,6 +14,7 @@
             u32 from, to;
             u32 reg;
             u32 sym;
+            u32 cc_end;
         } run;
 
         struct {
@@ -31,6 +32,10 @@
             u8 mem[0xFFFF+1];
         } after, before;
 
+        struct {
+            char (*data)[54];
+            u32 size;
+        } trace;
     } dbg_t;
 
     extern dbg_t dbg;
@@ -52,6 +57,13 @@
 
     /* OPS */
     void debug_op(u8 b);
+
+    /* Tracing */
+    void debug_trace_op(const char *name);
+    void debug_trace_opl(void *ptr, int len, int mem);
+    void debug_trace_opr(void *ptr, int len, int mem);
+    void debug_trace_opl_data(int d);
+    void debug_trace_opr_data(int d);
 
 
     /*

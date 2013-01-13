@@ -1,5 +1,6 @@
 #include "monitor.h"
 #include "debug.h"
+#include "disasm.h"
 #include "cpu.h"
 #include "cpu/defines.h"
 #include <stdio.h>
@@ -20,7 +21,7 @@ void monitor_range(u16 from, u16 to) {
 
 void debug_sym_dma(u8 hn) {
     if(dbg.monitor.sym & MONITOR_SYM_DMA) {
-        fprintf(stderr, "%.4X: DMA=%.2XXX\n", dbg.before.cpu.pc.w, hn);
+        fprintf(stderr, "%.4X %s: DMA=%.2XXX\n", dbg.before.cpu.pc.w, disasm(cpu.pc.w), hn);
     }
 }
 

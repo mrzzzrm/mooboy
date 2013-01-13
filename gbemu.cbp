@@ -11,15 +11,12 @@
 				<Option object_output="build/bin/cli_release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="--rom ./rom/tetris.gb" />
+				<Option parameters="--rom ./rom/filltest.gb" />
 				<Compiler>
-					<Add option="-O2" />
+					<Add option="-g" />
 					<Add directory="src/core" />
 					<Add directory="debug" />
 				</Compiler>
-				<Linker>
-					<Add option="-s" />
-				</Linker>
 			</Target>
 			<Target title="cli_debug">
 				<Option output="build/bin/cli_debug/gbemu" prefix_auto="1" extension_auto="1" />

@@ -1,15 +1,17 @@
 #include "disasm.h"
+#include <stdio.h>
+#include <string.h>
+#include "mem.h"
 #include "cpu/ops.h"
 #include "cpu/chunks.h"
 #include "cpu/defines.h"
 
 static char out[256];
 static char op[16];
-static char opl[16];
-static char opr[16];
+//static char opl[16];
+//static char opr[16];
 
 #define OP(func, n) if(f == (func)) {sprintf(op, "%s", (n)); return; }
-
 
 
 void set_op(op_chunk *c) {

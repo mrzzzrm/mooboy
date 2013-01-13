@@ -118,7 +118,7 @@ void io_write(u16 adr, u8 val) {
         case 0x41: lcd.stat = val; break;
         case 0x42: lcd.scy = val; break;
         case 0x43: lcd.scx = val; break;
-        case 0x44: assert(0); break;
+        case 0x44: lcd.ly = val; break;
         case 0x45: lcd.lyc = val; /* TODO */  break;
         case 0x46: lcd_dma(val); break;
         case 0x47: lcd.bgp = val; break;
@@ -128,16 +128,16 @@ void io_write(u16 adr, u8 val) {
         case 0x4B: lcd.wx = val; break;
 
         /* TODO: CGB Mode */
-        case 0x51: assert(0); break;
-        case 0x52: assert(0); break;
-        case 0x53: assert(0); break;
-        case 0x55: assert(0); break;
-        case 0x54: assert(0); break;
+        case 0x51: break;
+        case 0x52: break;
+        case 0x53: break;
+        case 0x55: break;
+        case 0x54: break;
 
         /* TODO: CGB Mode */
-        case 0x68: assert(0); break;
-        case 0x69: assert(0); break;
-        case 0x6A: assert(0); break;
-        case 0x6B: assert(0); break;
+        case 0x68: break;
+        case 0x69: break;
+        case 0x6A: break;
+        case 0x6B: break;
     }
 }
