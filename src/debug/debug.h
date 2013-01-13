@@ -42,9 +42,6 @@
     void debug_before();
     void debug_after();
 
-    void debug_print_diff();
-    void debug_print_cpu_state();
-
     /* Symbols */
     void debug_sym_dma(u8 hn);
     void debug_sym_irq(u8 f);

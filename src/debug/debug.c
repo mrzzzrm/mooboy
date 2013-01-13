@@ -168,6 +168,15 @@ static void dump_disasm() {
     fclose(f);
 }
 
+static void print_state() {
+    fprintf(stderr, "[");
+    fprintf(stderr, "PC:%.4X AF:%.2X%.2X BC:%.2X%.2X DE:%.2X%.2X HL:%.2X%.2X SP:%.4X F:", (int)PC, (int)A, (int)F, (int)B, (int)C, (int)D, (int)E, (int)H, (int)L, (int)SP);
+    unsigned int b;
+    for(b = 7; b >= 4; b--) {
+        fprintf(stderr, "%i", (1<<b)&F?1:0);
+    }
+    fprintf(stderr, " \n LC:%.2X LS:%.2X LY:%.2X CC: %.8X]\n", lcd.c, lcd.stat, lcd.ly, cpu.cc);
+}
 
 static void handle_cmd(const char *str) {
     if(begeq("rc", str)) {
@@ -218,6 +227,9 @@ static void handle_cmd(const char *str) {
     }
     else if(begeq("dasm", str)) {
         dump_disasm();
+    }
+    else if(begeq("s", str)) {
+        print_state();
     }
     else {
         fprintf(stderr, "Unknown cmd\n");
