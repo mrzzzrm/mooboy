@@ -351,7 +351,7 @@ void debug_trace_opl_data(int d) {
     if(ctrace.opl_set)
         return;
 
-    sprintf(ctrace.opl, "%i", d);
+    sprintf(ctrace.opl, "%.4X", d);
     ctrace.opl_set = 1;
 }
 
@@ -359,7 +359,7 @@ void debug_trace_opr_data(int d) {
     if(ctrace.opr_set)
         return;
 
-    sprintf(ctrace.opr, "%i", d);
+    sprintf(ctrace.opr, "%.4X", d);
     ctrace.opr_set = 1;
 }
 

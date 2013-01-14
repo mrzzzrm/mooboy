@@ -1,5 +1,5 @@
 #include "ops.h"
-
+#include <assert.h>
 #include "cpu.h"
 #include "mem.h"
 #include "defines.h"
@@ -35,29 +35,30 @@ void op_opl_memcall(op_chunk *c) {
     xc.op = c->op;
     xc.opr = c->opr;
     c->funcs[xc.sp++](&xc);
-    //printf("[%X] (= %X) = %X\n", OPLW,  mem_readb(adr), static_byte);
     mem_writeb(adr, static_byte);
 }
 
 void op_opl_ib(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  _opl_ib()");
     static_byte = mem_readb(PC++);//if(dbg.verbose) fprintf(stderr, " B = %.2X\n", static_byte);
     c->opl.b = &static_byte;
+    debug_trace_opl_data(static_byte);
+
     c->funcs[c->sp++](c);
 }
 
 void op_opl_iw(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  _opl_iw()");
     static_word = mem_readw(PC); //if(dbg.verbose) fprintf(stderr, " W = %.4X\n", static_word);
+    debug_trace_opl_data(static_word);
     PC += 2;
     c->opl.w = &static_word;
+
     c->funcs[c->sp++](c);
 }
 
 void op_opl_addio(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  _opl_addio() ADR = %.4X\n", (u16)OPLB + 0xFF00);
     op_chunk xc = *c;
     static_word = (u16)OPLB + 0xFF00;
+    debug_trace_opl_data(static_word);
     xc.opl.w = &static_word;
     xc.op = c->op;
     xc.opr = c->opr;
@@ -65,33 +66,34 @@ void op_opl_addio(op_chunk *c) {
 }
 
 void op_opr_memread(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  _opr_memread() ADR = %.4X", OPRW);
+    debug_trace_opr(&OPRW, 2, 1);
+
     op_chunk xc = *c;
 
-    static_byte = mem_readb(OPRW); //if(dbg.verbose) fprintf(stderr, " B = %.4X\n", static_byte);
+    static_byte = mem_readb(OPRW);
     xc.opr.b = &static_byte;
     c->funcs[xc.sp++](&xc);
 }
 
 void op_opr_ib(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  _opr_ib()");
-    static_byte = mem_readb(PC++);//if(dbg.verbose) fprintf(stderr, " B = %.2X\n", static_byte);
+    static_byte = mem_readb(PC++);
+    debug_trace_opr_data(static_byte);
     c->opr.b = &static_byte;
     c->funcs[c->sp++](c);
 }
 
 void op_opr_iw(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  _opr_iw()");
-    static_word = mem_readw(PC);//if(dbg.verbose) fprintf(stderr, " W = %.4X\n", static_word);
+    static_word = mem_readw(PC);
+    debug_trace_opr_data(static_word);
     PC += 2;
     c->opr.w = &static_word;
     c->funcs[c->sp++](c);
 }
 
 void op_opr_addio(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  _opr_addio()");
     op_chunk xc = *c;
-    static_word = (u16)OPRB + 0xFF00;//if(dbg.verbose) fprintf(stderr, " ADR = %.4X\n", static_word);
+    static_word = (u16)OPRB + 0xFF00;
+    debug_trace_opr_data(static_word);
     xc.opr.w = &static_word;
     c->funcs[xc.sp++](&xc);
 }
@@ -117,14 +119,14 @@ void op_ldx(op_chunk *c) {
 }
 
 void op_ldhl_spi(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  LDHL SP, i\n");
+    assert(0);
     HL = SP + (s8)FETCHB;
     // TODO: Flags!
 }
 
 void op_ld_imsp(op_chunk *c)  {
     mem_writew(mem_readw(PC), SP);
-    //if(dbg.verbose) fprintf(stderr, "  LD (i), SP\n");
+    assert(0);
     PC += 2;
 }
 
@@ -140,6 +142,7 @@ void op_pop(op_chunk *c)  {
 
 void op_add_b(op_chunk *c) {
     debug_trace_op("ADD"); debug_trace_opl(&OPLB, 1, 0); debug_trace_opl(&OPRB, 1, 0);
+
     u16 r = (u16)OPLB + (u16)OPRB;
     F = FZZ((u8)r) |
         (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) |
@@ -148,7 +151,8 @@ void op_add_b(op_chunk *c) {
 }
 
 void op_add_w(op_chunk *c) {
-    debug_trace_op("ADD"); debug_trace_opl(&OPLW, 2, 0); debug_trace_opl(&OPRW, 2, 0);
+    debug_trace_op("ADD"); debug_trace_opl(&OPLW, 2, 0); debug_trace_opr(&OPRW, 2, 0);
+
     u32 r = (u32)OPLW + (u32)OPRW;
     F = FZZ((u16)r) |
         (FHBIT & ((OPLB ^ OPRB ^ r) >> 7)) |
@@ -158,6 +162,7 @@ void op_add_w(op_chunk *c) {
 
 void op_adc(op_chunk *c) {
     debug_trace_op("ADC"); debug_trace_opl(&OPLB, 1, 0); debug_trace_opl(&OPRB, 1, 0);
+
     u16 r = (u16)OPLB + (u16)OPRB + (u16)FC;
     F = FZZ((u8)r) |
         (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) |
@@ -167,6 +172,7 @@ void op_adc(op_chunk *c) {
 
 void op_sub(op_chunk *c) {
     debug_trace_op("SUB"); debug_trace_opl(&OPLB, 1, 0); debug_trace_opl(&OPRB, 1, 0);
+
     u16 r = (u16)OPLB - (u16)OPRB;
     F = FZZ((u8)r) |
         FNBIT |
@@ -177,6 +183,7 @@ void op_sub(op_chunk *c) {
 
 void op_sbc(op_chunk *c) {
     debug_trace_op("SBC"); debug_trace_opl(&OPLB, 1, 0); debug_trace_opl(&OPRB, 1, 0);
+
     u16 r = (u16)OPLB - (u16)OPRB - (u16)FC;
     F = FZZ((u8)r) |
         FNBIT |
@@ -187,6 +194,7 @@ void op_sbc(op_chunk *c) {
 
 void op_inc_b(op_chunk *c) {
     debug_trace_op("INC"); debug_trace_opl(&OPLB, 1, 0);
+
     u16 r = (u16)OPLB + 1;
     F = FZZ((u8)r) |
         (FHBIT & ((OPLB ^ r) << 1)) |
@@ -196,97 +204,131 @@ void op_inc_b(op_chunk *c) {
 
 void op_dec_b(op_chunk *c) {
     debug_trace_op("DEC"); debug_trace_opl(&OPLB, 1, 0);
+
     u8 r = OPLB - 1;
     F = FZZ((u8)r) | FNBIT | (FHBIT & ((OPLB ^ r) << 1)) | (FCBIT & (r >> 4));
     OPLB = r;
 }
 
 void op_inc_w(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  INC w\n");
+    debug_trace_op("INC"); debug_trace_opl(&OPLW, 2, 0);
+
     OPLW++;
 }
 
 void op_dec_w(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  DEC w\n");
+    debug_trace_op("DEC"); debug_trace_opl(&OPLW, 2, 0);
+
     OPLW--;
 }
 
 void op_add_spi(op_chunk *c) {
     //if(dbg.verbose) fprintf(stderr, "  ADD SP, (i)\n");
+    assert(0);
     u32 r = (u32)SP + (s8)FETCHB;
     // TODO: Set flags
     SP = r;
 }
 
 void op_and(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  AND b\n");
+    debug_trace_op("AND"); debug_trace_opl(&OPLB, 1, 0); debug_trace_opr(&OPRB, 1, 0);
+
     OPLB &= OPRB;
     F = FZZ(OPLB) | FHBIT;
 }
 
 void op_xor(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  XOR b\n");
+    debug_trace_op("XOR"); debug_trace_opl(&OPLB, 1, 0); debug_trace_opr(&OPRB, 1, 0);
+
     OPLB ^= OPRB;
     F = FZZ(OPLB);
 }
 
 void op_or(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  OR b\n");
+    debug_trace_op("OR"); debug_trace_opl(&OPLB, 1, 0); debug_trace_opr(&OPRB, 1, 0);
+
     OPLB |= OPRB;
     F = FZZ(OPLB);
 }
 
 void op_cp(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  CP b\n");
+    debug_trace_op("CP"); debug_trace_opl(&OPLB, 1, 0); debug_trace_opr(&OPRB, 1, 0);
+
     u16 r = (u16)OPLB - (u16)OPRB;
     F = FZZ((u8)r) | FNBIT | (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) | (FCBIT & (r >> 4));
 }
 
 void op_daa(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  DAA\n");
+    debug_trace_op("DAA");
+
+    if(FN) {
+        if (FC) {
+            A -= 0x60;
+        }
+        if (FH) {
+            A -= 0x06;
+        }
+    }
+    else {
+        if (FC || (A & 0xFF) > 0x99) {
+            A += 0x60;
+            F |= FCBIT;
+        }
+        if (FH || (A & 0x0F) > 0x09) {
+            A += 0x06;
+        }
+    }
+    F |= FN | FZZ(A);
 }
 
 void op_cpl(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  CPL\n");
+    debug_trace_op("CPL");
+
     A ^= 0xFF;
     F = FNBIT | FHBIT;
 }
 
 void op_rl(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  RL\n");
+    debug_trace_op("RL"); debug_trace_opl(&OPLB, 1, 0);
+
     u8 fc = FCB7(OPLB);
     OPLB = (OPLB<<1) | (FC>>4);
     F = FZZ(OPLB) | fc;
 }
 
 void op_rr(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  RR\n");
+    debug_trace_op("RR"); debug_trace_opl(&OPLB, 1, 0);
+
     u8 fc = FCB0(OPLB);
     OPLB = (OPLB>>1) | (FC<<3);
     F = FZZ(OPLB) | fc;
 }
 
 void op_rlc(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  RLC\n");
+    debug_trace_op("RLC"); debug_trace_opl(&OPLB, 1, 0);
+
     OPLB = (OPLB<<1) | (OPLB>>7);
     F = FZZ(OPLB) | FCB0(OPLB);
 }
 
 void op_rrc(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  RRC\n");
+    debug_trace_op("RRC"); debug_trace_opl(&OPLB, 1, 0);
+
     OPLB = (OPLB>>1) | (OPLB<<7);
     F = FZZ(OPLB) | FCB7(OPLB);
 }
 
 void op_sla(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  SLA\n");
+    debug_trace_op("SLA"); debug_trace_opl(&OPLB, 1, 0);
+
     u8 fc = FCB7(OPLB);
     OPLB <<= 1;
     F = FZZ(OPLB) | fc;
 }
 
 void op_sra(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  SRA\n");
+    debug_trace_op("SRA"); debug_trace_opl(&OPLB, 1, 0);
+
     u8 fc = FCB0(OPLB);
     u8 msb = OPLB | 0x80;
     OPLB >>= 1;
@@ -295,14 +337,15 @@ void op_sra(op_chunk *c) {
 }
 
 void op_srl(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  SRL\n");
+    debug_trace_op("SRL"); debug_trace_opl(&OPLB, 1, 0);
+
     u8 fc = FCB0(OPLB);
     OPLB >>= 1;
     F = FZZ(OPLB) | fc;
 }
 
 void op_cb(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  CB\n");
+
     u8 cbop = FETCHB;
     op_chunk *cbc = op_cb_chunk_map[cbop];
 
@@ -312,65 +355,70 @@ void op_cb(op_chunk *c) {
 }
 
 void op_swap(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  SWAP\n");
+    debug_trace_op("SWAP"); debug_trace_opl(&OPLB, 1, 0);
+
     OPLB = LN << 4 | HN >> 4;
     F = FZZ(OPLB);
 }
 
 void op_bit(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  BIT b\n");
+    debug_trace_op("BIT"); debug_trace_opl(&OPLD, 1, 0); debug_trace_opr(&OPRB, 1, 0);
+
     F = FZZ((1<<OPLD)&OPRB) | FHBIT | FC;
 }
 
 void op_set(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  SET b\n");
+    debug_trace_op("SET"); debug_trace_opl(&OPLD, 1, 0); debug_trace_opr(&OPRB, 1, 0);
+
     OPRB |= 1<<OPLD;
 }
 
 void op_res(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  RES\n");
+    debug_trace_op("RES"); debug_trace_opl(&OPLD, 1, 0); debug_trace_opr(&OPRB, 1, 0);
+
     OPRB &= ~(1<<OPLD);
 }
 
 void op_nop(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  NOP\n");
+    debug_trace_op("NOP");
 }
 
 void op_ccf(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  CCF\n");
+    debug_trace_op("CCF");
     F = FZ | (FC ? 0 : FCBIT);
 }
 
 void op_scf(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  SCF\n");
+    debug_trace_op("SCF");
     F = FZ | FCBIT;
 }
 
 void op_halt(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  HALT\n");
+    debug_trace_op("HALT");
     // TODO!
 }
 
 void op_stop(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  STOP\n");
+    debug_trace_op("STOP");
     // TODO!
 }
 
 void op_di(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  DI\n");
+    debug_trace_op("DI");
     if(cpu.ime != IME_OFF)
         cpu.ime = IME_DOWN;
 
 }
 
 void op_ei(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  EI\n");
+    debug_trace_op("EI");
     if(cpu.ime != IME_ON)
         cpu.ime = IME_UP;
 }
 
 void op_jp(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  JP\n");
+    debug_trace_op("JP"); if(c->op == 0xE9) debug_trace_opl(&HL, 2, 0); else debug_trace_opl(&OPLW, 2, 0);
+
     switch(c->op) {
         case 0xC3: PC = OPLW; break;
         case 0xE9: PC = HL; CPU_MCS(1); return;
@@ -383,9 +431,9 @@ void op_jp(op_chunk *c) {
 }
 
 void op_jr(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  JR %i\n", (int)((s8)OPLB));
-    u16 _pc = PC;
+    debug_trace_op("JR"); debug_trace_opl(&OPLB, 1, 0);
 
+    u16 _pc = PC;
     switch(c->op) {
         case 0x18: cpu.pc.w += (s8)OPLB; break;
         case 0x20: if(!FZ) PC += (s8)OPLB; break;
@@ -397,9 +445,9 @@ void op_jr(op_chunk *c) {
 }
 
 void op_call(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  CALL\n");
-    u16 _pc = PC;
+    debug_trace_op("CALL"); debug_trace_opl(&OPLW, 2, 0);
 
+    u16 _pc = PC;
     switch(c->op) {
         case 0xCD: push(PC); PC = OPLW; break;
         case 0xC4: if(!FZ) push(PC); PC = OPLW; break;
@@ -411,15 +459,16 @@ void op_call(op_chunk *c) {
 }
 
 void op_rst(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  RST\n");
+    debug_trace_op("RST");
+
     push(PC);
     PC = ((c->op >> 3) & 0x07) * 8;
 }
 
 void op_ret(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  RET\n");
-    u16 _pc = PC;
+    debug_trace_op("RET");
 
+    u16 _pc = PC;
     switch(c->op) {
         case 0xC9: PC = pop(); CPU_MCS(4); return;
         case 0xC0: if(!FZ) PC = pop(); break;
@@ -431,9 +480,10 @@ void op_ret(op_chunk *c) {
 }
 
 void op_reti(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  RETI\n");
+    debug_trace_op("RETI");
+
     PC = pop();
-    cpu.ime = 0xFF;
+    cpu.ime = 1;
 }
 
 
