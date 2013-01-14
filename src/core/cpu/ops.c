@@ -119,9 +119,15 @@ void op_ldx(op_chunk *c) {
 }
 
 void op_ldhl_spi(op_chunk *c) {
-    assert(0);
-    HL = SP + (s8)FETCHB;
-    // TODO: Flags!
+    debug_trace_op("LDHL SP,#");
+
+    s8 o = (s8)FETCHB;
+    u32 r = SP + o;
+
+    F = FHBIT & (r >> 11);
+    F |= FCBIT & (((SP & 0xF) + (o & 0xF)) << 1);
+
+    HL = (u16)r;
 }
 
 void op_ld_imsp(op_chunk *c)  {
@@ -223,10 +229,13 @@ void op_dec_w(op_chunk *c) {
 }
 
 void op_add_spi(op_chunk *c) {
-    //if(dbg.verbose) fprintf(stderr, "  ADD SP, (i)\n");
-    assert(0);
-    u32 r = (u32)SP + (s8)FETCHB;
-    // TODO: Set flags
+    debug_trace_op("ADD SP,#");
+
+    s8 o = (s8)FETCHB;
+    u32 r = (u32)SP + o;
+
+    F = FHBIT & (r >> 11);
+    F |= FCBIT & (((SP & 0xF) + (o & 0xF)) << 1);
     SP = r;
 }
 
