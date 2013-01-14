@@ -269,7 +269,7 @@ void debug_console() {
             monitor_range(dbg.monitor.from, dbg.monitor.to);
 
         if(dbg.console) {
-            fprintf(stderr, "%.4X %s: ", PC, disasm(cpu.pc.w));
+            //fprintf(stderr, "%.4X ", PC);
             assert(gets(str) != NULL);
             fflush(stdin);
 
@@ -279,6 +279,8 @@ void debug_console() {
             handle_cmd(str);
         }
     } while(dbg.console);
+
+
 }
 
 void debug_before() {
@@ -291,6 +293,10 @@ void debug_after() {
     trace_after();
     snap_mem(dbg.after.mem);
     dbg.after.cpu = cpu;
+
+    if(dbg.console) {
+        fprintf(stderr, "%s", dbg.trace.data[dbg.trace.size-1]);
+    }
 }
 
 void debug_trace_op(const char *name) {
