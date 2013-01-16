@@ -12,13 +12,11 @@ static u8 static_byte;
 static u16 static_word;
 
 static void push(u16 w) {
-    //if(dbg.verbose) fprintf(stderr, "  _push(%X) SP => %.4X\n", w, SP);
     SP -= 2;
     mem_writew(SP, w);
 }
 
 static u16 pop() {
-    //if(dbg.verbose) fprintf(stderr, "  _pop() SP => %.4X\n", SP);
     u16 r = mem_readw(SP);
     SP += 2;
     return r;
@@ -39,16 +37,16 @@ void op_opl_memcall(op_chunk *c) {
 }
 
 void op_opl_ib(op_chunk *c) {
-    static_byte = mem_readb(PC++);//if(dbg.verbose) fprintf(stderr, " B = %.2X\n", static_byte);
+    static_byte = mem_readb(PC++);
     c->opl.b = &static_byte;
-    debug_trace_opl_data(static_byte);
+    //debug_trace_opl_data(static_byte);
 
     c->funcs[c->sp++](c);
 }
 
 void op_opl_iw(op_chunk *c) {
-    static_word = mem_readw(PC); //if(dbg.verbose) fprintf(stderr, " W = %.4X\n", static_word);
-    debug_trace_opl_data(static_word);
+    static_word = mem_readw(PC);
+    //debug_trace_opl_data(static_word);
     PC += 2;
     c->opl.w = &static_word;
 
@@ -77,14 +75,14 @@ void op_opr_memread(op_chunk *c) {
 
 void op_opr_ib(op_chunk *c) {
     static_byte = mem_readb(PC++);
-    debug_trace_opr_data(static_byte);
+    //debug_trace_opr_data(static_byte);
     c->opr.b = &static_byte;
     c->funcs[c->sp++](c);
 }
 
 void op_opr_iw(op_chunk *c) {
     static_word = mem_readw(PC);
-    debug_trace_opr_data(static_word);
+    //debug_trace_opr_data(static_word);
     PC += 2;
     c->opr.w = &static_word;
     c->funcs[c->sp++](c);
@@ -440,7 +438,7 @@ void op_jp(op_chunk *c) {
 }
 
 void op_jr(op_chunk *c) {
-    debug_trace_op("JR"); debug_trace_opl(&OPLB, 1, 0);
+    debug_trace_op("JR"); debug_trace_opl_data(PC + (s8)OPLB);
 
     u16 _pc = PC;
     switch(c->op) {

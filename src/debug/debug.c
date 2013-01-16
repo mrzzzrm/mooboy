@@ -1,10 +1,12 @@
 #include "debug.h"
 #include "monitor.h"
+#include "utils.h"
 #include "disasm.h"
 #include "cpu.h"
 #include "mem/io/lcd.h"
 #include "cpu/defines.h"
 #include "run.h"
+#include "sym.h"
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -45,15 +47,6 @@ static struct {
 } ctrace;
 
 
-static int begeq(const char *sstr, const char *lstr) {
-    if(strlen(lstr) < strlen(sstr))
-        return false;
-    return memcmp(sstr, lstr, strlen(sstr)) == 0;
-}
-
-static int streq(const char *sstr, const char *lstr) {
-    return strcmp(sstr, lstr) == 0;
-}
 
 static void snap_mem(u8 *mem) {
     if(dbg.monitor.mode == MONITOR_MEMORY_CELL) {
@@ -74,7 +67,13 @@ static void trace_before() {
 
 static void trace_after() {
     char *str = dbg.trace.data[dbg.trace.size-1];
-    sprintf(str, "%.4X %s %s, %s", dbg.before.cpu.pc.w, ctrace.op, ctrace.opl, ctrace.opr);
+    if(ctrace.opr_set)
+        sprintf(str, "%s %s, %s", ctrace.op, ctrace.opl, ctrace.opr);
+    else if(ctrace.opl_set)
+        sprintf(str, "%s %s", ctrace.op, ctrace.opl);
+    else
+        sprintf(str, "%s", ctrace.op);
+
 }
 
 static void dump_trace() {
@@ -167,7 +166,17 @@ static void print_state() {
     fprintf(stderr, " \n LC:%.2X LS:%.2X LY:%.2X CC: %.8X]\n", lcd.c, lcd.stat, lcd.ly, cpu.cc);
 }
 
+
 static void handle_cmd(const char *str) {
+    char cmd[256];
+    const char *end;
+
+    end = get_word(str, cmd, sizeof(cmd));
+
+    if(streq("sym", cmd)) {
+        sym_cmd(end);
+    }
+
     if(begeq("rc", str)) {
         switch(str[2]) {
             case '=': dbg.run.mode = RUN_UNTIL_CURSOR_EQ; break;
@@ -250,9 +259,10 @@ void debug_init() {
     dbg.monitor.mode = 0x00;
     snap_mem(mem_before);
     snap_mem(mem_after);
+    sym_init();
 }
 
-void debug_console() {
+void debug_update() {
     char str[256];
 
     do {
@@ -269,7 +279,7 @@ void debug_console() {
             monitor_range(dbg.monitor.from, dbg.monitor.to);
 
         if(dbg.console) {
-            //fprintf(stderr, "%.4X ", PC);
+            fprintf(stderr, "%.4X: ", PC);
             assert(gets(str) != NULL);
             fflush(stdin);
 
@@ -280,22 +290,24 @@ void debug_console() {
         }
     } while(dbg.console);
 
-
+    sym_update();
 }
 
 void debug_before() {
     trace_before();
     snap_mem(dbg.before.mem);
     dbg.before.cpu = cpu;
+    sym_before();
 }
 
 void debug_after() {
     trace_after();
     snap_mem(dbg.after.mem);
     dbg.after.cpu = cpu;
+    sym_after();
 
     if(dbg.console) {
-        fprintf(stderr, "%s", dbg.trace.data[dbg.trace.size-1]);
+        fprintf(stderr, "  %s\n", dbg.trace.data[dbg.trace.size-1]);
     }
 }
 

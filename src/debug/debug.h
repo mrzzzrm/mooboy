@@ -42,7 +42,7 @@
 
     void debug_init();
 
-    void debug_console();
+    void debug_update();
 
     void debug_before();
     void debug_after();

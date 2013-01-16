@@ -7,38 +7,38 @@
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="cli_release">
-				<Option output="build\bin\cli_release\gbemu" prefix_auto="1" extension_auto="1" />
-				<Option object_output="build\bin\cli_release\" />
+				<Option output="build/bin/cli_release/gbemu" prefix_auto="1" extension_auto="1" />
+				<Option object_output="build/bin/cli_release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="--rom ./rom/tetris.gb" />
+				<Option parameters="--rom ./rom/simple.gb" />
 				<Compiler>
 					<Add option="-g" />
-					<Add directory="src\core" />
+					<Add directory="src/core" />
 					<Add directory="debug" />
 				</Compiler>
 			</Target>
 			<Target title="cli_debug">
-				<Option output="build\bin\cli_debug\gbemu" prefix_auto="1" extension_auto="1" />
-				<Option object_output="build\bin\cli_debug\" />
+				<Option output="build/bin/cli_debug/gbemu" prefix_auto="1" extension_auto="1" />
+				<Option object_output="build/bin/cli_debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Option parameters="--rom ./rom/tetris.gb" />
 				<Compiler>
 					<Add option="-g" />
-					<Add directory="src\core" />
+					<Add directory="src/core" />
 					<Add directory="debug" />
 				</Compiler>
 			</Target>
 			<Target title="sdl_release">
-				<Option output="build\bin\cli_release\gbemu" prefix_auto="1" extension_auto="1" />
-				<Option object_output="build\bin\cli_release\" />
+				<Option output="build/bin/cli_release/gbemu" prefix_auto="1" extension_auto="1" />
+				<Option object_output="build/bin/cli_release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Option parameters="--rom ./rom/tetris.gb" />
 				<Compiler>
 					<Add option="-O2" />
-					<Add directory="src\core" />
+					<Add directory="src/core" />
 					<Add directory="debug" />
 				</Compiler>
 				<Linker>
@@ -51,111 +51,119 @@
 			<Add option="-Wall" />
 			<Add directory="src" />
 		</Compiler>
-		<Unit filename="src\core\_assert.h" />
-		<Unit filename="src\core\cpu.c">
+		<Unit filename="src/core/_assert.h" />
+		<Unit filename="src/core/cpu.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\core\cpu.h" />
-		<Unit filename="src\core\cpu\chunks.c">
+		<Unit filename="src/core/cpu.h" />
+		<Unit filename="src/core/cpu/chunks.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\core\cpu\chunks.h" />
-		<Unit filename="src\core\cpu\defines.h" />
-		<Unit filename="src\core\cpu\ops.c">
+		<Unit filename="src/core/cpu/chunks.h" />
+		<Unit filename="src/core/cpu/defines.h" />
+		<Unit filename="src/core/cpu/ops.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\core\cpu\ops.h" />
-		<Unit filename="src\core\emu.c">
+		<Unit filename="src/core/cpu/ops.h" />
+		<Unit filename="src/core/emu.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\core\emu.h" />
-		<Unit filename="src\core\fb.h" />
-		<Unit filename="src\core\loader.c">
+		<Unit filename="src/core/emu.h" />
+		<Unit filename="src/core/fb.h" />
+		<Unit filename="src/core/loader.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\core\loader.h" />
-		<Unit filename="src\core\mem.c">
+		<Unit filename="src/core/loader.h" />
+		<Unit filename="src/core/mem.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\core\mem.h" />
-		<Unit filename="src\core\mem\io.c">
+		<Unit filename="src/core/mem.h" />
+		<Unit filename="src/core/mem/io.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\core\mem\io.h" />
-		<Unit filename="src\core\mem\io\divt.c">
+		<Unit filename="src/core/mem/io.h" />
+		<Unit filename="src/core/mem/io/divt.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\core\mem\io\divt.h" />
-		<Unit filename="src\core\mem\io\lcd.c">
+		<Unit filename="src/core/mem/io/divt.h" />
+		<Unit filename="src/core/mem/io/lcd.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\core\mem\io\lcd.h" />
-		<Unit filename="src\core\mem\io\lcd\maps.c">
+		<Unit filename="src/core/mem/io/lcd.h" />
+		<Unit filename="src/core/mem/io/lcd/maps.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\core\mem\io\lcd\maps.h" />
-		<Unit filename="src\core\mem\io\lcd\obj.c">
+		<Unit filename="src/core/mem/io/lcd/maps.h" />
+		<Unit filename="src/core/mem/io/lcd/obj.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\core\mem\io\lcd\obj.h" />
-		<Unit filename="src\core\mem\io\tima.c">
+		<Unit filename="src/core/mem/io/lcd/obj.h" />
+		<Unit filename="src/core/mem/io/tima.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\core\mem\io\tima.h" />
-		<Unit filename="src\core\mem\mbc.c">
+		<Unit filename="src/core/mem/io/tima.h" />
+		<Unit filename="src/core/mem/mbc.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\core\mem\mbc.h" />
-		<Unit filename="src\core\mem\mbc\rtc.c">
+		<Unit filename="src/core/mem/mbc.h" />
+		<Unit filename="src/core/mem/mbc/rtc.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\core\mem\mbc\rtc.h" />
-		<Unit filename="src\debug\debug.c">
+		<Unit filename="src/core/mem/mbc/rtc.h" />
+		<Unit filename="src/debug/debug.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\debug\debug.h" />
-		<Unit filename="src\debug\disasm.c">
+		<Unit filename="src/debug/debug.h" />
+		<Unit filename="src/debug/disasm.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\debug\disasm.h" />
-		<Unit filename="src\debug\monitor.c">
+		<Unit filename="src/debug/disasm.h" />
+		<Unit filename="src/debug/monitor.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\debug\monitor.h" />
-		<Unit filename="src\debug\run.c">
+		<Unit filename="src/debug/monitor.h" />
+		<Unit filename="src/debug/run.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\debug\run.h" />
-		<Unit filename="src\main.c">
+		<Unit filename="src/debug/run.h" />
+		<Unit filename="src/debug/sym.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\sys\cli\cli.c">
+		<Unit filename="src/debug/sym.h" />
+		<Unit filename="src/debug/utils.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\sys\sdl\sdl.c">
+		<Unit filename="src/debug/utils.h" />
+		<Unit filename="src/main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/sys/cli/cli.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/sys/sdl/sdl.c">
 			<Option compilerVar="CC" />
 			<Option target="cli_debug" />
 			<Option target="sdl_release" />
 		</Unit>
-		<Unit filename="src\sys\sdl\sdl.h">
+		<Unit filename="src/sys/sdl/sdl.h">
 			<Option target="cli_debug" />
 			<Option target="sdl_release" />
 		</Unit>
-		<Unit filename="src\sys\sdl\vid\vid.h" />
-		<Unit filename="src\sys\sys.h" />
-		<Unit filename="src\util\cmd.c">
+		<Unit filename="src/sys/sdl/vid/vid.h" />
+		<Unit filename="src/sys/sys.h" />
+		<Unit filename="src/util/cmd.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\util\cmd.h" />
-		<Unit filename="src\util\defines.h" />
-		<Unit filename="src\util\err.c">
+		<Unit filename="src/util/cmd.h" />
+		<Unit filename="src/util/defines.h" />
+		<Unit filename="src/util/err.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\util\err.h" />
-		<Unit filename="src\util\io.c">
+		<Unit filename="src/util/err.h" />
+		<Unit filename="src/util/io.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\util\io.h" />
+		<Unit filename="src/util/io.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />

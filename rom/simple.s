@@ -1,9 +1,9 @@
 ;--------------------------------------------------------
 ; File Created by SDCC : FreeWare ANSI-C Compiler
-; Version 2.3.1 Mon Jan 14 14:43:32 2013
+; Version 2.3.1 Mon Jan 14 17:25:21 2013
 
 ;--------------------------------------------------------
-	.module lcc47740
+	.module lcc62420
 	
 ;--------------------------------------------------------
 ; Public variables in this module
@@ -50,7 +50,7 @@
 ; code
 ;--------------------------------------------------------
 	.area _CODE
-;	simple.c 4
+;	simple.c 1
 ;	genLabel
 ;	genFunction
 ;	---------------------------------
@@ -59,21 +59,22 @@
 ___main_start:
 _main:
 	
-;	simple.c 5
-;	genIpush
-; _saveRegsForCall: sendSetSize: 0 deInUse: 0 bcInUse: 0 deSending: 0
-	ld	hl,#__str_0
-	push	hl
-;	genCall
-	call	_gprintf
-	lda	sp,2(sp)
+;	simple.c 2
+;	genAssign
+	ld	bc,#0x0000
+;	simple.c 3
 ;	genLabel
-00101$:
+00102$:
+;	simple.c 4
+;	genPlus
+;	genPlusIncr
+	inc	bc
+;	genGoto
+	jp	00102$
+;	genLabel
+00104$:
 ;	genEndFunction
 	
 	ret
 ___main_end:
-__str_0:
-	.ascii "Hallo"
-	.db 0x00
 	.area _CODE

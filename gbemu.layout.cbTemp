@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="cli_release" />
+	<File name="src/core/cpu.c" open="1" top="0" tabpos="9">
+		<Cursor position="404" topLine="0" />
+	</File>
+	<File name="src/core/cpu.h" open="0" top="0" tabpos="19">
+		<Cursor position="364" topLine="0" />
+	</File>
+	<File name="src/core/cpu/chunks.c" open="1" top="0" tabpos="6">
+		<Cursor position="3137" topLine="30" />
+	</File>
+	<File name="src/core/cpu/chunks.h" open="0" top="0" tabpos="0">
+		<Cursor position="430" topLine="0" />
+	</File>
+	<File name="src/core/cpu/defines.h" open="1" top="0" tabpos="2">
+		<Cursor position="536" topLine="0" />
+	</File>
+	<File name="src/core/cpu/ops.c" open="1" top="0" tabpos="1">
+		<Cursor position="986" topLine="27" />
+	</File>
+	<File name="src/core/cpu/ops.h" open="1" top="0" tabpos="3">
+		<Cursor position="1540" topLine="0" />
+	</File>
+	<File name="src/core/emu.c" open="1" top="0" tabpos="13">
+		<Cursor position="563" topLine="0" />
+	</File>
+	<File name="src/core/emu.h" open="0" top="0" tabpos="14">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="src/core/loader.c" open="0" top="0" tabpos="12">
+		<Cursor position="2240" topLine="0" />
+	</File>
+	<File name="src/core/mem.c" open="1" top="0" tabpos="8">
+		<Cursor position="689" topLine="8" />
+	</File>
+	<File name="src/core/mem.h" open="1" top="0" tabpos="7">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="src/core/mem/io.c" open="1" top="0" tabpos="11">
+		<Cursor position="1993" topLine="0" />
+	</File>
+	<File name="src/core/mem/io.h" open="1" top="0" tabpos="10">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="src/core/mem/io/divt.c" open="0" top="0" tabpos="16">
+		<Cursor position="181" topLine="0" />
+	</File>
+	<File name="src/core/mem/io/divt.h" open="0" top="0" tabpos="20">
+		<Cursor position="119" topLine="0" />
+	</File>
+	<File name="src/core/mem/io/lcd.c" open="1" top="0" tabpos="12">
+		<Cursor position="2250" topLine="61" />
+	</File>
+	<File name="src/core/mem/io/lcd/maps.c" open="0" top="0" tabpos="0">
+		<Cursor position="35" topLine="0" />
+	</File>
+	<File name="src/core/mem/io/tima.c" open="0" top="0" tabpos="17">
+		<Cursor position="600" topLine="0" />
+	</File>
+	<File name="src/core/mem/io/tima.h" open="0" top="0" tabpos="18">
+		<Cursor position="158" topLine="0" />
+	</File>
+	<File name="src/core/mem/mbc.c" open="0" top="0" tabpos="9">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="src/debug/debug.c" open="1" top="0" tabpos="5">
+		<Cursor position="3956" topLine="143" />
+	</File>
+	<File name="src/debug/debug.h" open="1" top="0" tabpos="4">
+		<Cursor position="783" topLine="12" />
+	</File>
+	<File name="src/debug/disasm.c" open="0" top="0" tabpos="1">
+		<Cursor position="312" topLine="15" />
+	</File>
+	<File name="src/debug/disasm.h" open="0" top="0" tabpos="0">
+		<Cursor position="104" topLine="0" />
+	</File>
+	<File name="src/debug/monitor.c" open="0" top="0" tabpos="6">
+		<Cursor position="259" topLine="0" />
+	</File>
+	<File name="src/debug/monitor.h" open="0" top="0" tabpos="7">
+		<Cursor position="112" topLine="0" />
+	</File>
+	<File name="src/debug/run.c" open="0" top="0" tabpos="3">
+		<Cursor position="76" topLine="0" />
+	</File>
+	<File name="src/debug/run.h" open="0" top="0" tabpos="4">
+		<Cursor position="41" topLine="0" />
+	</File>
+	<File name="src/debug/sym.c" open="1" top="1" tabpos="14">
+		<Cursor position="1013" topLine="33" />
+	</File>
+	<File name="src/debug/sym.h" open="1" top="0" tabpos="15">
+		<Cursor position="41" topLine="0" />
+	</File>
+	<File name="src/debug/utils.c" open="1" top="0" tabpos="16">
+		<Cursor position="550" topLine="0" />
+	</File>
+	<File name="src/debug/utils.h" open="1" top="0" tabpos="17">
+		<Cursor position="96" topLine="0" />
+	</File>
+	<File name="src/sys/sdl/sdl.c" open="0" top="0" tabpos="0">
+		<Cursor position="294" topLine="0" />
+	</File>
+</CodeBlocks_layout_file>

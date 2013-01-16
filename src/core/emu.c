@@ -39,7 +39,7 @@ bool emu_run() {
     debug_init();
 
     for(;;) {
-        debug_console();
+        debug_update();
 
         debug_before();
         emu_step();
