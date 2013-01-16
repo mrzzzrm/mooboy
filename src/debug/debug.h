@@ -7,6 +7,7 @@
     typedef struct {
         int verbose;
         int console;
+        int log_indent;
 
         struct {
             int mode;
@@ -57,6 +58,8 @@
 
     /* OPS */
     void debug_op(u8 b);
+    void debug_call(u16 adr);
+    void debug_ret();
 
     /* Tracing */
     void debug_trace_op(const char *name);

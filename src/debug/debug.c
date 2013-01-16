@@ -255,6 +255,7 @@ static void to_trace() {
 void debug_init() {
     dbg.verbose = 1;
     dbg.console = 1;
+    dbg.log_indent = 0;
     dbg.run.mode = RUN_TRACE;
     dbg.monitor.mode = 0x00;
     snap_mem(mem_before);
@@ -309,6 +310,14 @@ void debug_after() {
     if(dbg.console) {
         fprintf(stderr, "  %s\n", dbg.trace.data[dbg.trace.size-1]);
     }
+}
+
+void debug_call(u16 adr) {
+    sym_call(adr);
+}
+
+void debug_ret() {
+    sym_ret();
 }
 
 void debug_trace_op(const char *name) {
@@ -374,5 +383,7 @@ void debug_trace_opr_data(int d) {
     sprintf(ctrace.opr, "%.4X", d);
     ctrace.opr_set = 1;
 }
+
+
 
 

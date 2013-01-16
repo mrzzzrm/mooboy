@@ -463,6 +463,8 @@ void op_call(op_chunk *c) {
         case 0xDC: if(FC)  push(PC); PC = OPLW; break;
     }
     CPU_MCS(_pc == PC ? 3 : 6);
+
+    if(_pc != PC) debug_call(PC);
 }
 
 void op_rst(op_chunk *c) {
@@ -477,13 +479,15 @@ void op_ret(op_chunk *c) {
 
     u16 _pc = PC;
     switch(c->op) {
-        case 0xC9: PC = pop(); CPU_MCS(4); return;
+        case 0xC9: PC = pop(); CPU_MCS(4); debug_ret(); return;
         case 0xC0: if(!FZ) PC = pop(); break;
         case 0xC8: if(FZ)  PC = pop(); break;
         case 0xD0: if(!FC) PC = pop(); break;
         case 0xD8: if(FC)  PC = pop(); break;
     }
     CPU_MCS(_pc == PC ? 2 : 5);
+
+    if(_pc != PC) debug_ret();
 }
 
 void op_reti(op_chunk *c) {
