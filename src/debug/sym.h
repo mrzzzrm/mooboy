@@ -8,7 +8,7 @@
     void sym_update();
     void sym_before();
     void sym_after();
-    void sym_call(u16 adr);
+    void sym_call(u16 adr, u16 from);
     void sym_ret();
 
 #endif

@@ -20,85 +20,78 @@ static struct {
     unsigned int size;
 } funcs;
 
-typedef struct callnode_s {
+typedef struct node_s {
     field_t *func;
-    struct callnode_s *parent;
+    struct node_s *parent;
 
     struct {
-        struct callnode_s **data;
+        struct node_s **data;
         unsigned int size;
     } children;
-} callnode_t;
+} node_t;
 
 
-static callnode_t rootcallnode;
+static node_t rootnode;
 static field_t anonfield;
-static callnode_t *callnode;
+static node_t *currentnode;
 static int recent_call;
 
+static node_t *new_node(node_t *parent, field_t *func) {
+    node_t *node = malloc(sizeof(*node));
+    node->parent = parent;
+    node->func = func;
+    node->children.data = NULL;
+    node->children.size = 0;
 
-static void func_called(field_t *func) {
+    return node;
+}
+
+static void append_childnode(node_t *parent, node_t *child) {
+    parent->children.data = realloc(parent->children.data, (++parent->children.size) * sizeof(*parent->children.data));
+    parent->children.data[parent->children.size-1] = child;
+}
+
+static void func_called(field_t *func, u16 from) {
     unsigned int s;
-    callnode_t *funcnode;
+    node_t *funcnode;
 
     for(s = 0; s < dbg.log_indent*2; s++) {
         fprintf(stderr, " ");
     }
-    fprintf(stderr, ">> %s(0x%.4X)\n", func->name, func->adr);
+    fprintf(stderr, "%.4X >> %s@0x%.4X\n", from, func->name, func->adr);
 
-    funcnode = malloc(sizeof(*funcnode));
-    funcnode->parent = callnode;
-    funcnode->func = func;
-    funcnode->children.data = NULL;
-    funcnode->children.size = 0;
-
-    callnode->children.data = realloc(callnode->children.data, (++callnode->children.size) * sizeof(*callnode->children.data));
-    callnode->children.data[callnode->children.size-1] = funcnode;
+    funcnode = new_node(currentnode, func);
+    append_childnode(currentnode, funcnode);
+    currentnode = funcnode;
 
     dbg.log_indent++;
-
-    callnode = funcnode;
 }
 
 static void append_func(field_t *func) {
-    unsigned int s;
-    callnode_t *funcnode;
-    callnode_t *parentnode;
+    node_t *funcnode;
+    node_t *parentnode;
 
-    parentnode = callnode->parent != NULL ? callnode->parent : callnode;
+    parentnode = currentnode->parent != NULL ? currentnode->parent : currentnode;
 
-    for(s = 0; s < dbg.log_indent*2; s++) {
-        fprintf(stderr, " ");
-    }
-    fprintf(stderr, ">> %s(0x%.4X)\n", func->name, func->adr);
+    debug_indent();
+    fprintf(stderr, "%.4X >> %s@0x%.4X\n", PC, func->name, PC);
 
-    funcnode = malloc(sizeof(*funcnode));
-    funcnode->parent = parentnode;
-    funcnode->func = func;
-    funcnode->children.data = NULL;
-    funcnode->children.size = 0;
-
-    parentnode->children.data = realloc(parentnode->children.data, (++parentnode->children.size) * sizeof(*parentnode->children.data));
-    parentnode->children.data[parentnode->children.size-1] = funcnode;
-
-    callnode = funcnode;
+    funcnode = new_node(parentnode, func);
+    append_childnode(parentnode, funcnode);
+    currentnode = funcnode;
 }
 
-static void anon_func_called(u16 adr) {
-    callnode_t *funcnode;
+static void anon_func_called(u16 adr, u16 from) {
+    node_t *funcnode;
 
-    funcnode = malloc(sizeof(*funcnode));
-    funcnode->parent = callnode;
-    funcnode->func = &anonfield;
-    funcnode->children.data = NULL;
-    funcnode->children.size = 0;
+    debug_indent();
+    fprintf(stderr, ">> CALL 0x%.4X from %.4X\n", adr, from);
 
-    callnode->children.data = realloc(callnode->children.data, (++callnode->children.size) * sizeof(*callnode->children.data));
-    callnode->children.data[callnode->children.size-1] = funcnode;
+    funcnode = new_node(currentnode, &anonfield);
+    append_childnode(currentnode, funcnode);
+    currentnode = funcnode;
 
     dbg.log_indent++;
-
-    callnode = funcnode;
 }
 
 static field_t *read_field(const char *str) {
@@ -113,11 +106,11 @@ static field_t *read_field(const char *str) {
     return field;
 }
 
-static void set_node(callnode_t *node, field_t *field, callnode_t *node) {
-    node->func = NULL;
-    node->parent = NULL;
-    node->children.data = NULL;
-    node->children.size = 0;
+static void init_node(node_t *currentnode) {
+    currentnode->func = NULL;
+    currentnode->parent = NULL;
+    currentnode->children.data = NULL;
+    currentnode->children.size = 0;
 }
 
 static void init_field(field_t *field) {
@@ -166,9 +159,9 @@ static void load_sym_file(const char *path) {
 void sym_init() {
     funcs.data = NULL;
     funcs.size = 0;
-    callnode = &rootcallnode;
-    set_node(&rootcallnode, NULL, NULL, NULL);
-    set_field(&anonfield, 0, 0xFFF, "");
+    currentnode = &rootnode;
+    init_node(&rootnode);
+    init_field(&anonfield);
     recent_call = 0;
 }
 
@@ -211,22 +204,26 @@ void sym_after() {
 
 }
 
-void sym_call(u16 adr) {
+void sym_call(u16 adr, u16 from) {
     recent_call = 1;
     unsigned int f;
     for(f = 0; f < funcs.size; f++) {
         field_t *func = funcs.data[f];
 
-        if(func->bank == 0 && func->adr == PC) {
-            func_called(func);
+        if(func->bank == 0 && func->adr == adr) {
+            func_called(func, from);
             break;
         }
+    }
+    if(f == funcs.size) {
+        anon_func_called(adr, from);
     }
 }
 
 void sym_ret() {
-    if(callnode->parent != NULL) {
-        callnode = callnode->parent;
+    if(currentnode->parent != NULL) {
+        currentnode = currentnode->parent;
         dbg.log_indent--;
     }
 }
+

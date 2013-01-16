@@ -312,8 +312,15 @@ void debug_after() {
     }
 }
 
-void debug_call(u16 adr) {
-    sym_call(adr);
+void debug_indent() {
+    unsigned int s;
+    for(s = 0; s < dbg.log_indent*2; s++) {
+        fprintf(stderr, " ");
+    }
+}
+
+void debug_call(u16 adr, u16 from) {
+    sym_call(adr, from);
 }
 
 void debug_ret() {

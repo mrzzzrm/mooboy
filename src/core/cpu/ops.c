@@ -464,7 +464,7 @@ void op_call(op_chunk *c) {
     }
     CPU_MCS(_pc == PC ? 3 : 6);
 
-    if(_pc != PC) debug_call(PC);
+    if(_pc != PC) debug_call(PC, _pc-3);
 }
 
 void op_rst(op_chunk *c) {
