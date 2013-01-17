@@ -51,20 +51,26 @@ static void append_childnode(node_t *parent, node_t *child) {
     parent->children.data[parent->children.size-1] = child;
 }
 
-static void func_called(field_t *func, u16 from) {
-    unsigned int s;
+static void func_entered(field_t *func, u16 from, int call) {
     node_t *funcnode;
 
-    for(s = 0; s < dbg.log_indent*2; s++) {
-        fprintf(stderr, " ");
-    }
-    fprintf(stderr, "%.4X >> %s@0x%.4X\n", from, func->name, func->adr);
+    debug_print_line_prefix();
+    fprintf(stderr, "%s %s@0x%.4X %s\n", call ? "CALL" : "JUMP", func->name, func->adr, call ? "{" : "");
 
     funcnode = new_node(currentnode, func);
     append_childnode(currentnode, funcnode);
     currentnode = funcnode;
 
-    dbg.log_indent++;
+    if(call)
+        dbg.log_indent++;
+}
+
+static void func_call(field_t *func, u16 from) {
+    func_entered(func, from, 1);
+}
+
+static void func_jp(field_t *func, u16 from) {
+    func_entered(func, from, 0);
 }
 
 static void append_func(field_t *func) {
@@ -73,25 +79,37 @@ static void append_func(field_t *func) {
 
     parentnode = currentnode->parent != NULL ? currentnode->parent : currentnode;
 
-    debug_indent();
-    fprintf(stderr, "%.4X >> %s@0x%.4X\n", PC, func->name, PC);
+    debug_print_line_prefix();
+    fprintf(stderr, "ENTER %s@0x%.4X\n", PC, func->name, PC);
 
     funcnode = new_node(parentnode, func);
     append_childnode(parentnode, funcnode);
     currentnode = funcnode;
 }
 
-static void anon_func_called(u16 adr, u16 from) {
+static void anon_func_call(u16 adr, u16 from) {
     node_t *funcnode;
 
-    debug_indent();
-    fprintf(stderr, ">> CALL 0x%.4X from %.4X\n", adr, from);
+    debug_print_line_prefix();
+    fprintf(stderr, "CALL 0x%.4X {\n", adr, from);
 
     funcnode = new_node(currentnode, &anonfield);
     append_childnode(currentnode, funcnode);
     currentnode = funcnode;
 
     dbg.log_indent++;
+}
+
+static field_t *get_func(u16 adr) {
+    unsigned int f;
+    for(f = 0; f < funcs.size; f++) {
+        field_t *func = funcs.data[f];
+
+        if(func->bank == 0 && func->adr == adr) {
+            return func;
+        }
+    }
+    return NULL;
 }
 
 static field_t *read_field(const char *str) {
@@ -182,14 +200,9 @@ void sym_cmd(const char *str)  {
 
 void sym_update() {
     if(!recent_call) {
-        unsigned int f;
-        for(f = 0; f < funcs.size; f++) {
-            field_t *func = funcs.data[f];
-
-            if(func->bank == 0 && func->adr == PC) {
-                append_func(func);
-                return;
-            }
+        field_t *func = get_func(PC);
+        if(func != NULL) {
+            append_func(func);
         }
     }
 
@@ -204,26 +217,31 @@ void sym_after() {
 
 }
 
-void sym_call(u16 adr, u16 from) {
+void sym_jp() {
+    field_t *func = get_func(PC);
+    if(func != NULL) {
+        func_jp(func, dbg.before.cpu.pc.w);
+    }
     recent_call = 1;
-    unsigned int f;
-    for(f = 0; f < funcs.size; f++) {
-        field_t *func = funcs.data[f];
+}
 
-        if(func->bank == 0 && func->adr == adr) {
-            func_called(func, from);
-            break;
-        }
+void sym_call(u16 adr, u16 from) {
+    field_t *func = get_func(PC);
+    if(func != NULL) {
+        func_call(func, from);
     }
-    if(f == funcs.size) {
-        anon_func_called(adr, from);
+    else {
+        anon_func_call(adr, from);
     }
+    recent_call = 1;
 }
 
 void sym_ret() {
     if(currentnode->parent != NULL) {
         currentnode = currentnode->parent;
         dbg.log_indent--;
+        debug_print_line_prefix();
+        fprintf(stderr, "} RET\n");
     }
 }
 

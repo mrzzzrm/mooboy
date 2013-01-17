@@ -104,6 +104,7 @@ void mem_writeb(u16 adr, u8 val) {
                 ram.hram[adr - 0xFF80] = val;
             }
             else {
+                debug_int_ie(val);
                 cpu.ie = val;
             }
         break;

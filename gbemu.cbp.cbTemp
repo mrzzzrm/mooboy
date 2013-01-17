@@ -126,6 +126,14 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/debug/run.h" />
+		<Unit filename="src/debug/sym.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/debug/sym.h" />
+		<Unit filename="src/debug/utils.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/debug/utils.h" />
 		<Unit filename="src/main.c">
 			<Option compilerVar="CC" />
 		</Unit>

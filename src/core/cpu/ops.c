@@ -411,14 +411,14 @@ void op_stop(op_chunk *c) {
 }
 
 void op_di(op_chunk *c) {
-    debug_trace_op("DI");
+    debug_trace_op("DI"); debug_int_ime(0);
     if(cpu.ime != IME_OFF)
         cpu.ime = IME_DOWN;
 
 }
 
 void op_ei(op_chunk *c) {
-    debug_trace_op("EI");
+    debug_trace_op("EI"); debug_int_ime(1);
     if(cpu.ime != IME_ON)
         cpu.ime = IME_UP;
 }
@@ -428,13 +428,15 @@ void op_jp(op_chunk *c) {
 
     switch(c->op) {
         case 0xC3: PC = OPLW; break;
-        case 0xE9: PC = HL; CPU_MCS(1); return;
+        case 0xE9: PC = HL; CPU_MCS(1); debug_jp(); return;
         case 0xC2: if(!FZ) PC = OPLW; break;
         case 0xCA: if(FZ)  PC = OPLW; break;
         case 0xD2: if(!FC) PC = OPLW; break;
         case 0xDA: if(FC)  PC = OPLW; break;
     }
     CPU_MCS(PC == OPLW ? 4 : 3);
+
+    if(PC == OPLW) debug_jp();
 }
 
 void op_jr(op_chunk *c) {
@@ -464,7 +466,7 @@ void op_call(op_chunk *c) {
     }
     CPU_MCS(_pc == PC ? 3 : 6);
 
-    if(_pc != PC) debug_call(PC, _pc-3);
+    if(_pc != PC) debug_call(PC);
 }
 
 void op_rst(op_chunk *c) {
@@ -494,7 +496,8 @@ void op_reti(op_chunk *c) {
     debug_trace_op("RETI");
 
     PC = pop();
-    cpu.ime = 1;
+    debug_int_ime(1);
+    cpu.ime = IME_UP;
 }
 
 

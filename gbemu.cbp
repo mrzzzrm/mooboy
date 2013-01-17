@@ -118,6 +118,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/debug/disasm.h" />
+		<Unit filename="src/debug/int.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/debug/int.h" />
 		<Unit filename="src/debug/monitor.c">
 			<Option compilerVar="CC" />
 		</Unit>

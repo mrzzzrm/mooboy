@@ -48,7 +48,7 @@
     void debug_before();
     void debug_after();
 
-    void debug_indent();
+    void debug_print_line_prefix();
 
     /* Symbols */
     void debug_sym_dma(u8 hn);
@@ -60,8 +60,15 @@
 
     /* OPS */
     void debug_op(u8 b);
-    void debug_call(u16 adr, u16 from);
+    void debug_jp();
+    void debug_call(u16 adr);
     void debug_ret();
+
+    void debug_int_exec(u8 flag);
+    void debug_int_ie(u8 flag);
+    void debug_int_ime(u8 flag);
+    void debug_int_req(u8 flag);
+
 
     /* Tracing */
     void debug_trace_op(const char *name);

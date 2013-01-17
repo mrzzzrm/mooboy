@@ -33,6 +33,8 @@ void cpu_reset() {
 static inline void exec_int(u8 i) {
     static u16 isr[] = {0x40, 0x48, 0x50, 0x58, 0x60};
 
+    debug_int_exec(1 << i);
+
     mem_writew(SP, PC);
     SP -= 2;
     PC = isr[i];

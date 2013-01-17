@@ -7,6 +7,7 @@
 #include "cpu/defines.h"
 #include "run.h"
 #include "sym.h"
+#include "int.h"
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -176,6 +177,9 @@ static void handle_cmd(const char *str) {
     if(streq("sym", cmd)) {
         sym_cmd(end);
     }
+    else if(streq("int", cmd)) {
+        int_cmd(end);
+    }
 
     if(begeq("rc", str)) {
         switch(str[2]) {
@@ -292,6 +296,7 @@ void debug_update() {
     } while(dbg.console);
 
     sym_update();
+    int_update();
 }
 
 void debug_before() {
@@ -299,6 +304,7 @@ void debug_before() {
     snap_mem(dbg.before.mem);
     dbg.before.cpu = cpu;
     sym_before();
+    int_before();
 }
 
 void debug_after() {
@@ -306,25 +312,47 @@ void debug_after() {
     snap_mem(dbg.after.mem);
     dbg.after.cpu = cpu;
     sym_after();
+    int_after();
 
     if(dbg.console) {
         fprintf(stderr, "  %s\n", dbg.trace.data[dbg.trace.size-1]);
     }
 }
 
-void debug_indent() {
+void debug_print_line_prefix() {
     unsigned int s;
+    fprintf(stderr, "%.4X: ", dbg.before.cpu.pc.w);
     for(s = 0; s < dbg.log_indent*2; s++) {
         fprintf(stderr, " ");
     }
 }
 
-void debug_call(u16 adr, u16 from) {
-    sym_call(adr, from);
+void debug_jp() {
+    sym_jp();
+}
+
+void debug_call(u16 adr) {
+    sym_call(adr, dbg.before.cpu.pc.w);
 }
 
 void debug_ret() {
     sym_ret();
+}
+
+void debug_int_exec(u8 flag) {
+    int_exec(flag);
+}
+
+void debug_int_ie(u8 flag) {
+    int_ie(flag);
+}
+
+void debug_int_ime(u8 flag) {
+    int_ime(flag);
+}
+
+void debug_int_req(u8 flag) {
+    int_req(flag);
 }
 
 void debug_trace_op(const char *name) {
