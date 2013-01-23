@@ -2,6 +2,7 @@
 #include "utils.h"
 #include "cpu.h"
 #include "debug.h"
+#include "sys/sys.h"
 #include "cpu/defines.h"
 #include "util/defines.h"
 #include <stdio.h>
@@ -148,6 +149,7 @@ static void load_sym_file(const char *path) {
     funcs.size = 0;
 
     in_func_area = 0;
+    fprintf(stderr, "Loading symbols from: %s\n", path);
     f = fopen(path, "r"); assert(f != NULL);
 
     while (fgets(line, sizeof(line), f) != NULL) {
@@ -185,13 +187,25 @@ void sym_init() {
 
 void sym_cmd(const char *str)  {
     char cmd[256];
-    const char *end;
+    char *end;
 
     end = get_word(str, cmd, sizeof(cmd));
 
     if(streq(cmd, "load")) {
         end = get_word(end, cmd, sizeof(cmd));
-        load_sym_file(cmd);
+        if(strlen(cmd) != 0) {
+            load_sym_file(cmd);
+        }
+        else {
+            char *buf = malloc(strlen(sys_get_rompath()) + 3);
+            char *dot;
+            strcpy(buf, sys_get_rompath());
+            dot = strrchr(buf, '.');
+            assert(dot != NULL);
+            strcpy(dot+1, "sym\0");
+            load_sym_file(buf);
+            free(buf);
+        }
     }
     else {
         fprintf(stderr, "sym: unknown cmd\n");

@@ -11,7 +11,7 @@
 				<Option object_output="build/bin/cli_release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="--rom ./rom/simple.gb" />
+				<Option parameters="--rom ./rom/hello.gb" />
 				<Compiler>
 					<Add option="-g" />
 					<Add directory="src/core" />
@@ -146,11 +146,9 @@
 		</Unit>
 		<Unit filename="src/sys/sdl/sdl.c">
 			<Option compilerVar="CC" />
-			<Option target="cli_debug" />
 			<Option target="sdl_release" />
 		</Unit>
 		<Unit filename="src/sys/sdl/sdl.h">
-			<Option target="cli_debug" />
 			<Option target="sdl_release" />
 		</Unit>
 		<Unit filename="src/sys/sdl/vid/vid.h" />
