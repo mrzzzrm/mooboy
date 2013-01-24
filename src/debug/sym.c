@@ -81,7 +81,7 @@ static void append_func(field_t *func) {
     parentnode = currentnode->parent != NULL ? currentnode->parent : currentnode;
 
     debug_print_line_prefix();
-    fprintf(stderr, "ENTER %s@0x%.4X\n", PC, func->name, PC);
+    fprintf(stderr, "ENTER %s@0x%.4X\n", func->name, PC);
 
     funcnode = new_node(parentnode, func);
     append_childnode(parentnode, funcnode);
@@ -92,7 +92,7 @@ static void anon_func_call(u16 adr, u16 from) {
     node_t *funcnode;
 
     debug_print_line_prefix();
-    fprintf(stderr, "CALL 0x%.4X {\n", adr, from);
+    fprintf(stderr, "CALL 0x%.4X {\n", adr);
 
     funcnode = new_node(currentnode, &anonfield);
     append_childnode(currentnode, funcnode);
@@ -187,7 +187,7 @@ void sym_init() {
 
 void sym_cmd(const char *str)  {
     char cmd[256];
-    char *end;
+    const char *end;
 
     end = get_word(str, cmd, sizeof(cmd));
 
