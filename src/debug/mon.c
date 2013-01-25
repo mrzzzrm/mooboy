@@ -1,0 +1,95 @@
+#include "mon.h"
+#include <stdio.h>
+#include <assert.h>
+#include "utils.h"
+#include "util/defines.h"
+
+u8 before[0x10000];
+u8 after[0x10000];
+
+typedef struct {
+    int on;
+    u16 start, end;
+} range;
+
+static struct {
+    range *data;
+    unsigned int size;
+} ranges;
+
+#define VRAM ranges.data[0]
+
+
+static range *add_range(u16 start, u16 end) {
+    ranges.data = realloc(ranges.data, sizeof(*ranges.data) * ++ranges.size);
+    range *r = &ranges.data[ranges.size-1];
+
+    r->on = 1;
+    r->start = start;
+    r->end = end;
+
+    return &ranges.data[ranges.size-1];
+}
+
+static void update_range(range *r, u8 *buf) {
+    unsigned int a;
+    for(a = r->start; a <= r->end; a++) {
+        buf[a] = mem_readb(a);
+    }
+}
+
+void mon_init() {
+    ranges.data = NULL;
+    ranges.size = 0;
+
+    range *vram = add_range(0x8000, 0x97FF);
+        vram->on = 0;
+}
+
+void mon_cmd(const char *str) {
+    char cmd[256];
+    const char *end;
+
+    end = get_word(str, cmd, sizeof(cmd));
+
+    if(streq("vram", cmd)) {
+        VRAM.on = get_bool(end, "on", "off", &end);
+        assert(VRAM.on >= 0);
+        fprintf(stderr, "VRAM monitoring %s\n", VRAM.on ? "on" : "off");
+    }
+}
+
+void mon_update() {
+    unsigned int i;
+    for(i = 0; i < ranges.size; i++) {
+        range *r = &ranges.data[i];
+        if(r->on) {
+            unsigned int a;
+            for(a = r->start; a <= r->end; a++) {
+                if(before[a] != after[a]) {
+                    debug_print_line_prefix();
+                    fprintf(stderr, "%.4X %.2X=>%.2X\n", a, before[a], after[a]);
+                }
+            }
+        }
+    }
+}
+
+void mon_before() {
+    unsigned int i;
+    for(i = 0; i < ranges.size; i++) {
+        range *r = &ranges.data[i];
+        update_range(r, before);
+    }
+}
+
+void mon_after() {
+    unsigned int i;
+    for(i = 0; i < ranges.size; i++) {
+        range *r = &ranges.data[i];
+        update_range(r, after);
+    }
+}
+
+
+

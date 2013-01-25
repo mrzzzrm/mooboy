@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="cli_release" />
+	<File name="src\core\cpu.c" open="1" top="0" tabpos="3">
+		<Cursor position="1030" topLine="30" />
+	</File>
+	<File name="src\core\cpu.h" open="1" top="0" tabpos="8">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="src\core\cpu\chunks.c" open="1" top="0" tabpos="5">
+		<Cursor position="5505" topLine="120" />
+	</File>
+	<File name="src\core\cpu\ops.c" open="1" top="0" tabpos="6">
+		<Cursor position="1653" topLine="13" />
+	</File>
+	<File name="src\core\emu.c" open="1" top="0" tabpos="2">
+		<Cursor position="175" topLine="0" />
+	</File>
+	<File name="src\core\emu.h" open="1" top="0" tabpos="7">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="src\core\fb.h" open="0" top="0" tabpos="0">
+		<Cursor position="189" topLine="0" />
+	</File>
+	<File name="src\core\mem.c" open="1" top="0" tabpos="4">
+		<Cursor position="3913" topLine="66" />
+	</File>
+	<File name="src\core\mem\io.c" open="1" top="0" tabpos="9">
+		<Cursor position="2119" topLine="81" />
+	</File>
+	<File name="src\debug\debug.c" open="1" top="1" tabpos="10">
+		<Cursor position="7909" topLine="310" />
+	</File>
+	<File name="src\main.c" open="0" top="0" tabpos="0">
+		<Cursor position="298" topLine="6" />
+	</File>
+	<File name="src\sys\cli\cli.c" open="0" top="0" tabpos="0">
+		<Cursor position="43" topLine="0" />
+	</File>
+	<File name="src\sys\sdl\sdl.c" open="1" top="0" tabpos="1">
+		<Cursor position="308" topLine="0" />
+	</File>
+	<File name="src\sys\sys.h" open="0" top="0" tabpos="0">
+		<Cursor position="88" topLine="0" />
+	</File>
+	<File name="src\util\err.c" open="0" top="0" tabpos="0">
+		<Cursor position="480" topLine="0" />
+	</File>
+</CodeBlocks_layout_file>

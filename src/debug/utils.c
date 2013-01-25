@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
@@ -26,6 +27,21 @@ const char *get_word(const char *str, char *buf, unsigned int bufsize) {
     return &str[i];
 }
 
+int get_bool(const char *str, const char *t, const char *f, const char **end) {
+    char cmd[256];
+
+    *end = get_word(str, cmd, sizeof(cmd));
+
+    if(streq(t, cmd)) {
+        return 1;
+    }
+    else if(streq(f, cmd)) {
+        return 0;
+    }
+    else {
+        return -1;
+    }
+}
 
 int begeq(const char *sstr, const char *lstr) {
     if(strlen(lstr) < strlen(sstr))

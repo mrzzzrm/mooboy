@@ -31,6 +31,11 @@ typedef struct node_s {
     } children;
 } node_t;
 
+static struct {
+    int call;
+    int jp;
+    int pc;
+} handle;
 
 static node_t rootnode;
 static field_t anonfield;
@@ -67,14 +72,17 @@ static void func_entered(field_t *func, u16 from, int call) {
 }
 
 static void func_call(field_t *func, u16 from) {
+    if(!handle.call) return;
     func_entered(func, from, 1);
 }
 
 static void func_jp(field_t *func, u16 from) {
+    if(!handle.jp) return;
     func_entered(func, from, 0);
 }
 
 static void append_func(field_t *func) {
+    if(!handle.pc) return;
     node_t *funcnode;
     node_t *parentnode;
 
@@ -89,6 +97,7 @@ static void append_func(field_t *func) {
 }
 
 static void anon_func_call(u16 adr, u16 from) {
+    if(!handle.call) return;
     node_t *funcnode;
 
     debug_print_line_prefix();
@@ -183,6 +192,9 @@ void sym_init() {
     init_node(&rootnode);
     init_field(&anonfield);
     recent_call = 0;
+    handle.call = 1;
+    handle.jp = 1;
+    handle.pc = 1;
 }
 
 void sym_cmd(const char *str)  {
@@ -206,6 +218,18 @@ void sym_cmd(const char *str)  {
             load_sym_file(buf);
             free(buf);
         }
+    }
+    else if(streq(cmd, "call")) {
+        handle.call = get_bool(end, "on", "off", &end);
+        assert(handle.call >= 0);
+    }
+    else if(streq(cmd, "jp")) {
+        handle.jp = get_bool(end, "on", "off", &end);
+        assert(handle.jp >= 0);
+    }
+    else if(streq(cmd, "pc")) {
+        handle.pc = get_bool(end, "on", "off", &end);
+        assert(handle.pc >= 0);
     }
     else {
         fprintf(stderr, "sym: unknown cmd\n");
@@ -251,6 +275,7 @@ void sym_call(u16 adr, u16 from) {
 }
 
 void sym_ret() {
+    if(!handle.call) return;
     if(currentnode->parent != NULL) {
         currentnode = currentnode->parent;
         dbg.log_indent--;

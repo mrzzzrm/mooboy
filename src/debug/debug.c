@@ -6,6 +6,7 @@
 #include "mem/io/lcd.h"
 #include "cpu/defines.h"
 #include "run.h"
+#include "mon.h"
 #include "sym.h"
 #include "int.h"
 #include <assert.h>
@@ -175,11 +176,15 @@ static void handle_cmd(const char *str) {
     end = get_word(str, cmd, sizeof(cmd));
 
     if(streq("sym", cmd)) {
-        sym_cmd(end);
+        sym_cmd(end); return;
     }
     else if(streq("int", cmd)) {
-        int_cmd(end);
+        int_cmd(end); return;
     }
+    else if(streq("mon", cmd)) {
+        mon_cmd(end); return;
+    }
+
 
     if(begeq("rc", str)) {
         switch(str[2]) {
@@ -265,6 +270,8 @@ void debug_init() {
     snap_mem(mem_before);
     snap_mem(mem_after);
     sym_init();
+    int_init();
+    mon_init();
 }
 
 void debug_update() {
@@ -297,6 +304,7 @@ void debug_update() {
 
     sym_update();
     int_update();
+    mon_update();
 }
 
 void debug_before() {
@@ -305,6 +313,7 @@ void debug_before() {
     dbg.before.cpu = cpu;
     sym_before();
     int_before();
+    mon_before();
 }
 
 void debug_after() {
@@ -313,6 +322,7 @@ void debug_after() {
     dbg.after.cpu = cpu;
     sym_after();
     int_after();
+    mon_after();
 
     if(dbg.console) {
         fprintf(stderr, "  %s\n", dbg.trace.data[dbg.trace.size-1]);
