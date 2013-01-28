@@ -37,11 +37,10 @@ void break_update() {
 }
 
 void break_cmd(const char *str) {
-    const char *end;
     char cmd[256];
     u16 adr;
 
-    end = get_word(str, cmd, sizeof(cmd));
+    get_word(str, cmd, sizeof(cmd));
 
     adr = strtol(cmd, NULL, 16);
     add_bp(adr);

@@ -2,5 +2,5 @@
 #include <gb/drawing.h>
 
 void main() {
-	gprintf("Hello Derp!");
+	gprint("Hello Derp!");
 }

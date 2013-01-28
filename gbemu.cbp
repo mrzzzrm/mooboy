@@ -110,6 +110,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/mem/mbc/rtc.h" />
+		<Unit filename="src/debug/break.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/debug/break.h" />
 		<Unit filename="src/debug/debug.c">
 			<Option compilerVar="CC" />
 		</Unit>

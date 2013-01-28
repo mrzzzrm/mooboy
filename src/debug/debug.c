@@ -8,6 +8,7 @@
 #include "run.h"
 #include "mon.h"
 #include "sym.h"
+#include "break.h"
 #include "int.h"
 #include <assert.h>
 #include <ctype.h>

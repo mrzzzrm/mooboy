@@ -181,8 +181,8 @@ AREA _XSEG
 MODULES
 	FILE /opt/gbdk/lib/small/asxxxx/gb/crt0.o
 		NAME Runtime
-	FILE /tmp/lcc68172.o
-		NAME lcc68170
+	FILE /tmp/lcc93372.o
+		NAME lcc93370
 USERBASEDEF
 	_CODE=0x0200
 	_DATA=0xC0A0

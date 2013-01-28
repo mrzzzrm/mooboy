@@ -35,8 +35,8 @@ static inline void exec_int(u8 i) {
 
     debug_int_exec(1 << i);
 
-    mem_writew(SP, PC);
     SP -= 2;
+    mem_writew(SP, PC);
     PC = isr[i];
 }
 

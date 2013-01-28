@@ -306,5 +306,8 @@ void sym_ret() {
         debug_print_line_prefix();
         fprintf(stderr, "} RET %s@%.4X\n", oldnode->func->name, (unsigned)oldnode->func->adr);
     }
+    else {
+        fprintf(stderr, "WARNING: Potential RET without corresponding CALL detected\n");
+    }
 }
 
