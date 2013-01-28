@@ -184,6 +184,9 @@ static void handle_cmd(const char *str) {
     else if(streq("mon", cmd)) {
         mon_cmd(end); return;
     }
+    else if(streq("break", cmd)) {
+        break_cmd(end); return;
+    }
 
 
     if(begeq("rc", str)) {
@@ -272,6 +275,7 @@ void debug_init() {
     sym_init();
     int_init();
     mon_init();
+    break_init();
 }
 
 void debug_update() {
@@ -300,6 +304,7 @@ void debug_update() {
     sym_update();
     int_update();
     mon_update();
+    break_update();
 }
 
 void debug_before() {
@@ -309,19 +314,21 @@ void debug_before() {
     sym_before();
     int_before();
     mon_before();
+    break_before();
 }
 
 void debug_after() {
     trace_after();
+    if(dbg.console) {
+        fprintf(stderr, "  %s\n", dbg.trace.data[dbg.trace.size-1]);
+    }
+
     snap_mem(dbg.after.mem);
     dbg.after.cpu = cpu;
     sym_after();
     int_after();
     mon_after();
-
-    if(dbg.console) {
-        fprintf(stderr, "  %s\n", dbg.trace.data[dbg.trace.size-1]);
-    }
+    break_after();
 }
 
 void debug_print_line_prefix() {
