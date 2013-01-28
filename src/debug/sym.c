@@ -32,6 +32,7 @@ typedef struct node_s {
 } node_t;
 
 static struct {
+    int anon;
     int call;
     int jp;
     int pc;
@@ -98,6 +99,7 @@ static void append_func(field_t *func) {
 
 static void anon_func_call(u16 adr, u16 from) {
     if(!handle.call) return;
+    if(!handle.anon) return;
     node_t *funcnode;
 
     debug_print_line_prefix();
@@ -185,6 +187,17 @@ static void load_sym_file(const char *path) {
     fclose(f);
 }
 
+static void load_same_sym_file() {
+    char *buf = malloc(strlen(sys_get_rompath()) + 3);
+    char *dot;
+    strcpy(buf, sys_get_rompath());
+    dot = strrchr(buf, '.');
+    assert(dot != NULL);
+    strcpy(dot+1, "sym\0");
+    load_sym_file(buf);
+    free(buf);
+}
+
 void sym_init() {
     funcs.data = NULL;
     funcs.size = 0;
@@ -192,9 +205,12 @@ void sym_init() {
     init_node(&rootnode);
     init_field(&anonfield);
     recent_call = 0;
+    handle.anon = 0;
     handle.call = 1;
-    handle.jp = 1;
-    handle.pc = 1;
+    handle.jp = 0;
+    handle.pc = 0;
+
+    load_same_sym_file();
 }
 
 void sym_cmd(const char *str)  {
@@ -203,20 +219,27 @@ void sym_cmd(const char *str)  {
 
     end = get_word(str, cmd, sizeof(cmd));
 
-    if(streq(cmd, "load")) {
+    if(streq(cmd, "off")) {
+        handle.call = 0;
+        handle.jp = 0;
+        handle.pc = 0;
+    }
+    else if(streq(cmd, "on")) {
+        handle.call = 1;
+        handle.jp = 1;
+        handle.pc = 1;
+    }
+    else if(streq(cmd, "anon")) {
+        handle.anon = get_bool(end, "on", "off", &end);
+        assert(handle.call >= 0);
+    }
+    else if(streq(cmd, "load")) {
         end = get_word(end, cmd, sizeof(cmd));
         if(strlen(cmd) != 0) {
             load_sym_file(cmd);
         }
         else {
-            char *buf = malloc(strlen(sys_get_rompath()) + 3);
-            char *dot;
-            strcpy(buf, sys_get_rompath());
-            dot = strrchr(buf, '.');
-            assert(dot != NULL);
-            strcpy(dot+1, "sym\0");
-            load_sym_file(buf);
-            free(buf);
+            load_same_sym_file();
         }
     }
     else if(streq(cmd, "call")) {
@@ -277,10 +300,11 @@ void sym_call(u16 adr, u16 from) {
 void sym_ret() {
     if(!handle.call) return;
     if(currentnode->parent != NULL) {
+        node_t *oldnode = currentnode;
         currentnode = currentnode->parent;
         dbg.log_indent--;
         debug_print_line_prefix();
-        fprintf(stderr, "} RET\n");
+        fprintf(stderr, "} RET %s@%.4X\n", oldnode->func->name, (unsigned)oldnode->func->adr);
     }
 }
 

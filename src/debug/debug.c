@@ -285,11 +285,6 @@ void debug_update() {
             case RUN_UNTIL_CURSOR_LE: if(PC <= dbg.run.cursor) to_trace(); break;
         }
 
-        if(dbg.monitor.mode & MONITOR_MEMORY_CELL)
-            monitor_cell(dbg.monitor.mem);
-        if(dbg.monitor.mode & MONITOR_MEMORY_RANGE)
-            monitor_range(dbg.monitor.from, dbg.monitor.to);
-
         if(dbg.console) {
             fprintf(stderr, "%.4X: ", PC);
             assert(gets(str) != NULL);

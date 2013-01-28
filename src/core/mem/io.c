@@ -73,7 +73,7 @@ u8 io_read(u16 adr) {
         case 0x6B: break;
     }
 
-    return 0xFF; // Avoids warnings;
+    return 0xFF; // Avoids nasty warnings, precious
 }
 
 void io_write(u16 adr, u8 val) {
