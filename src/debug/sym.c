@@ -24,6 +24,7 @@ static struct {
 typedef struct node_s {
     field_t *func;
     struct node_s *parent;
+    u16 calladr;
 
     struct {
         struct node_s **data;
@@ -43,12 +44,13 @@ static field_t anonfield;
 static node_t *currentnode;
 static int recent_call;
 
-static node_t *new_node(node_t *parent, field_t *func) {
+static node_t *new_node(node_t *parent, field_t *func, u16 calladr) {
     node_t *node = malloc(sizeof(*node));
     node->parent = parent;
     node->func = func;
     node->children.data = NULL;
     node->children.size = 0;
+    node->calladr = calladr;
 
     return node;
 }
@@ -64,7 +66,7 @@ static void func_entered(field_t *func, u16 from, int call) {
     debug_print_line_prefix();
     fprintf(stderr, "%s %s@0x%.4X %s\n", call ? "CALL" : "JUMP", func->name, func->adr, call ? "{" : "");
 
-    funcnode = new_node(currentnode, func);
+    funcnode = new_node(currentnode, func, dbg.before.cpu.pc.w);
     append_childnode(currentnode, funcnode);
     currentnode = funcnode;
 
@@ -92,7 +94,7 @@ static void append_func(field_t *func) {
     debug_print_line_prefix();
     fprintf(stderr, "ENTER %s@0x%.4X\n", func->name, PC);
 
-    funcnode = new_node(parentnode, func);
+    funcnode = new_node(parentnode, func, dbg.before.cpu.pc.w);
     append_childnode(parentnode, funcnode);
     currentnode = funcnode;
 }
@@ -105,7 +107,7 @@ static void anon_func_call(u16 adr, u16 from) {
     debug_print_line_prefix();
     fprintf(stderr, "CALL 0x%.4X {\n", adr);
 
-    funcnode = new_node(currentnode, &anonfield);
+    funcnode = new_node(currentnode, &anonfield, dbg.before.cpu.pc.w);
     append_childnode(currentnode, funcnode);
     currentnode = funcnode;
 
@@ -136,11 +138,12 @@ static field_t *read_field(const char *str) {
     return field;
 }
 
-static void init_node(node_t *currentnode) {
+static void init_node(node_t *currentnode, u16 calladr) {
     currentnode->func = NULL;
     currentnode->parent = NULL;
     currentnode->children.data = NULL;
     currentnode->children.size = 0;
+    currentnode->calladr = calladr;
 }
 
 static void init_field(field_t *field) {
@@ -202,7 +205,7 @@ void sym_init() {
     funcs.data = NULL;
     funcs.size = 0;
     currentnode = &rootnode;
-    init_node(&rootnode);
+    init_node(&rootnode, 0x100);
     init_field(&anonfield);
     recent_call = 0;
     handle.anon = 0;
@@ -298,16 +301,20 @@ void sym_call(u16 adr, u16 from) {
 }
 
 void sym_ret() {
-    if(!handle.call) return;
+    if(PC - 3 != currentnode->calladr)
+        return;
+
     if(currentnode->parent != NULL) {
         node_t *oldnode = currentnode;
         currentnode = currentnode->parent;
         dbg.log_indent--;
         debug_print_line_prefix();
-        fprintf(stderr, "} RET %s@%.4X\n", oldnode->func->name, (unsigned)oldnode->func->adr);
+        if(handle.call)
+            fprintf(stderr, "} RET %s@%.4X\n", oldnode->func->name, (unsigned)oldnode->func->adr);
     }
     else {
-        fprintf(stderr, "WARNING: Potential RET without corresponding CALL detected\n");
+        if(handle.call)
+            fprintf(stderr, "WARNING: Potential RET without corresponding CALL detected\n");
     }
 }
 

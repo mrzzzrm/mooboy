@@ -69,13 +69,16 @@
     void debug_int_ime(u8 flag);
     void debug_int_req(u8 flag);
 
-
     /* Tracing */
     void debug_trace_op(const char *name);
     void debug_trace_opl(void *ptr, int len, int mem);
     void debug_trace_opr(void *ptr, int len, int mem);
     void debug_trace_opl_data(int d);
     void debug_trace_opr_data(int d);
+
+    /* Event */
+    void debug_on_int(u8 iflag, void (*func)(u8 iflag));
+
 
 
     /*

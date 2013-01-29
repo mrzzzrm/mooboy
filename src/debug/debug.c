@@ -49,6 +49,7 @@ static struct {
     char opr[18]; int opr_set;
 } ctrace;
 
+static void (*on_vblank)(u8 iflag);
 
 
 static void snap_mem(u8 *mem) {
@@ -271,6 +272,7 @@ void debug_init() {
     dbg.log_indent = 0;
     dbg.run.mode = RUN_TRACE;
     dbg.monitor.mode = 0x00;
+    on_vblank = NULL;
     snap_mem(mem_before);
     snap_mem(mem_after);
     sym_init();
@@ -354,6 +356,9 @@ void debug_ret() {
 
 void debug_int_exec(u8 flag) {
     int_exec(flag);
+    switch(flag) {
+        case IF_VBLANK: if(on_vblank != NULL) on_vblank(flag); break;
+    }
 }
 
 void debug_int_ie(u8 flag) {
@@ -433,5 +438,9 @@ void debug_trace_opr_data(int d) {
 }
 
 
-
+void debug_on_int(u8 iflag, void (*func)(u8 iflag)) {
+    switch(iflag) {
+        case IF_VBLANK: on_vblank = func; break;
+    }
+}
 
