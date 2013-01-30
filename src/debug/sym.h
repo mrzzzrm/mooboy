@@ -11,5 +11,6 @@
     void sym_jp();
     void sym_call(u16 adr, u16 from);
     void sym_ret();
+    void sym_on_func(void (*f)(const char *));
 
 #endif

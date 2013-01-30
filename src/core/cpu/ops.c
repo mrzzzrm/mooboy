@@ -459,10 +459,10 @@ void op_call(op_chunk *c) {
     u16 _pc = PC;
     switch(c->op) {
         case 0xCD: push(PC); PC = OPLW; break;
-        case 0xC4: if(!FZ) push(PC); PC = OPLW; break;
-        case 0xCC: if(FZ)  push(PC); PC = OPLW; break;
-        case 0xD4: if(!FC) push(PC); PC = OPLW; break;
-        case 0xDC: if(FC)  push(PC); PC = OPLW; break;
+        case 0xC4: if(!FZ) {push(PC); PC = OPLW;} break;
+        case 0xCC: if(FZ)  {push(PC); PC = OPLW;} break;
+        case 0xD4: if(!FC) {push(PC); PC = OPLW;} break;
+        case 0xDC: if(FC)  {push(PC); PC = OPLW;} break;
     }
     CPU_MCS(_pc == PC ? 3 : 6);
 

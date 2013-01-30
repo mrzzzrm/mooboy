@@ -43,6 +43,7 @@ static node_t rootnode;
 static field_t anonfield;
 static node_t *currentnode;
 static int recent_call;
+static void (*func_callback)(const char *name);
 
 static node_t *new_node(node_t *parent, field_t *func, u16 calladr) {
     node_t *node = malloc(sizeof(*node));
@@ -212,6 +213,7 @@ void sym_init() {
     handle.call = 1;
     handle.jp = 0;
     handle.pc = 0;
+    func_callback = NULL;
 
     load_same_sym_file();
 }
@@ -293,6 +295,9 @@ void sym_call(u16 adr, u16 from) {
     field_t *func = get_func(PC);
     if(func != NULL) {
         func_call(func, from);
+        if(func_callback != NULL) {
+            func_callback(func->name);
+        }
     }
     else {
         anon_func_call(adr, from);
@@ -316,5 +321,9 @@ void sym_ret() {
         if(handle.call)
             fprintf(stderr, "WARNING: Potential RET without corresponding CALL detected\n");
     }
+}
+
+void sym_on_func(void (*f)(const char *)) {
+    func_callback = f;
 }
 
