@@ -43,7 +43,7 @@ void mon_init() {
     ranges.data = NULL;
     ranges.size = 0;
 
-    range *vram = add_range(0x8000, 0x97FF);
+    range *vram = add_range(0x8000, 0x9FFF);
         vram->on = 0;
 }
 
@@ -92,8 +92,7 @@ void mon_update() {
         if(r->on) {
             if(r->start < min) min = r->start;
             if(r->end > max) max = r->end;
-
-            memset(&mon[r->start], 0xFF, r->end - r->start + 1);
+            memset(&mon[r->start], 0xFF, (r->end - r->start + 1)*sizeof(*mon));
         }
     }
 
