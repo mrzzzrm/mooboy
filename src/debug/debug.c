@@ -1,6 +1,7 @@
 #include "debug.h"
 #include "monitor.h"
 #include "utils.h"
+#include "dump.h"
 #include "disasm.h"
 #include "cpu.h"
 #include "mem/io/lcd.h"
@@ -189,6 +190,10 @@ static void handle_cmd(const char *str) {
     else if(streq("break", cmd)) {
         break_cmd(end); return;
     }
+    else if(streq("dump", cmd)) {
+        dump_cmd(end); return;
+    }
+
 
 
     if(begeq("rc", str)) {
