@@ -7,7 +7,10 @@ static void dump_fb() {
     unsigned int x,y;
     for(y = 0; y < 144; y++) {
         for(x = 0; x < 160; x++) {
-            fprintf(stderr, "%.1X", lcd.working_fb[y*160+x]);
+            if(lcd.clean_fb[y*160+x] > 0)
+                fprintf(stderr, "%.1X", lcd.clean_fb[y*160+x]);
+            else
+                fprintf(stderr, " ");
         }
         fprintf(stderr, "\n");
     }

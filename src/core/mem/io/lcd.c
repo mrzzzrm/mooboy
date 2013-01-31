@@ -31,7 +31,7 @@
 #define STAT_SET_CFLAG(c) (lcd.stat ^= (~lcd.stat)&(c<<2))
 
 #define LCDC_DISPLAY_ENABLE_BIT 0x80
-#define LCDC_BG_ENABLE_BIT 0x00
+#define LCDC_BG_ENABLE_BIT 0x01
 #define LCDC_WND_ENABLE_BIT 0x20
 
 #define LCD_WIDTH 160
