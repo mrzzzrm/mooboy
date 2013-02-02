@@ -110,7 +110,8 @@ void mon_before() {
     unsigned int i;
     for(i = 0; i < ranges.size; i++) {
         range *r = &ranges.data[i];
-        update_range(r, before);
+        if(r->on)
+            update_range(r, before);
     }
 }
 
@@ -118,7 +119,8 @@ void mon_after() {
     unsigned int i;
     for(i = 0; i < ranges.size; i++) {
         range *r = &ranges.data[i];
-        update_range(r, after);
+        if(r->on)
+            update_range(r, after);
     }
 }
 

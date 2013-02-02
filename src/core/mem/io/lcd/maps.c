@@ -104,7 +104,7 @@ void lcd_render_bg_line() {
 //}
 
 static void tile_line(u8 *line, u8 tx, u8 ty, u8 fbx) {
-        fprintf(stderr, "%.2X%.2X/%i ", line[0], line[1], lcd.ly);
+    //fprintf(stderr, "%.2X%.2X/%i ", line[0], line[1], lcd.ly);
     for(; tx < 8 && fbx < FB_WIDTH; tx++, fbx++) {
         u8 pbm = 0x80 >> tx;
         lcd.working_fb[lcd.ly*FB_WIDTH + fbx] = ((line[0] & pbm) >> (8-tx)) | ((line[1] & pbm) >> ((8-tx)-1));
@@ -112,7 +112,19 @@ static void tile_line(u8 *line, u8 tx, u8 ty, u8 fbx) {
 }
 
 static void render_map_line_signed_tdt(u8 *map, u8 palette, u8 mx, u8 my) {
+    u8 fbx;
+    u8 *tdt = &mbc.vrambank[0x1000];
+    u8 tx = mx % TILE_WIDTH;
+    u8 ty = my % TILE_HEIGHT;
+    u8 tc = mx / TILE_WIDTH;
+    u8 tr = my / TILE_HEIGHT;
 
+    tile_line(&tdt[(s8)(map[tr * MAP_COLUMNS + tc]*0x10 + ty*2)], tx, ty, 0);
+    tc++;
+    for(fbx = TILE_WIDTH - tx; fbx <= FB_WIDTH; fbx += 8, tc++) {
+        tile_line(&tdt[(s8)(map[tr * MAP_COLUMNS + tc]*0x10 + ty*2)], 0, ty, fbx);
+    }
+    //fprintf(stderr, "\n");
 }
 
 static void render_map_line_unsigned_tdt(u8 *map, u8 palette, u8 mx, u8 my) {
@@ -128,7 +140,7 @@ static void render_map_line_unsigned_tdt(u8 *map, u8 palette, u8 mx, u8 my) {
     for(fbx = TILE_WIDTH - tx; fbx <= FB_WIDTH; fbx += 8, tc++) {
         tile_line(&tdt[map[tr * MAP_COLUMNS + tc]*0x10 + ty*2], 0, ty, fbx);
     }
-    fprintf(stderr, "\n");
+    //fprintf(stderr, "\n");
 }
 
 void lcd_render_bg_line() {

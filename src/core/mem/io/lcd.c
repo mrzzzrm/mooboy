@@ -61,10 +61,12 @@ static void swap_fb() {
 
 
 static void draw_line() {
-    if(lcd.c & LCDC_BG_ENABLE_BIT)
+    if(lcd.c & LCDC_BG_ENABLE_BIT) {
         lcd_render_bg_line();
-    if(lcd.c & LCDC_WND_ENABLE_BIT)
+    }
+    if(lcd.c & LCDC_WND_ENABLE_BIT) {
         lcd_render_wnd_line();
+    }
 }
 
 static u8 step_mode(u8 m1) {

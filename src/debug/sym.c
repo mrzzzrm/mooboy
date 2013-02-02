@@ -165,7 +165,11 @@ static void load_sym_file(const char *path) {
 
     in_func_area = 0;
     fprintf(stderr, "Loading symbols from: %s\n", path);
-    f = fopen(path, "r"); assert(f != NULL);
+    f = fopen(path, "r");
+    if(f == NULL) {
+        fprintf(stderr, "No such sym-file\n");
+        return;
+    }
 
     while (fgets(line, sizeof(line), f) != NULL) {
         if(begeq("; Area: _CODE", line) ||
