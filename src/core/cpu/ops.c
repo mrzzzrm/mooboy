@@ -411,14 +411,14 @@ void op_stop(op_chunk *c) {
 }
 
 void op_di(op_chunk *c) {
-    debug_trace_op("DI"); debug_int_ime(0);
+    debug_trace_op("DI"); //debug_int_ime(0);
     if(cpu.ime != IME_OFF)
         cpu.ime = IME_DOWN;
 
 }
 
 void op_ei(op_chunk *c) {
-    debug_trace_op("EI"); debug_int_ime(1);
+    debug_trace_op("EI"); //debug_int_ime(1);
     if(cpu.ime != IME_ON)
         cpu.ime = IME_UP;
 }
@@ -496,7 +496,7 @@ void op_reti(op_chunk *c) {
     debug_trace_op("RETI");
 
     PC = pop();
-    debug_int_ime(1);
+    //debug_int_ime(1);
     cpu.ime = IME_UP;
 }
 

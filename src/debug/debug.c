@@ -360,7 +360,6 @@ void debug_ret() {
 }
 
 void debug_int_exec(u8 flag) {
-    int_exec(flag);
     switch(flag) {
         case IF_VBLANK: if(on_vblank != NULL) on_vblank(flag); break;
     }

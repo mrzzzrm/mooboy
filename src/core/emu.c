@@ -4,7 +4,7 @@
 #include "debug/debug.h"
 #include "loader.h"
 
-
+#define QUANTUM 1000
 
 static void emu_reset() {
     mem_reset();
@@ -36,14 +36,19 @@ bool emu_load(u8 *data, size_t size) {
 }
 
 bool emu_run() {
+
     debug_init();
-
     for(;;) {
-        debug_update();
+        unsigned int t;
+        for(t = 0; t < QUANTUM; t++) {
+            //debug_update();
 
-        debug_before();
-        emu_step();
-        debug_after();
+            //debug_before();
+            emu_step();
+            //debug_after();
+        }
+
+        sys_invoke();
     }
 
     return true;

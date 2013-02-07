@@ -6,6 +6,8 @@
 
     void sys_init(int argc, const char** argv);
     void sys_close();
+    void sys_invoke();
+    void sys_fb_ready();
 
     bool sys_running();
     bool sys_new_rom();

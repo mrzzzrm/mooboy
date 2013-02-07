@@ -1,31 +1,41 @@
 #include "sys/sys.h"
 #include <SDL/SDL.h>
+#include <SDL/SDL_gfxPrimitives.h>
 #include "util/cmd.h"
 #include "core/fb.h"
+#include "core/cpu.h"
+#include "core/mem/io/lcd.h"
 #include "util/err.h"
+
+#define FB_WIDTH 160
+#define FB_HEIGHT 144
 
 fb_t fb;
 
+static unsigned int invoke_count;
+static unsigned int last_cc;
+static time_t last_sec;
+
+u32 palette[] = {
+    0x444444FF,
+    0x888888FF,
+    0xCCCCCCFF,
+    0xFFFFFFFF
+};
+
+static void set_pixel(SDL_Surface *surface, unsigned int x, unsigned int y, u32 color) {
+     pixelColor(surface, x, y, color);
+}
+
+
 void sys_init(int argc, const char** argv) {
+    invoke_count = 0;
+    last_cc = 0;
+    last_sec = SDL_GetTicks();
     cmd_init(argc, argv);
 
     SDL_Init(SDL_INIT_VIDEO);
     SDL_Surface *screen = SDL_SetVideoMode(160, 144, 24, SDL_DOUBLEBUF);
-
-//    fb.data = screen->pixels;
-//    fb.pitch = screen->pitch;
-//    fb.w = 160;
-//    fb.h = 144;
-//    fb.poffset = 3;
-//    fb.psize = 3;
-//
-//    unsigned int s;
-//    for(s = 0; s < 4; s++)
-//        fb.gbpalette[s] = malloc(sizeof(**fb.gbpalette) * fb.psize);
-//    memset(fb.gbpalette[0], 0x44, 3);
-//    memset(fb.gbpalette[1], 0x88, 3);
-//    memset(fb.gbpalette[2], 0xBB, 3);
-//    memset(fb.gbpalette[3], 0xFF, 3);
 }
 
 void sys_close() {
@@ -56,3 +66,27 @@ void sys_sleep(time_t ticks) {
 void sys_error() {
     exit(EXIT_FAILURE);
 }
+
+void sys_invoke() {
+    invoke_count++;
+    if(SDL_GetTicks() - last_sec > 1000) {
+        last_sec = SDL_GetTicks();
+        fprintf(stderr, "Invokes: %i %f%%\n", invoke_count, (double)(cpu.cc - last_cc)/10000.0);
+        invoke_count = 0;
+        last_cc = cpu.cc;
+    }
+}
+
+void sys_fb_ready() {
+    unsigned int x, y;
+    SDL_Surface *s = SDL_GetVideoSurface();
+
+    for(y = 0; y < FB_HEIGHT; y++) {
+        for(x = 0; x < FB_WIDTH; x++) {
+            set_pixel(s, x, y, palette[lcd.clean_fb[y*FB_WIDTH + x]]);
+        }
+    }
+
+    SDL_Flip(s);
+}
+

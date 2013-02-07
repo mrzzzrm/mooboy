@@ -128,6 +128,7 @@ void lcd_step() {
                 if(m2 == 0x01) { // VBlank IRQ
                     cpu.irq |= IF_VBLANK;
                     stat_irq(SIF_VBLANK);
+                    sys_fb_ready();
                 }
                 else  {// OAM IRQ
                     stat_irq(SIF_OAM);
