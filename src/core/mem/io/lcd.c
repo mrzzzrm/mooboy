@@ -101,7 +101,7 @@ void lcd_reset() {
     lcd.lyc = 0;
     lcd.wx = 0;
     lcd.wy = 0;
-    lcd.bgp = 0;
+    lcd.bgp = 0xE4;
     lcd.obp0 = 0;
     lcd.obp1 = 0;
 

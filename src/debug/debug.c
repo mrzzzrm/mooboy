@@ -1,3 +1,5 @@
+#define DEBUG_DEBUG_C
+
 #include "debug.h"
 #include "monitor.h"
 #include "utils.h"

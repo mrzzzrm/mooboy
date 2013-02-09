@@ -4,20 +4,21 @@
 #include "mem/mbc.h"
 
 static u8 rom_bankcount(u8 ref) {
-    if(ref <= 6) {
-        return ((u8[]){2, 4, 8, 16, 32, 64, 128})[ref];
+    if(ref <= 8) {
+        return 2 << ref;
     }
     else if(ref >= 0x52 && ref <= 0x54) {
         return ((u8[]){72, 80, 96})[ref - 0x52];
     }
     else {
+        fprintf(stderr, "ROM-bankcount ref: %.2X\n", ref);
         return 0;
     }
 }
 
 static void init_mbc(u8 ref) {
-    u8 ln = (ref & 0x0F);
-    u8 hn = (ref & 0xF0);
+    u8 ln = ref & 0x0F;
+    u8 hn = ref >> 4;
 
     if(hn == 0x00) {
         switch(ln) {
@@ -58,10 +59,12 @@ static void init_mbc(u8 ref) {
             case 0xC: case 0xD: case 0xE:
                 mbc_set_type(5);
             break;
+            default:
+                assert_corrupt(1, "No such MBC - type");
         }
     }
     else {
-        assert_unsupported(1, "Illegal or unsupported MBC-type");
+        mbc_set_type(0);
     }
 }
 

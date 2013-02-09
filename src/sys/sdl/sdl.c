@@ -17,10 +17,10 @@ static unsigned int last_cc;
 static time_t last_sec;
 
 u32 palette[] = {
-    0x444444FF,
-    0x888888FF,
-    0xCCCCCCFF,
-    0xFFFFFFFF
+    0x000000FF,
+    0x446644FF,
+    0x77AA77FF,
+    0xCCFFCCFF
 };
 
 static void set_pixel(SDL_Surface *surface, unsigned int x, unsigned int y, u32 color) {

@@ -94,6 +94,7 @@ void mbc_set_type(u8 type) {
     void (*control_funcs[])(u16, u8) = {mbc0_control, mbc1_control, mbc2_control, mbc3_control, mbc5_control};
 
     mbc.control_func = control_funcs[type];
+    fprintf(stderr, "MBC-type is %i\n", (int)type);
 }
 
 u8 mbc_upper_read(u16 adr) {

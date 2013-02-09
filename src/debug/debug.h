@@ -114,5 +114,13 @@
 
     */
 
+    #ifndef DEBUG
+    #ifndef DEBUG_DEBUG_C
+        #define debug_update();
+        #define debug_before();
+        #define debug_after();
+    #endif
+    #endif
+
 
 #endif // DEBUG_H

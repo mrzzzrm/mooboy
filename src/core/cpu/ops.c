@@ -39,14 +39,14 @@ void op_opl_memcall(op_chunk *c) {
 void op_opl_ib(op_chunk *c) {
     static_byte = mem_readb(PC++);
     c->opl.b = &static_byte;
-    //debug_trace_opl_data(static_byte);
+    debug_trace_opl_data(static_byte);
 
     c->funcs[c->sp++](c);
 }
 
 void op_opl_iw(op_chunk *c) {
     static_word = mem_readw(PC);
-    //debug_trace_opl_data(static_word);
+    debug_trace_opl_data(static_word);
     PC += 2;
     c->opl.w = &static_word;
 
@@ -75,14 +75,14 @@ void op_opr_memread(op_chunk *c) {
 
 void op_opr_ib(op_chunk *c) {
     static_byte = mem_readb(PC++);
-    //debug_trace_opr_data(static_byte);
+    debug_trace_opr_data(static_byte);
     c->opr.b = &static_byte;
     c->funcs[c->sp++](c);
 }
 
 void op_opr_iw(op_chunk *c) {
     static_word = mem_readw(PC);
-    //debug_trace_opr_data(static_word);
+    debug_trace_opr_data(static_word);
     PC += 2;
     c->opr.w = &static_word;
     c->funcs[c->sp++](c);

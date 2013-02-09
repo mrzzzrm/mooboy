@@ -3,6 +3,7 @@
 #include "mem/io/lcd.h"
 #include "debug/debug.h"
 #include "loader.h"
+#include "sys/sys.h"
 
 #define QUANTUM 1000
 
@@ -41,11 +42,11 @@ bool emu_run() {
     for(;;) {
         unsigned int t;
         for(t = 0; t < QUANTUM; t++) {
-            //debug_update();
+            debug_update();
 
-            //debug_before();
+            debug_before();
             emu_step();
-            //debug_after();
+            debug_after();
         }
 
         sys_invoke();
