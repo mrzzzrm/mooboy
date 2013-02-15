@@ -145,7 +145,7 @@ void op_pop(op_chunk *c)  {
 }
 
 void op_add_b(op_chunk *c) {
-    debug_trace_op("ADD"); debug_trace_opl(&OPLB, 1, 0); debug_trace_opl(&OPRB, 1, 0);
+    debug_trace_op("ADD"); debug_trace_opl(&OPLB, 1, 0); debug_trace_opr(&OPRB, 1, 0);
 
     u16 r = (u16)OPLB + (u16)OPRB;
     F = FZZ((u8)r) |
@@ -159,23 +159,24 @@ void op_add_w(op_chunk *c) {
 
     u32 r = (u32)OPLW + (u32)OPRW;
     F = FZZ((u16)r) |
-        (FHBIT & ((OPLB ^ OPRB ^ r) >> 7)) |
+        (FHBIT & ((OPLW ^ OPRW ^ r) >> 7)) |
         (FCBIT & (r >> 12));
     OPLW = (u16)r;
 }
 
 void op_adc(op_chunk *c) {
-    debug_trace_op("ADC"); debug_trace_opl(&OPLB, 1, 0); debug_trace_opl(&OPRB, 1, 0);
+    debug_trace_op("ADC"); debug_trace_opl(&OPLB, 1, 0); debug_trace_opr(&OPRB, 1, 0);
 
-    u16 r = (u16)OPLB + (u16)OPRB + (u16)FC;
+    u8 fc = FC ? 1 : 0;
+    u16 r = (u16)OPLB + (u16)OPRB + (u16)fc;
     F = FZZ((u8)r) |
-        (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) |
+        (FHBIT & ((OPLB ^ OPRB ^ fc ^ r) << 1)) |
         (FCBIT & (r >> 4));
     OPLB = (u8)r;
 }
 
 void op_sub(op_chunk *c) {
-    debug_trace_op("SUB"); debug_trace_opl(&OPLB, 1, 0); debug_trace_opl(&OPRB, 1, 0);
+    debug_trace_op("SUB"); debug_trace_opl(&OPLB, 1, 0); debug_trace_opr(&OPRB, 1, 0);
 
     u16 r = (u16)OPLB - (u16)OPRB;
     F = FZZ((u8)r) |
@@ -186,12 +187,13 @@ void op_sub(op_chunk *c) {
 }
 
 void op_sbc(op_chunk *c) {
-    debug_trace_op("SBC"); debug_trace_opl(&OPLB, 1, 0); debug_trace_opl(&OPRB, 1, 0);
+    debug_trace_op("SBC"); debug_trace_opl(&OPLB, 1, 0); debug_trace_opr(&OPRB, 1, 0);
 
-    u16 r = (u16)OPLB - (u16)OPRB - (u16)FC;
+    u8 fc = FC ? 1 : 0;
+    u16 r = (u16)OPLB - (u16)OPRB - (u16)fc;
     F = FZZ((u8)r) |
         FNBIT |
-        (FHBIT & ((OPLB ^ OPRB ^ r) << 1)) |
+        (FHBIT & ((OPLB ^ OPRB ^ fc ^ r) << 1)) |
         (FCBIT & (r >> 4));
     OPLB = (u8)r;
 }
@@ -352,7 +354,6 @@ void op_srl(op_chunk *c) {
 }
 
 void op_cb(op_chunk *c) {
-
     u8 cbop = FETCHB;
     op_chunk *cbc = op_cb_chunk_map[cbop];
 
@@ -371,7 +372,7 @@ void op_swap(op_chunk *c) {
 void op_bit(op_chunk *c) {
     debug_trace_op("BIT"); debug_trace_opl(&OPLD, 1, 0); debug_trace_opr(&OPRB, 1, 0);
 
-    F = FZZ((1<<OPLD)&OPRB) | FHBIT | FC;
+    F = FZZ(OPRB & (1<<OPLD)) | FHBIT | FC;
 }
 
 void op_set(op_chunk *c) {

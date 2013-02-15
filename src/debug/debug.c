@@ -53,6 +53,7 @@ static struct {
 } ctrace;
 
 static void (*on_vblank)(u8 iflag);
+static void (*on_lcdstat)(u8 iflag);
 
 
 static void snap_mem(u8 *mem) {
@@ -362,8 +363,11 @@ void debug_ret() {
 }
 
 void debug_int_exec(u8 flag) {
+
+
     switch(flag) {
         case IF_VBLANK: if(on_vblank != NULL) on_vblank(flag); break;
+        case IF_LCDSTAT: if(on_lcdstat != NULL) on_lcdstat(flag); break;
     }
 }
 
@@ -447,6 +451,7 @@ void debug_trace_opr_data(int d) {
 void debug_on_int(u8 iflag, void (*func)(u8 iflag)) {
     switch(iflag) {
         case IF_VBLANK: on_vblank = func; break;
+        case IF_LCDSTAT: on_lcdstat = func; break;
     }
 }
 

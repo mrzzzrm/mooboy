@@ -1,0 +1,163 @@
+; no$gmb format .sym file
+; Generated automagically by ASxxxx linker V01.75 (SDK 3.0.0)
+; Area: .  .ABS.
+00:0000 s__HEADER
+00:0000 .init
+00:0200 s__CODE
+00:097F s__HOME
+00:0B2B s__BASE
+00:194F s__GSINITTAIL
+00:194F s__LIT
+00:194F s__GSINIT
+00:1950 s__GSFINAL
+00:C000 .OAM
+00:C0A0 s__DATA
+00:C0A0 s__BSS
+00:C124 s__HEAP
+00:C124 s__BSEG
+00:C124 s__ISEG
+00:C124 s__XSEG
+00:C124 s__OVERLAY
+00:E000 .STACK
+00:FF80 .refresh_OAM
+; Area: _CODE
+00:0200 _main
+00:020E .adv_gcurs
+00:022B .circle
+00:02CE .horlin
+00:0306 .verlin
+00:0362 .circplot
+00:03E0 .box
+00:04B6 .line
+00:05D7 .xonly
+00:0726 .yonly
+00:0747 .plot
+00:0764 .wrbyte
+00:07E6 .getpix
+00:081B .wrtchr
+00:087F _gotogxy
+00:088A _wrtchr
+00:089F _getpix
+00:08AB _color
+00:08BA _circle
+00:08D4 _box
+00:08F8 _line
+00:0910 _plot_point
+00:0924 _plot
+00:0940 _putchar
+00:0949 _setchar
+00:0952 _gotoxy
+00:095D _posx
+00:096E _posy
+; Area: _HEADER
+00:01D2 _exit
+; Area: _HOME
+00:097F .set_mode
+00:098F .remove_VBL
+00:0995 .remove_LCD
+00:099B .remove_TIM
+00:09A1 .remove_SIO
+00:09A7 .remove_JOY
+00:09AD .add_VBL
+00:09B3 .add_LCD
+00:09B9 .add_TIM
+00:09BF .add_SIO
+00:09C5 .add_JOY
+00:09CB .remove_int
+00:09EB .add_int
+00:0A07 .wait_vbl_done
+00:0A07 _wait_vbl_done
+00:0A1E _display_off
+00:0A1E .display_off
+00:0A3F .serial_IO
+00:0A6E _mode
+00:0A77 _get_mode
+00:0A7C _enable_interrupts
+00:0A7E _disable_interrupts
+00:0A80 _reset
+00:0A80 .reset
+00:0A86 _set_interrupts
+00:0A91 _remove_VBL
+00:0A9C _remove_LCD
+00:0AA7 _remove_TIM
+00:0AB2 _remove_SIO
+00:0ABD _remove_JOY
+00:0AC8 _add_VBL
+00:0AD3 _add_LCD
+00:0ADE _add_TIM
+00:0AE9 _add_SIO
+00:0AF4 _add_JOY
+00:0AFF _clock
+00:0B08 __printTStates
+00:0B09 banked_call
+00:0B22 banked_ret
+; Area: _BASE
+00:0B2B .gmode
+00:0B8D .vbl
+00:0B98 .lcd
+00:0BA5 .draw_image
+00:0BAF .switch_data
+00:0BE6 _switch_data
+00:0C01 _draw_image
+00:0C14 .y_table
+00:0D34 _font_load_ibm_fixed
+00:0D3B _font_ibm_fixed
+00:0E3D _font_ibm_fixed_tiles
+00:163D font_copy_uncompressed
+00:1673 font_copy_compressed
+00:16C8 font_load
+00:1710 font_copy_current
+00:1758 font_set
+00:1765 .put_char
+00:177E .out_char
+00:1785 .del_char
+00:17E0 _font_load
+00:17EE _font_set
+00:17FD _font_init
+00:181F _cls
+00:181F .cls
+00:1851 .cr_curs
+00:1866 .adv_curs
+00:18C2 .tmode
+00:18EB .tmode_out
+00:18FB .init_vram
+00:1909 .init_wtt
+00:1919 .init_btt
+00:1927 .init_tt
+00:192D .copy_vram
+00:193C _get_data
+00:193C _set_data
+; Area: _LIT
+; Area: _GSINIT
+00:194F gsinit
+; Area: _GSINITTAIL
+; Area: _GSFINAL
+; Area: _DATA
+; Area: _BSS
+00:C0A0 __cpu
+00:C0A1 .mode
+00:C0A2 __io_out
+00:C0A3 __io_in
+00:C0A4 __io_status
+00:C0A5 .vbl_done
+00:C0A6 __current_bank
+00:C0A7 _sys_time
+00:C0A7 .sys_time
+00:C0A9 .int_0x40
+00:C0B9 .int_0x48
+00:C0C9 .int_0x50
+00:C0D9 .int_0x58
+00:C0E9 .int_0x60
+00:C0F9 .fg_colour
+00:C0FA .bg_colour
+00:C10C font_current
+00:C10F font_first_free_tile
+00:C110 font_table
+00:C122 .curx
+00:C123 .cury
+; Area: _HEAP
+00:C124 _malloc_heap_start
+; Area: _OVERLAY
+; Area: _ISEG
+; Area: _BSEG
+; Area: _XSEG

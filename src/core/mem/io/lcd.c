@@ -27,8 +27,8 @@
 #define STAT_OAM_IRQ    (lcd.stat & 0x20)
 #define STAT_LYC_IRQ    (lcd.stat & 0x40)
 
-#define STAT_SET_MODE(m)  {lcd.stat ^= lcd.stat&0x03; lcd.stat |= (m);}
-#define STAT_SET_CFLAG(c) (lcd.stat ^= (~lcd.stat)&(c<<2))
+#define STAT_SET_MODE(m)  (lcd.stat = (lcd.stat & 0xFC) | (m))
+#define STAT_SET_CFLAG(c) (lcd.stat = (lcd.stat & 0xFB) | ((c) << 2))
 
 #define LCDC_DISPLAY_ENABLE_BIT 0x80
 #define LCDC_BG_ENABLE_BIT 0x01
@@ -58,7 +58,6 @@ static void swap_fb() {
     lcd.clean_fb = lcd.working_fb;
     lcd.working_fb = tmp;
 }
-
 
 static void draw_line() {
     if(lcd.c & LCDC_BG_ENABLE_BIT) {
