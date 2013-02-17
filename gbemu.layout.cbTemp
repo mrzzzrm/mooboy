@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
-	<ActiveTarget name="sdl_debug" />
+	<ActiveTarget name="sdl_release" />
 	<File name="src/core/_assert.h" open="0" top="0" tabpos="21">
 		<Cursor position="660" topLine="0" />
 	</File>
@@ -44,7 +44,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="src/core/mem/io.c" open="1" top="0" tabpos="16">
-		<Cursor position="3205" topLine="87" />
+		<Cursor position="3205" topLine="85" />
 	</File>
 	<File name="src/core/mem/io.h" open="0" top="0" tabpos="10">
 		<Cursor position="0" topLine="0" />
@@ -62,7 +62,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="src/core/mem/io/lcd/maps.c" open="1" top="1" tabpos="1">
-		<Cursor position="1924" topLine="27" />
+		<Cursor position="1451" topLine="25" />
 	</File>
 	<File name="src/core/mem/io/lcd/maps.h" open="0" top="0" tabpos="15">
 		<Cursor position="0" topLine="0" />
@@ -128,6 +128,6 @@
 		<Cursor position="121" topLine="0" />
 	</File>
 	<File name="src/sys/sdl/sdl.c" open="1" top="0" tabpos="14">
-		<Cursor position="1912" topLine="41" />
+		<Cursor position="1912" topLine="39" />
 	</File>
 </CodeBlocks_layout_file>

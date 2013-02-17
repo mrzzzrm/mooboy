@@ -11,8 +11,6 @@
 #define MAP_COLUMNS 32
 #define MAP_ROWS 32
 #define LCDC_TILE_DATA_BIT 0x10
-#define LCDC_BG_MAP_BIT 0x04
-#define LCDC_WND_MAP_BIT 0x40
 
 #define PIXEL_PER_BYTE 4
 
@@ -29,7 +27,7 @@ static void tile_line(u8 *line, u8 tx, u8 ty, u8 fbx) {
     }
 }
 
-static void render_map_line_signed_tdt(u8 *map, u8 palette, u8 mx, u8 my) {
+static void render_map_line_signed_tdt(u8 *map, u8 mx, u8 my, u8 sx) {
     u8 fbx;
     u8 *tdt = &mbc.vrambank[0x1000];
     u8 tx = mx % TILE_WIDTH;
@@ -44,15 +42,13 @@ static void render_map_line_signed_tdt(u8 *map, u8 palette, u8 mx, u8 my) {
     }
 }
 
-static void render_map_line_unsigned_tdt(u8 *map, u8 palette, u8 mx, u8 my) {
+static void render_map_line_unsigned_tdt(u8 *map, u8 mx, u8 my, s8 sx) {
     u8 fbx;
     u8 *tdt = &mbc.vrambank[0x0000];
     u8 tx = mx % TILE_WIDTH;
     u8 ty = my % TILE_HEIGHT;
     u8 tc = mx / TILE_WIDTH;
     u8 tr = my / TILE_HEIGHT;
-
-    fprintf(stderr, "Line %i: %i\n", lcd.ly, map[tr * MAP_COLUMNS + tc]*0x10 + ty*2);
 
     tile_line(&tdt[map[tr * MAP_COLUMNS + tc]*0x10 + ty*2], tx, ty, 0);
     tc++;
@@ -62,24 +58,36 @@ static void render_map_line_unsigned_tdt(u8 *map, u8 palette, u8 mx, u8 my) {
 }
 
 void lcd_render_bg_line() {
-    u8 *map = &mbc.vrambank[lcd.c & LCDC_BG_MAP_BIT ? 0x1C00 : 0x1800];
     u8 mx = lcd.scx;
     u8 my = lcd.scy + lcd.ly;
 
     if(lcd.c & LCDC_TILE_DATA_BIT)
-        render_map_line_unsigned_tdt(map, lcd.bgp, mx, my);
+        render_map_line_unsigned_tdt(lcd.bgmap, mx, my, 0);
     else
-        render_map_line_signed_tdt(map, lcd.bgp, mx, my);
+        render_map_line_signed_tdt(lcd.bgmap, mx, my, 0);
 }
 
 void lcd_render_wnd_line() {
-    u8 *map = &mbc.vrambank[lcd.c & LCDC_WND_MAP_BIT ? 0x1C00 : 0x1800];
-    u8 mx = lcd.wx + 7;
-    u8 my = lcd.wy + lcd.ly;
+    u8 sx, mx;
+
+    if(lcd.wy > lcd.ly) {
+        return;
+    }
+
+    if(lcd.wx < 7) {
+        sx = 0;
+        mx = 7 - lcd.wx;
+    }
+    else {
+        sx = lcd.wx - 7;
+        mx = 0;
+    }
+
+    u8 my = lcd.ly - lcd.wy;
 
     if(lcd.c & LCDC_TILE_DATA_BIT)
-        render_map_line_unsigned_tdt(map, lcd.bgp, mx, my);
+        render_map_line_unsigned_tdt(lcd.wndmap, mx, my, sx);
     else
-        render_map_line_signed_tdt(map, lcd.bgp, mx, my);
+        render_map_line_signed_tdt(lcd.wndmap, mx, my, sx);
 }
 

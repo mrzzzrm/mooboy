@@ -114,7 +114,10 @@ void io_write(u16 adr, u8 val) {
         case 0x26: break;
         case 0x30: break;
 
-        case 0x40: lcd.c = val; break;
+        case 0x40:
+            lcd.c = val;
+            lcd_update_map_ptrs();
+        break;
         case 0x41: lcd.stat = val; break;
         case 0x42: lcd.scy = val; break;
         case 0x43: lcd.scx = val; break;

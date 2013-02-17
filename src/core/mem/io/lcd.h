@@ -16,13 +16,17 @@
         u8 fb[2][144*160];
         u8 *clean_fb;
         u8 *working_fb;
+
+        u8 *bgmap;
+        u8 *wndmap;
     } lcd_t;
 
     extern lcd_t lcd;
 
     void lcd_reset();
-    void lcd_step();
 
+    void lcd_step();
     void lcd_dma(u8 v);
+    void lcd_update_map_ptrs();
 
 #endif
