@@ -83,7 +83,12 @@ void sys_fb_ready() {
 
     for(y = 0; y < FB_HEIGHT; y++) {
         for(x = 0; x < FB_WIDTH; x++) {
-            set_pixel(s, x, y, palette[lcd.clean_fb[y*FB_WIDTH + x]]);
+            u8 gbc = lcd.clean_fb[y*FB_WIDTH + x];
+
+            if(gbc == 0)
+                set_pixel(s, x, y, ((x/8)%2==0 && (y/8)%2==0) || ((x/8)%2==1 && (y/8)%2==1) ? 0x220000ff : 0x000000ff);
+            else
+                set_pixel(s, x, y, palette[lcd.clean_fb[y*FB_WIDTH + x]]);
         }
     }
 

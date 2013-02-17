@@ -171,10 +171,10 @@ op_chunk *op_create_chunk(u8 op) {
                         case 0x07: // 00XX X111
                             c->opl.b = &A;
                             if(op&0x10) {
-                                PUSH_FUNC(op&0x80 ? op_rr : op_rl);
+                                PUSH_FUNC(op&0x08 ? op_rr : op_rl);
                             }
                             else {
-                                PUSH_FUNC(op&0x80 ? op_rrc : op_rlc);
+                                PUSH_FUNC(op&0x08 ? op_rrc : op_rlc);
                             }
                         break;
                     }

@@ -2,7 +2,7 @@
 /* Jon Fuge jonny@q-continuum.demon.co.uk */
 
 #include <gb/gb.h>
-#include <gb/drawing.h>
+#include <drawing.h>
 
 void main()
 {
