@@ -37,10 +37,10 @@ static void render_map_line_signed_tdt(u8 *map, u8 palette, u8 mx, u8 my) {
     u8 tc = mx / TILE_WIDTH;
     u8 tr = my / TILE_HEIGHT;
 
-    tile_line(&tdt[(s8)(map[tr * MAP_COLUMNS + tc]*0x10 + ty*2)], tx, ty, 0);
+    tile_line(&tdt[(s8)(map[tr * MAP_COLUMNS + tc])*0x10 + ty*2], tx, ty, 0);
     tc++;
     for(fbx = TILE_WIDTH - tx; fbx <= FB_WIDTH; fbx += 8, tc++) {
-        tile_line(&tdt[(s8)(map[tr * MAP_COLUMNS + tc]*0x10 + ty*2)], 0, ty, fbx);
+        tile_line(&tdt[(s8)(map[tr * MAP_COLUMNS + tc])*0x10 + ty*2], 0, ty, fbx);
     }
 }
 
@@ -51,6 +51,8 @@ static void render_map_line_unsigned_tdt(u8 *map, u8 palette, u8 mx, u8 my) {
     u8 ty = my % TILE_HEIGHT;
     u8 tc = mx / TILE_WIDTH;
     u8 tr = my / TILE_HEIGHT;
+
+    fprintf(stderr, "Line %i: %i\n", lcd.ly, map[tr * MAP_COLUMNS + tc]*0x10 + ty*2);
 
     tile_line(&tdt[map[tr * MAP_COLUMNS + tc]*0x10 + ty*2], tx, ty, 0);
     tc++;

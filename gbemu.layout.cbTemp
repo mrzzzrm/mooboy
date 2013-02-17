@@ -5,13 +5,13 @@
 		<Cursor position="660" topLine="0" />
 	</File>
 	<File name="src/core/cpu.c" open="1" top="0" tabpos="3">
-		<Cursor position="570" topLine="6" />
+		<Cursor position="670" topLine="27" />
 	</File>
 	<File name="src/core/cpu.h" open="0" top="0" tabpos="7">
 		<Cursor position="364" topLine="0" />
 	</File>
 	<File name="src/core/cpu/chunks.c" open="1" top="0" tabpos="13">
-		<Cursor position="10309" topLine="232" />
+		<Cursor position="1804" topLine="54" />
 	</File>
 	<File name="src/core/cpu/chunks.h" open="0" top="0" tabpos="0">
 		<Cursor position="430" topLine="0" />
@@ -19,8 +19,8 @@
 	<File name="src/core/cpu/defines.h" open="1" top="0" tabpos="12">
 		<Cursor position="1139" topLine="4" />
 	</File>
-	<File name="src/core/cpu/ops.c" open="1" top="1" tabpos="10">
-		<Cursor position="5094" topLine="221" />
+	<File name="src/core/cpu/ops.c" open="1" top="0" tabpos="10">
+		<Cursor position="6758" topLine="286" />
 	</File>
 	<File name="src/core/cpu/ops.h" open="1" top="0" tabpos="11">
 		<Cursor position="592" topLine="2" />
@@ -37,14 +37,14 @@
 	<File name="src/core/loader.h" open="0" top="0" tabpos="26">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="src/core/mem.c" open="0" top="0" tabpos="18">
-		<Cursor position="3489" topLine="27" />
+	<File name="src/core/mem.c" open="1" top="0" tabpos="15">
+		<Cursor position="3489" topLine="18" />
 	</File>
 	<File name="src/core/mem.h" open="0" top="0" tabpos="7">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="src/core/mem/io.c" open="0" top="0" tabpos="17">
-		<Cursor position="2006" topLine="85" />
+	<File name="src/core/mem/io.c" open="1" top="0" tabpos="16">
+		<Cursor position="3205" topLine="87" />
 	</File>
 	<File name="src/core/mem/io.h" open="0" top="0" tabpos="10">
 		<Cursor position="0" topLine="0" />
@@ -56,13 +56,13 @@
 		<Cursor position="119" topLine="0" />
 	</File>
 	<File name="src/core/mem/io/lcd.c" open="1" top="0" tabpos="2">
-		<Cursor position="3602" topLine="115" />
+		<Cursor position="3322" topLine="103" />
 	</File>
 	<File name="src/core/mem/io/lcd.h" open="0" top="0" tabpos="14">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="src/core/mem/io/lcd/maps.c" open="1" top="0" tabpos="1">
-		<Cursor position="1682" topLine="8" />
+	<File name="src/core/mem/io/lcd/maps.c" open="1" top="1" tabpos="1">
+		<Cursor position="1924" topLine="27" />
 	</File>
 	<File name="src/core/mem/io/lcd/maps.h" open="0" top="0" tabpos="15">
 		<Cursor position="0" topLine="0" />
@@ -128,6 +128,6 @@
 		<Cursor position="121" topLine="0" />
 	</File>
 	<File name="src/sys/sdl/sdl.c" open="1" top="0" tabpos="14">
-		<Cursor position="1066" topLine="34" />
+		<Cursor position="1912" topLine="41" />
 	</File>
 </CodeBlocks_layout_file>

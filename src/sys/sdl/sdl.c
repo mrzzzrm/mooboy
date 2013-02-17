@@ -35,7 +35,7 @@ void sys_init(int argc, const char** argv) {
     cmd_init(argc, argv);
 
     SDL_Init(SDL_INIT_VIDEO);
-    SDL_Surface *screen = SDL_SetVideoMode(160, 144, 24, SDL_DOUBLEBUF);
+    SDL_Surface *screen = SDL_SetVideoMode(800, 720, 24, SDL_DOUBLEBUF);
 }
 
 void sys_close() {
@@ -86,9 +86,9 @@ void sys_fb_ready() {
             u8 gbc = lcd.clean_fb[y*FB_WIDTH + x];
 
             if(gbc == 0)
-                set_pixel(s, x, y, ((x/8)%2==0 && (y/8)%2==0) || ((x/8)%2==1 && (y/8)%2==1) ? 0x220000ff : 0x000000ff);
+                boxColor(s, x*5, y*5, x*5+4, y*5+4, ((x/8)%2==0 && (y/8)%2==0) || ((x/8)%2==1 && (y/8)%2==1) ? 0x220000ff : 0x000000ff);
             else
-                set_pixel(s, x, y, palette[lcd.clean_fb[y*FB_WIDTH + x]]);
+                boxColor(s, x*5, y*5, x*5+4, y*5+4, palette[lcd.clean_fb[y*FB_WIDTH + x]]);
         }
     }
 

@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include "mem/io/lcd.h"
 #include "mem/io/divt.h"
 #include "mem/io/tima.h"
 #include "mem/mbc/rtc.h"
@@ -32,6 +33,7 @@ void cpu_reset() {
 
 static inline void exec_int(u8 i) {
     static u16 isr[] = {0x40, 0x48, 0x50, 0x58, 0x60};
+
 
     debug_int_exec(1 << i);
 
