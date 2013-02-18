@@ -71,8 +71,8 @@ static void draw_line() {
     if(lcd.c & LCDC_WND_ENABLE_BIT) {
         lcd_render_wnd_line();
     }
-    if(lcd.c & LCDC_WND_ENABLE_BIT) {
-        lcd_render_wnd_line();
+    if(lcd.c & LCDC_OBJ_ENABLE_BIT) {
+        lcd_render_obj_line();
     }
 }
 
