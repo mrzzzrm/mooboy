@@ -12,6 +12,8 @@
     #define LCDC_WND_MAP_BIT        0x40
     #define LCDC_DISPLAY_ENABLE_BIT 0x80
 
+    #define FB_WIDTH 160
+
     typedef struct {
         u8 c;
         u8 stat;

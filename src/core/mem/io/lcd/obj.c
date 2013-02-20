@@ -1,4 +1,5 @@
 #include "obj.h"
+#include "fb.h"
 #include "mem.h"
 #include "mem/io/lcd.h"
 
@@ -17,26 +18,43 @@
 #define OBJ_BYTES_IN_OAM 4
 
 
-static void draw_obj_line_flipped(const u8 *line_data, s16 sx, u8 palette) {
+static void draw_obj_line_flipped(const u8 *line_data, s16 fbx, u8 palette) {
 
 }
 
-static void draw_obj_line_normal(const u8 *line_data, s16 sx, u8 palette) {
+static void draw_obj_line_normal(const u8 *line_data, s16 fbx, u8 palette) {
+    s16 x, lx;
+    s16 rx;
 
+    rx = fbx + 8;
+    x = fbx > 0 ? fbx : 0;
+    lx = x - fbx;
+    for(; x < rx; x++) {
+        u8 pbm = 0x80 >> lx;
+        u8 rcol = ((line_data[0] & pbm) >> (8-lx)) | ((line_data[1] & pbm) >> ((8-lx)-1));
+        u8 pcol = (palette & (0x3 << (rcol<<1))) >> (rcol<<1);
+
+        lcd.working_fb[lcd.ly*FB_WIDTH + fbx] = pcol;
+    }
 }
 
-static unsigned int select_obj_indexes(const u8 *buf) {
+static unsigned int select_obj_indexes(u8 *buf) {
     u8 oam_pos, buf_index;
 
     buf_index = 0;
-    for(oam_pos = 0; oam_pos < OAM_OBJ_COUNT; oam_pos += OBJ_BYTES_IN_OAM {
-        s16 top_line = (s16)ram. oam[oam_pos + OBJ_POSY_OFFSET] - 16;
+    for(oam_pos = 0; oam_pos < OAM_OBJ_COUNT; oam_pos += OBJ_BYTES_IN_OAM) {
+        s16 top_line = (s16)ram.oam[oam_pos + OBJ_POSY_OFFSET] - 16;
         s16 bottom_line = top_line + (lcd.c & LCDC_OBJ_SIZE_BIT ? 15 : 7);
 
         if(lcd.ly >= top_line && lcd.ly <= bottom_line) {
-            buf[++buf_index] = ram.oam[oam_pos + OBJ_INDEX_OFFSET];
+            buf[buf_index++] = ram.oam[oam_pos + OBJ_INDEX_OFFSET];
+            if(buf_index >= MAX_OBJS_PER_LINE) {
+                break;
+            }
         }
     }
+
+    return buf_index;
 }
 
 static void establish_draw_priority(u8 *obj_indexes, unsigned int count) {
@@ -46,9 +64,9 @@ static void establish_draw_priority(u8 *obj_indexes, unsigned int count) {
         u8 o;
 
         switched = 0;
-        for(o = 0; i < count; o++) {
+        for(o = 0; o + 1 < count; o++) {
             u8 x1 = ram.oam[obj_indexes[o]*OBJ_BYTES_IN_OAM + OBJ_POSX_OFFSET];
-            u8 x2 = ram.oam[obj_indexes[o]*OBJ_BYTES_IN_OAM + OBJ_POSX_OFFSET];
+            u8 x2 = ram.oam[obj_indexes[o+1]*OBJ_BYTES_IN_OAM + OBJ_POSX_OFFSET];
 
             if(x2 < x1) {
                 u8 tmp = obj_indexes[o];
@@ -63,7 +81,7 @@ static void establish_draw_priority(u8 *obj_indexes, unsigned int count) {
 static void draw_obj(u8 index) {
     u8 obj_line;
     u8 *line_data;
-    s16 sx;
+    s16 fbx;
     u8 palette;
 
     obj_line = lcd.ly - (ram.oam[index*OBJ_BYTES_IN_OAM + OBJ_POSY_OFFSET] - 16);
@@ -72,14 +90,14 @@ static void draw_obj(u8 index) {
     }
 
     line_data = &mbc.vrambank[ram.oam[index*OBJ_BYTES_IN_OAM + OBJ_INDEX_OFFSET] * 16];
-    sx = ram.oam[obj_indexes[o]*OBJ_BYTES_IN_OAM + OBJ_POSX_OFFSET] - 8;
+    fbx = ram.oam[index*OBJ_BYTES_IN_OAM + OBJ_POSX_OFFSET] - 8;
     palette = ram.oam[index*OBJ_BYTES_IN_OAM + OBJ_FLAGS_OFFSET] & OBJ_PALETTE_BIT ? lcd.obp1 : lcd.obp0;
 
     if(ram.oam[index*OBJ_BYTES_IN_OAM + OBJ_FLAGS_OFFSET] & OBJ_XFLIP_BIT) {
-        draw_obj_line_flipped(line_data, sx, palette);
+        draw_obj_line_flipped(line_data, fbx, palette);
     }
     else {
-        draw_obj_line_normal(line_data, sx, palette);
+        draw_obj_line_normal(line_data, fbx, palette);
     }
 }
 
@@ -88,7 +106,7 @@ void lcd_render_obj_line() {
     unsigned int obj_count;
     u8 obj_indexes[MAX_OBJS_PER_LINE];
 
-    obj_count = select_obj_indexes_8x16(obj_indexes);
+    obj_count = select_obj_indexes(obj_indexes);
 
     establish_draw_priority(obj_indexes, obj_count);
 

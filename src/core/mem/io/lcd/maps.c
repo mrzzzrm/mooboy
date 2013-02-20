@@ -3,7 +3,6 @@
 #include <assert.h>
 #include "mem/io/lcd.h"
 
-#define FB_WIDTH 160
 
 #define MAP_WIDTH 256
 #define TILE_WIDTH 8
@@ -68,26 +67,26 @@ void lcd_render_bg_line() {
 }
 
 void lcd_render_wnd_line() {
-    u8 sx, mx;
+    u8 fbx, mx;
 
     if(lcd.wy > lcd.ly) {
         return;
     }
 
     if(lcd.wx < 7) {
-        sx = 0;
+        fbx = 0;
         mx = 7 - lcd.wx;
     }
     else {
-        sx = lcd.wx - 7;
+        fbx = lcd.wx - 7;
         mx = 0;
     }
 
     u8 my = lcd.ly - lcd.wy;
 
     if(lcd.c & LCDC_TILE_DATA_BIT)
-        render_map_line_unsigned_tdt(lcd.wndmap, mx, my, sx);
+        render_map_line_unsigned_tdt(lcd.wndmap, mx, my, fbx);
     else
-        render_map_line_signed_tdt(lcd.wndmap, mx, my, sx);
+        render_map_line_signed_tdt(lcd.wndmap, mx, my, fbx);
 }
 
