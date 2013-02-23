@@ -19,7 +19,19 @@
 
 
 static void draw_obj_line_flipped(const u8 *line_data, s16 fbx, u8 palette) {
+    s16 x, fx;
+    s16 lx;
 
+    fx = fbx > 0 ? fbx : 0;
+    x = fbx + 7;
+    lx = 7;
+    for(; lx >= fx; fx--) {
+        u8 pbm = 0x80 >> lx;
+        u8 rcol = ((line_data[0] & pbm) >> (8-lx)) | ((line_data[1] & pbm) >> ((8-lx)-1));
+        u8 pcol = (palette & (0x3 << (rcol<<1))) >> (rcol<<1);
+
+        lcd.working_fb[lcd.ly*LCD_WIDTH + fbx] = pcol;
+    }
 }
 
 static void draw_obj_line_normal(const u8 *line_data, s16 fbx, u8 palette) {
@@ -29,12 +41,12 @@ static void draw_obj_line_normal(const u8 *line_data, s16 fbx, u8 palette) {
     rx = fbx + 8;
     x = fbx > 0 ? fbx : 0;
     lx = x - fbx;
-    for(; x < rx; x++) {
+    for(; lx < rx; lx++) {
         u8 pbm = 0x80 >> lx;
         u8 rcol = ((line_data[0] & pbm) >> (8-lx)) | ((line_data[1] & pbm) >> ((8-lx)-1));
         u8 pcol = (palette & (0x3 << (rcol<<1))) >> (rcol<<1);
 
-        lcd.working_fb[lcd.ly*FB_WIDTH + fbx] = pcol;
+        lcd.working_fb[lcd.ly*LCD_WIDTH + fbx + lx] = pcol;
     }
 }
 

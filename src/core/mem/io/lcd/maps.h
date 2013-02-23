@@ -4,4 +4,6 @@
     void lcd_render_bg_line();
     void lcd_render_wnd_line();
 
+    void lcd_bgpmap_dirty();
+
 #endif

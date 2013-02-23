@@ -30,9 +30,6 @@
 #define STAT_SET_MODE(m)  (lcd.stat = (lcd.stat & 0xFC) | (m))
 #define STAT_SET_CFLAG(c) (lcd.stat = (lcd.stat & 0xFB) | ((c) << 2))
 
-#define LCD_WIDTH 160
-#define LCD_HEIGHT 144
-
 #define TILE_WIDTH 8
 #define TILE_HEIGHT 8
 #define TILE_BYTES 16
@@ -62,9 +59,9 @@ static void draw_line() {
     if(lcd.c & LCDC_WND_ENABLE_BIT) {
         lcd_render_wnd_line();
     }
-    if(lcd.c & LCDC_OBJ_ENABLE_BIT) {
-        lcd_render_obj_line();
-    }
+//    if(lcd.c & LCDC_OBJ_ENABLE_BIT) {
+//        lcd_render_obj_line();
+//    }
 }
 
 static u8 step_mode(u8 m1) {
@@ -107,7 +104,8 @@ void lcd_reset() {
     lcd.clean_fb = lcd.fb[0];
     lcd.working_fb = lcd.fb[1];
 
-    lcd_update_map_ptrs();
+    lcd_c_dirty();
+    lcd_bgpmap_dirty();
 }
 
 void lcd_step() {
@@ -165,14 +163,12 @@ void lcd_dma(u8 v) {
     u8 b;
     u16 src;
 
-    //debug_sym_dma(v);
-
     for(src = ((u16)v)<<8, b = 0; b < 0x9F; b++, src++) {
         ram.oam[b] = mem_readb(src);
     }
 }
 
-void lcd_update_map_ptrs() {
+void lcd_c_dirty() {
     lcd.bgmap = &mbc.vrambank[lcd.c & LCDC_BG_MAP_BIT ? 0x1C00 : 0x1800];
     lcd.wndmap = &mbc.vrambank[lcd.c & LCDC_WND_MAP_BIT ? 0x1C00 : 0x1800];
 }

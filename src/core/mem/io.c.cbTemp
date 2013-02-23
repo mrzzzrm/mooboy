@@ -124,10 +124,7 @@ void io_write(u16 adr, u8 val) {
         case 0x44: lcd.ly = val; break;
         case 0x45: lcd.lyc = val; /* TODO */  break;
         case 0x46: lcd_dma(val); break;
-        case 0x47:
-            lcd.bgp = val;
-            lcd_bgpmap_dirty();
-        break;
+        case 0x47: lcd.bgp = val; break;
         case 0x48: lcd.obp0 = val; break;
         case 0x49: lcd.obp1 = val; break;
         case 0x4A: lcd.wy = val; break;
