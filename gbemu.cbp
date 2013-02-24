@@ -104,6 +104,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/mem/io/divt.h" />
+		<Unit filename="src/core/mem/io/joy.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/mem/io/joy.h" />
 		<Unit filename="src/core/mem/io/lcd.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -156,6 +160,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/debug/mon.h" />
+		<Unit filename="src/debug/monitor.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/debug/monitor.h" />
 		<Unit filename="src/debug/run.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -175,16 +183,12 @@
 			<Option compilerVar="CC" />
 			<Option target="cli_release" />
 			<Option target="cli_debug" />
+			<Option target="sdl_debug" />
 		</Unit>
 		<Unit filename="src/sys/sdl/sdl.c">
 			<Option compilerVar="CC" />
-			<Option target="sdl_release" />
-			<Option target="sdl_debug" />
 		</Unit>
-		<Unit filename="src/sys/sdl/sdl.h">
-			<Option target="sdl_release" />
-			<Option target="sdl_debug" />
-		</Unit>
+		<Unit filename="src/sys/sdl/sdl.h" />
 		<Unit filename="src/sys/sdl/vid/vid.h" />
 		<Unit filename="src/sys/sys.h" />
 		<Unit filename="src/util/cmd.c">

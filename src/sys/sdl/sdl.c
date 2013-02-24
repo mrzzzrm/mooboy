@@ -5,6 +5,7 @@
 #include "core/fb.h"
 #include "core/cpu.h"
 #include "core/mem/io/lcd.h"
+#include "core/mem/io/joy.h"
 #include "util/err.h"
 
 #define FB_WIDTH 160
@@ -29,6 +30,30 @@ u32 palette[] = {
 
 static void set_pixel(SDL_Surface *surface, unsigned int x, unsigned int y, u32 color) {
      pixelColor(surface, x, y, color);
+}
+
+static void update_joypad() {
+   SDL_Event event;
+
+   while(SDL_PollEvent(&event)) {
+        if(event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
+            u8 state = event.key.state == SDL_RELEASED ? JOY_STATE_RELEASED : JOY_STATE_PRESSED;
+
+            switch(event.key.keysym.sym) {
+                case SDLK_UP:   joy_set_button(JOY_BUTTON_UP, state); break;
+                case SDLK_DOWN: joy_set_button(JOY_BUTTON_DOWN, state); break;
+                case SDLK_LEFT: joy_set_button(JOY_BUTTON_LEFT, state); break;
+                case SDLK_RIGHT:joy_set_button(JOY_BUTTON_RIGHT, state); break;
+                case SDLK_a:    joy_set_button(JOY_BUTTON_A, state); break;
+                case SDLK_s:    joy_set_button(JOY_BUTTON_B, state); break;
+                case SDLK_w:    joy_set_button(JOY_BUTTON_START, state); break;
+                case SDLK_d:    joy_set_button(JOY_BUTTON_SELECT, state); break;
+            }
+        }
+        else if(event.type == SDL_QUIT) {
+            exit(EXIT_SUCCESS);
+        }
+   }
 }
 
 
@@ -79,6 +104,8 @@ void sys_invoke() {
         invoke_count = 0;
         last_cc = cpu.cc;
     }
+
+    update_joypad();
 }
 
 void sys_fb_ready() {
@@ -92,7 +119,7 @@ void sys_fb_ready() {
 //            if(gbc == 3)
 //                boxColor(s, x*5, y*5, x*5+4, y*5+4, ((x/8)%2==0 && (y/8)%2==0) || ((x/8)%2==1 && (y/8)%2==1) ? 0x220000ff : 0x000000ff);
 //            else
-                boxColor(s, x*5, y*5, x*5+4, y*5+4, palette[lcd.clean_fb[y*FB_WIDTH + x]]);
+                boxColor(s, x*5, y*5, x*5+4, y*5+4, palette[lcd.clean_fb[y*FB_WIDTH + x] % 4]);
         }
     }
 

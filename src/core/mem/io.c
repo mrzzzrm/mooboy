@@ -5,6 +5,7 @@
 #include "_assert.h"
 #include "util/defines.h"
 #include "debug/debug.h"
+#include "io/joy.h"
 #include "io/divt.h"
 #include "io/tima.h"
 
@@ -13,7 +14,9 @@ u8 io_read(u16 adr) {
 
     switch(r) {
         /* TODO: Joypad */
-        case 0x00: break;
+        case 0x00: return joy_read(); break;
+
+        /* TODO: Serial */
         case 0x01: break;
         case 0x02: break;
 
@@ -81,7 +84,7 @@ void io_write(u16 adr, u8 val) {
     u8 r = adr & 0x00FF;
     switch(r) {
         /* TODO: Joypad */
-        case 0x00: break;
+        case 0x00: joy_select_col(val); break;
         case 0x01: break;
         case 0x02: break;
 
