@@ -18,37 +18,8 @@
 #define OBJ_BYTES_IN_OAM 4
 
 
-static void draw_obj_line_flipped(const u8 *line_data, s16 fbx, u8 palette) {
-    s16 x, fx;
-    s16 lx;
-
-    fx = fbx > 0 ? fbx : 0;
-    x = fbx + 7;
-    lx = 7;
-    for(; lx >= fx; fx--) {
-        u8 pbm = 0x80 >> lx;
-        u8 rcol = ((line_data[0] & pbm) >> (8-lx)) | ((line_data[1] & pbm) >> ((8-lx)-1));
-        u8 pcol = (palette & (0x3 << (rcol<<1))) >> (rcol<<1);
-
-        lcd.working_fb[lcd.ly*LCD_WIDTH + fbx] = pcol;
-    }
-}
-
-static void draw_obj_line_normal(const u8 *line_data, s16 fbx, u8 palette) {
-    s16 x, lx;
-    s16 rx;
-
-    rx = fbx + 8;
-    x = fbx > 0 ? fbx : 0;
-    lx = x - fbx;
-    for(; lx < rx; lx++) {
-        u8 pbm = 0x80 >> lx;
-        u8 rcol = ((line_data[0] & pbm) >> (8-lx)) | ((line_data[1] & pbm) >> ((8-lx)-1));
-        u8 pcol = (palette & (0x3 << (rcol<<1))) >> (rcol<<1);
-
-        lcd.working_fb[lcd.ly*LCD_WIDTH + fbx + lx] = pcol;
-    }
-}
+static u8 obp0map[4];
+static u8 obp1map[4];
 
 static unsigned int select_obj_indexes(u8 *buf) {
     u8 oam_pos, buf_index;
@@ -94,7 +65,7 @@ static void draw_obj(u8 index) {
     u8 obj_line;
     u8 *line_data;
     s16 fbx;
-    u8 palette;
+    u8 *palette_map;
 
     obj_line = lcd.ly - (ram.oam[index*OBJ_BYTES_IN_OAM + OBJ_POSY_OFFSET] - 16);
     if(ram.oam[index*OBJ_BYTES_IN_OAM + OBJ_FLAGS_OFFSET] & OBJ_YFLIP_BIT) {
@@ -103,13 +74,13 @@ static void draw_obj(u8 index) {
 
     line_data = &mbc.vrambank[ram.oam[index*OBJ_BYTES_IN_OAM + OBJ_INDEX_OFFSET] * 16];
     fbx = ram.oam[index*OBJ_BYTES_IN_OAM + OBJ_POSX_OFFSET] - 8;
-    palette = ram.oam[index*OBJ_BYTES_IN_OAM + OBJ_FLAGS_OFFSET] & OBJ_PALETTE_BIT ? lcd.obp1 : lcd.obp0;
+    palette_map = ram.oam[index*OBJ_BYTES_IN_OAM + OBJ_FLAGS_OFFSET] & OBJ_PALETTE_BIT ? obp1map : obp0map;
 
     if(ram.oam[index*OBJ_BYTES_IN_OAM + OBJ_FLAGS_OFFSET] & OBJ_XFLIP_BIT) {
-        draw_obj_line_flipped(line_data, fbx, palette);
+        lcd_render_tile_line_reversed(line_data, 0, 0, fbx, palette_map, 1);
     }
     else {
-        draw_obj_line_normal(line_data, fbx, palette);
+        lcd_render_tile_line(line_data, 0, 0, fbx, palette_map, 1);
     }
 }
 
@@ -126,4 +97,20 @@ void lcd_render_obj_line() {
         draw_obj(obj_indexes[o]);
     }
 }
+
+static void obpmap_dirty(u8 obp, u8 *obpmap) {
+    u8 rc;
+    for(rc = 0; rc < 4; rc++) {
+        obpmap[rc] = (obp & (0x3 << (rc<<1))) >> (rc<<1);
+    }
+}
+
+void lcd_obp0map_dirty() {
+    obpmap_dirty(lcd.obp0, obp0map);
+}
+
+void lcd_obp1map_dirty() {
+    obpmap_dirty(lcd.obp1, obp1map);
+}
+
 

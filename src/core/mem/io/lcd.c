@@ -30,8 +30,6 @@
 #define STAT_SET_MODE(m)  (lcd.stat = (lcd.stat & 0xFC) | (m))
 #define STAT_SET_CFLAG(c) (lcd.stat = (lcd.stat & 0xFB) | ((c) << 2))
 
-#define TILE_WIDTH 8
-#define TILE_HEIGHT 8
 #define TILE_BYTES 16
 #define TILE_LINE_BYTES 2
 
@@ -59,9 +57,9 @@ static void draw_line() {
     if(lcd.c & LCDC_WND_ENABLE_BIT) {
         lcd_render_wnd_line();
     }
-//    if(lcd.c & LCDC_OBJ_ENABLE_BIT) {
-//        lcd_render_obj_line();
-//    }
+    if(lcd.c & LCDC_OBJ_ENABLE_BIT) {
+        lcd_render_obj_line();
+    }
 }
 
 static u8 step_mode(u8 m1) {
@@ -106,10 +104,20 @@ void lcd_reset() {
 
     lcd_c_dirty();
     lcd_bgpmap_dirty();
+    lcd_obp0map_dirty();
+    lcd_obp1map_dirty();
 }
 
 void lcd_step() {
     u16 m1, m2;
+
+    if(lcd.ly == lcd.lyc) {
+        stat_irq(SIF_LYC);
+        STAT_SET_CFLAG(1);
+    }
+    else {
+        STAT_SET_CFLAG(0);
+    }
 
     if(!(lcd.c & LCDC_DISPLAY_ENABLE_BIT)) {
         return;
@@ -128,7 +136,7 @@ void lcd_step() {
                     stat_irq(SIF_VBLANK);
                     sys_fb_ready();
                 }
-                else  {// OAM IRQ
+                else  { // OAM IRQ
                     stat_irq(SIF_OAM);
                 }
             break;
@@ -148,14 +156,6 @@ void lcd_step() {
                 draw_line();
             }
         }
-    }
-
-    if(lcd.ly == lcd.lyc) {
-        stat_irq(SIF_LYC);
-        STAT_SET_CFLAG(1);
-    }
-    else {
-        STAT_SET_CFLAG(0);
     }
 }
 

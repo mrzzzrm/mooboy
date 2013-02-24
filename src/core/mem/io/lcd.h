@@ -3,6 +3,9 @@
 
     #include "util/defines.h"
 
+    #define TILE_WIDTH 8
+    #define TILE_HEIGHT 8
+
     #define LCDC_BG_ENABLE_BIT      0x01
     #define LCDC_OBJ_ENABLE_BIT     0x02
     #define LCDC_OBJ_SIZE_BIT       0x04

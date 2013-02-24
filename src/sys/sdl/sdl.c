@@ -17,10 +17,14 @@ static unsigned int last_cc;
 static time_t last_sec;
 
 u32 palette[] = {
+    0xFFFFFFFF,
+    0xAAAAAAFF,
+    0x555555FF,
     0x000000FF,
-    0x446644FF,
-    0x77AA77FF,
-    0xCCFFCCFF
+    0xFF0000FF,
+    0x00FF00FF,
+    0x0000FFFF,
+    0xFFFF00FF
 };
 
 static void set_pixel(SDL_Surface *surface, unsigned int x, unsigned int y, u32 color) {
@@ -85,9 +89,9 @@ void sys_fb_ready() {
         for(x = 0; x < FB_WIDTH; x++) {
             u8 gbc = lcd.clean_fb[y*FB_WIDTH + x];
 
-            if(gbc == 0)
-                boxColor(s, x*5, y*5, x*5+4, y*5+4, ((x/8)%2==0 && (y/8)%2==0) || ((x/8)%2==1 && (y/8)%2==1) ? 0x220000ff : 0x000000ff);
-            else
+//            if(gbc == 3)
+//                boxColor(s, x*5, y*5, x*5+4, y*5+4, ((x/8)%2==0 && (y/8)%2==0) || ((x/8)%2==1 && (y/8)%2==1) ? 0x220000ff : 0x000000ff);
+//            else
                 boxColor(s, x*5, y*5, x*5+4, y*5+4, palette[lcd.clean_fb[y*FB_WIDTH + x]]);
         }
     }

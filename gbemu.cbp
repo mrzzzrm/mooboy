@@ -52,7 +52,7 @@
 				<Option object_output="build/bin/sdl_debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="--rom ./rom/pokeblue.gb" />
+				<Option parameters="--rom ./rom/filltest.gb" />
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-DDEBUG" />
@@ -116,6 +116,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/mem/io/lcd/obj.h" />
+		<Unit filename="src/core/mem/io/lcd/tile.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/mem/io/lcd/tile.h" />
 		<Unit filename="src/core/mem/io/tima.c">
 			<Option compilerVar="CC" />
 		</Unit>

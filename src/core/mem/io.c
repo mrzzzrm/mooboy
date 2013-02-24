@@ -1,6 +1,7 @@
 #include "io.h"
 #include "io/lcd.h"
 #include "cpu.h"
+#include "cpu/defines.h"
 #include "_assert.h"
 #include "util/defines.h"
 #include "debug/debug.h"
@@ -122,14 +123,22 @@ void io_write(u16 adr, u8 val) {
         case 0x42: lcd.scy = val; break;
         case 0x43: lcd.scx = val; break;
         case 0x44: lcd.ly = val; break;
-        case 0x45: lcd.lyc = val; /* TODO */  break;
+        case 0x45:
+            lcd.lyc = val;
+        break;
         case 0x46: lcd_dma(val); break;
         case 0x47:
             lcd.bgp = val;
             lcd_bgpmap_dirty();
         break;
-        case 0x48: lcd.obp0 = val; break;
-        case 0x49: lcd.obp1 = val; break;
+        case 0x48:
+            lcd.obp0 = val;
+            lcd_obp0map_dirty();
+        break;
+        case 0x49:
+            lcd.obp1 = val;
+            lcd_obp1map_dirty();
+        break;
         case 0x4A: lcd.wy = val; break;
         case 0x4B: lcd.wx = val; break;
 
