@@ -38,6 +38,7 @@ static void render_map_line_signed_tdt(u8 *map, u8 mx, u8 my, u8 fbx, int crap) 
     u8 *tdp = &map[tr * MAP_COLUMNS + tc];
 
     lcd_render_tile_line(get_signed_tile_line(tdt, tdp, ty), tx, ty, fbx, bgpmap, crap);
+    tc++;
     for(fbx += (TILE_WIDTH-tx); fbx < LCD_WIDTH; fbx += TILE_WIDTH) {
         tdp = &map[tr * MAP_COLUMNS + tc];
         lcd_render_tile_line(get_signed_tile_line(tdt, tdp, ty), 0, ty, fbx, bgpmap, crap);
@@ -50,6 +51,7 @@ static void render_map_line_unsigned_tdt(u8 *map, u8 mx, u8 my, u8 fbx, int crap
     u8 *tdp = &map[tr * MAP_COLUMNS + tc];
 
     lcd_render_tile_line(get_unsigned_tile_line(tdt, tdp, ty), tx, ty, fbx, bgpmap, crap);
+    tc++;
     for(fbx += (TILE_WIDTH-tx); fbx < LCD_WIDTH; fbx += TILE_WIDTH) {
         tdp = &map[tr * MAP_COLUMNS + tc];
         lcd_render_tile_line(get_unsigned_tile_line(tdt, tdp, ty), 0, ty, fbx, bgpmap, crap);
@@ -76,7 +78,7 @@ void lcd_render_wnd_line() {
     }
     if(lcd.wx <= 7) {
         fbx = 0;
-        mx = lcd.wx;
+        mx = lcd.wx - 7;
     }
     else {
         fbx = lcd.wx - 7;
