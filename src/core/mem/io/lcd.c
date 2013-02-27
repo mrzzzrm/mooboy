@@ -48,6 +48,7 @@ static void swap_fb() {
     u8 *tmp = lcd.clean_fb;
     lcd.clean_fb = lcd.working_fb;
     lcd.working_fb = tmp;
+    memset(lcd.working_fb, 0x00, sizeof(lcd.working_fb));
 }
 
 static void draw_line() {

@@ -6,6 +6,7 @@
 #define MAX_PER_LINE 10
 #define OBJ_SIZE 4
 #define OAM_SIZE 0xA0
+#define OAM_OBJ_COUNT 40
 
 #define OBJ_POSY_OFFSET 0
 #define OBJ_POSX_OFFSET 1
@@ -43,10 +44,11 @@ static void render_obj_line(u8 *line, u8 tx, u8 ty, u8 fbx, u8 *palette, u8 bgpr
     for(; tx < TILE_WIDTH && fb_cursor < line_end; tx++, fb_cursor++) {
         u8 lsb = (line[0] >> rshift) & 0x01;
         u8 msb = (line[1] >> rshift) & 0x01;
-        u8 col = palette[lsb + (msb << 1)];
 
-        if(bgpriority || col) {
-            lcd.working_fb[fb_cursor] = col;
+        if(lsb || msb) {
+            if(bgpriority || lcd.working_fb[fb_cursor] == 0) {
+                lcd.working_fb[fb_cursor] = palette[lsb + (msb << 1)];
+            }
         }
         rshift--;
     }
@@ -69,16 +71,13 @@ static unsigned int select_obj_indexes(u8 **buf) {
 
         if((s16)lcd.ly >= top_line && (s16)lcd.ly <= bottom_line) {
             buf[buf_index++] = obj;
-            if(buf_index >= MAX_PER_LINE) {
-                break;
-            }
         }
     }
 
     return buf_index;
 }
 
-static void establish_render_priority(u8 **objs, unsigned int count) {
+static unsigned int establish_render_priority(u8 **objs, unsigned int count) {
     u8 switched;
 
     do {
@@ -93,6 +92,8 @@ static void establish_render_priority(u8 **objs, unsigned int count) {
             }
         }
     } while(switched);
+
+    return count > MAX_PER_LINE ? MAX_PER_LINE : count;
 }
 
 static void render_obj(u8 *obj) {
@@ -124,13 +125,13 @@ static void render_obj(u8 *obj) {
 void lcd_render_obj_line() {
     unsigned int o;
     unsigned int obj_count;
-    u8 *obj_indexes[MAX_PER_LINE];
+    u8 *obj_indexes[OAM_OBJ_COUNT];
 
     obj_size_mode = lcd.c & LCDC_OBJ_SIZE_BIT;
     obj_height = (obj_size_mode ? 15 : 7);
 
     obj_count = select_obj_indexes(obj_indexes);
-    establish_render_priority(obj_indexes, obj_count);
+    obj_count = establish_render_priority(obj_indexes, obj_count);
 
     for(o = 0; o < obj_count; o++) {
         render_obj(obj_indexes[o]);

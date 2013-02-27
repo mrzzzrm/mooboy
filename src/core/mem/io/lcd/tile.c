@@ -10,7 +10,7 @@ void lcd_render_tile_line(u8 *line, u8 tx, u8 ty, u8 fbx, u8 *palette, int crap)
         u8 lsb = (line[0] >> rshift) & 0x01;
         u8 msb = (line[1] >> rshift) & 0x01;
 
-        lcd.working_fb[fb_cursor] = palette[lsb + (msb << 1)] + crap*4;
+        lcd.working_fb[fb_cursor] = palette[lsb + (msb << 1)];// + crap*4;
         rshift--;
     }
 }

@@ -10,12 +10,12 @@ joy_t joy;
 
 
 void joy_init() {
-    joy.state = 0;
+    joy.state = 0xFF;
     joy.col = 0;
 }
 
 void joy_set_button(u8 button, u8 state) {
-    u8 old_state = joy.state & button ? 1 : 0;
+    u8 old_state = joy.state & button ? JOY_STATE_RELEASED : JOY_STATE_PRESSED;
     if(old_state != state) {
         if(state) {
             joy.state |= button;
@@ -37,5 +37,9 @@ void joy_select_col(u8 flag) {
 }
 
 u8 joy_read() {
-    return (joy.state >> (joy.col*4)) & 0x0F;
+    if(joy.col == 0)
+        return joy.state & 0x0F;
+    else
+        return joy.state >> 4;
 }
+
