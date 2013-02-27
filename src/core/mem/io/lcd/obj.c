@@ -5,6 +5,7 @@
 
 #define MAX_OBJS_PER_LINE 10
 #define OAM_OBJ_COUNT 40
+#define OAM_BYTE_COUNT 0xA0
 
 #define OBJ_POSY_OFFSET 0
 #define OBJ_POSX_OFFSET 1
@@ -25,7 +26,7 @@ static unsigned int select_obj_indexes(u8 *buf) {
     u8 oam_pos, buf_index;
 
     buf_index = 0;
-    for(oam_pos = 0; oam_pos < OAM_OBJ_COUNT; oam_pos += OBJ_BYTES_IN_OAM) {
+    for(oam_pos = 0; oam_pos < OAM_BYTE_COUNT; oam_pos += OBJ_BYTES_IN_OAM) {
         s16 top_line = (s16)ram.oam[oam_pos + OBJ_POSY_OFFSET] - 16;
         s16 bottom_line = top_line + (lcd.c & LCDC_OBJ_SIZE_BIT ? 15 : 7);
 
@@ -64,6 +65,8 @@ static void establish_draw_priority(u8 *obj_indexes, unsigned int count) {
 static void draw_obj(u8 index) {
     u8 obj_line;
     u8 *line_data;
+    u8 tile_index;
+    u8 line_num;
     s16 fbx;
     u8 *palette_map;
 
@@ -72,7 +75,10 @@ static void draw_obj(u8 index) {
         obj_line = (lcd.c & LCDC_OBJ_SIZE_BIT ? 15 : 7) - obj_line;
     }
 
-    line_data = &mbc.vrambank[ram.oam[index*OBJ_BYTES_IN_OAM + OBJ_INDEX_OFFSET] * 16];
+    tile_index = ram.oam[index*OBJ_BYTES_IN_OAM + OBJ_INDEX_OFFSET];
+    line_num = lcd.ly - ram.oam[index*OBJ_BYTES_IN_OAM + OBJ_POSY_OFFSET];
+
+    line_data = &mbc.vrambank[tile_index * 0x10 + line_num * 0x02];
     fbx = ram.oam[index*OBJ_BYTES_IN_OAM + OBJ_POSX_OFFSET] - 8;
     palette_map = ram.oam[index*OBJ_BYTES_IN_OAM + OBJ_FLAGS_OFFSET] & OBJ_PALETTE_BIT ? obp1map : obp0map;
 
@@ -90,7 +96,6 @@ void lcd_render_obj_line() {
     u8 obj_indexes[MAX_OBJS_PER_LINE];
 
     obj_count = select_obj_indexes(obj_indexes);
-
     establish_draw_priority(obj_indexes, obj_count);
 
     for(o = 0; o < obj_count; o++) {

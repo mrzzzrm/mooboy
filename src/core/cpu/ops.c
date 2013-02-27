@@ -130,7 +130,6 @@ void op_ldhl_spi(op_chunk *c) {
 
 void op_ld_imsp(op_chunk *c)  {
     mem_writew(mem_readw(PC), SP);
-    assert(0);
     PC += 2;
 }
 
