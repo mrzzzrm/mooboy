@@ -13,9 +13,9 @@
         reg_t af, bc, de, hl;
         reg_t sp, pc;
 
-        u8 ime;
-        u8 irq;
-        u8 ie;
+        u8 ime, irq, ie;
+
+        u8 div, tima, tma, tac;
 
         u32 cc;
         u32 mcs_per_second;

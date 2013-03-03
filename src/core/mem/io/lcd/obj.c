@@ -1,5 +1,4 @@
 #include "obj.h"
-#include "fb.h"
 #include "mem.h"
 #include "mem/io/lcd.h"
 
@@ -55,7 +54,22 @@ static void render_obj_line(u8 *line, u8 tx, u8 ty, u8 fbx, u8 *palette, u8 bgpr
 }
 
 static void render_obj_line_reversed(u8 *line, u8 tx, u8 ty, u8 fbx, u8 *palette, u8 bgpriority) {
-    render_obj_line(line, tx, ty, fbx, palette, bgpriority);
+    u16 fb_cursor = (lcd.ly * LCD_WIDTH) + fbx;
+    u16 line_end = (lcd.ly + 1) * LCD_WIDTH;
+    u8 rshift = 0;
+    bgpriority = bgpriority ? 0 : 1;
+
+    for(; tx < TILE_WIDTH && fb_cursor < line_end; tx++, fb_cursor++) {
+        u8 lsb = (line[0] >> rshift) & 0x01;
+        u8 msb = (line[1] >> rshift) & 0x01;
+
+        if(lsb || msb) {
+            if(bgpriority || lcd.working_fb[fb_cursor] == 0) {
+                lcd.working_fb[fb_cursor] = palette[lsb + (msb << 1)];
+            }
+        }
+        rshift++;
+    }
 }
 
 

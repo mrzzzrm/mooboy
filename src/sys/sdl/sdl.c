@@ -2,7 +2,6 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_gfxPrimitives.h>
 #include "util/cmd.h"
-#include "core/fb.h"
 #include "core/cpu.h"
 #include "core/mem/io/lcd.h"
 #include "core/mem/io/joy.h"
@@ -11,7 +10,6 @@
 #define FB_WIDTH 160
 #define FB_HEIGHT 144
 
-fb_t fb;
 
 static unsigned int invoke_count;
 static unsigned int last_cc;

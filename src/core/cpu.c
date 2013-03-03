@@ -1,11 +1,10 @@
 #include "cpu.h"
 #include "mem/io/lcd.h"
-#include "mem/io/divt.h"
-#include "mem/io/tima.h"
 #include "mem/mbc/rtc.h"
 #include "mem/mbc.h"
 #include "cpu/ops.h"
 #include "cpu/defines.h"
+#include "cpu/timers.h"
 #include "debug/debug.h"
 
 cpu_t cpu;
@@ -24,10 +23,17 @@ void cpu_reset() {
 
     cpu.ime = 0x00;
     cpu.irq = 0x00;
-    cpu.ie = 0x00;
+    cpu.ie = 0xFF;
+
+    cpu.div = 0x00;
+    cpu.tima = 0x00;
+    cpu.tma = 0x00;
+    cpu.tac = 0x00;
 
     cpu.cc = 0;
     cpu.mcs_per_second = 1048576;
+
+    timers_reset();
 }
 
 
@@ -61,8 +67,7 @@ static inline void handle_ints() {
 }
 
 static inline void step_timers(u8 mcs) {
-    divt_step(mcs);
-    tima_step(mcs);
+    timers_step(mcs);
 
     if(mbc.type == 3) {
         rtc_step(mcs);
@@ -70,12 +75,14 @@ static inline void step_timers(u8 mcs) {
 }
 
 u8 cpu_exec(u8 op) {
+    u32 old_mcs = cpu.cc;
+
 	op_chunk *c = op_chunk_map[op];
 	c->sp = 0;
 	c->funcs[c->sp++](c);
 	cpu.cc += c->mcs;
 
-	return c->mcs;
+	return cpu.cc - old_mcs;
 }
 
 u8 cpu_step() {

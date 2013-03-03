@@ -45,7 +45,7 @@
     #define FC (F&FCBIT)
 
     #define FZZ(b) ((b) == 0 ? FZBIT : 0)
-    #define FCB0(b) (((b)&0x1)<<4)
+    #define FCB0(b) (((b)&0x01)<<4)
     #define FCB7(b) (((b)&0x80)>>3)
 
     #define IF_VBLANK  0x01

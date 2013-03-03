@@ -39,10 +39,12 @@ static void render_map_line_signed_tdt(u8 *map, u8 mx, u8 my, u8 fbx, int crap) 
 
     lcd_render_tile_line(get_signed_tile_line(tdt, tdp, ty), tx, ty, fbx, bgpmap, crap);
     tc++;
+    tc %= 32;
     for(fbx += (TILE_WIDTH-tx); fbx < LCD_WIDTH; fbx += TILE_WIDTH) {
         tdp = &map[tr * MAP_COLUMNS + tc];
         lcd_render_tile_line(get_signed_tile_line(tdt, tdp, ty), 0, ty, fbx, bgpmap, crap);
         tc++;
+        tc %= 32;
     }
 }
 
@@ -52,10 +54,12 @@ static void render_map_line_unsigned_tdt(u8 *map, u8 mx, u8 my, u8 fbx, int crap
 
     lcd_render_tile_line(get_unsigned_tile_line(tdt, tdp, ty), tx, ty, fbx, bgpmap, crap);
     tc++;
+    tc %= 32;
     for(fbx += (TILE_WIDTH-tx); fbx < LCD_WIDTH; fbx += TILE_WIDTH) {
         tdp = &map[tr * MAP_COLUMNS + tc];
         lcd_render_tile_line(get_unsigned_tile_line(tdt, tdp, ty), 0, ty, fbx, bgpmap, crap);
         tc++;
+        tc %= 32;
     }
 }
 

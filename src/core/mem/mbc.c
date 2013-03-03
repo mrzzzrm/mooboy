@@ -62,13 +62,23 @@ static void mbc2_control(u16 adr, u8 val) {
 static void mbc3_control(u16 adr, u8 val) {
     switch(adr>>12) {
         case 0: case 1: // RAM and RTC en/disable
+            //exit(3);
         break;
         case 2: case 3: // Select ROM bank
             mbc.rombank = rom.banks[(val & 0x7F) == 0 ? 0x01 : (val & 0x7F)];
         break;
         case 4: case 5: // TODO: Select RAM bank or RTC register
+            switch(val) {
+                case 0x00: case 0x01: case 0x02: case 0x03:
+                    mbc.xrambank = ram.xbanks[val];
+                break;
+                default:
+                    exit(1);
+            }
         break;
         case 6: case 7: // TODO: Latch Clock Data
+            fprintf(stderr, "Latched clock data\n");
+            //exit(2);
         break;
     }
 }
@@ -101,6 +111,7 @@ u8 mbc_upper_read(u16 adr) {
     adr -= 0xA000;
 
     if(mbc.type == 3 && mbc3.mode == 0) {
+        exit(4);
         // TODO: RTC
         return 0;
     }
@@ -118,6 +129,7 @@ void mbc_upper_write(u16 adr, u8 val) {
 
     if(mbc.type == 3 && mbc3.mode == 0) {
         // TODO: RTC
+        exit(5);
     }
     else {
         mbc.xrambank[adr] = val;

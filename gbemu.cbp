@@ -11,7 +11,7 @@
 				<Option object_output="build/bin/cli_release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="--rom ./rom/pokeblue.gb.gb " />
+				<Option parameters="--rom ./rom/pokebluzelda.gb" />
 				<Compiler>
 					<Add option="-g" />
 					<Add directory="src/core" />
@@ -52,7 +52,7 @@
 				<Option object_output="build/bin/sdl_debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="--rom ./rom/filltest.gb" />
+				<Option parameters="--rom ./rom/irq.gb" />
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-DDEBUG" />
@@ -83,11 +83,14 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/cpu/ops.h" />
+		<Unit filename="src/core/cpu/timers.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/cpu/timers.h" />
 		<Unit filename="src/core/emu.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/emu.h" />
-		<Unit filename="src/core/fb.h" />
 		<Unit filename="src/core/loader.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -100,10 +103,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/mem/io.h" />
-		<Unit filename="src/core/mem/io/divt.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/core/mem/io/divt.h" />
 		<Unit filename="src/core/mem/io/joy.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -124,10 +123,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/mem/io/lcd/tile.h" />
-		<Unit filename="src/core/mem/io/tima.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/core/mem/io/tima.h" />
 		<Unit filename="src/core/mem/mbc.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -183,7 +178,6 @@
 			<Option compilerVar="CC" />
 			<Option target="cli_release" />
 			<Option target="cli_debug" />
-			<Option target="sdl_debug" />
 		</Unit>
 		<Unit filename="src/sys/sdl/sdl.c">
 			<Option compilerVar="CC" />

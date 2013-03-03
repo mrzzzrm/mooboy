@@ -8,6 +8,7 @@
 
 joy_t joy;
 
+static u8 state;
 
 void joy_init() {
     joy.state = 0xFF;

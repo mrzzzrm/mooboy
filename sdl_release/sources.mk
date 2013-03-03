@@ -1,0 +1,91 @@
+################################################################################
+# Automatically-generated file. Do not edit!
+################################################################################
+
+O_SRCS := 
+C_SRCS := 
+S_UPPER_SRCS := 
+OBJ_SRCS := 
+ASM_SRCS := 
+OBJS := 
+C_DEPS := 
+EXECUTABLES := 
+
+# Every subdirectory with source files must be described here
+SUBDIRS := \
+tools/disasm \
+test/mem/src \
+test/mem/obj/Debug/src/util \
+test/mem/obj/Debug/src/sys/cli \
+test/mem/obj/Debug/src \
+test/mem/obj/Debug/src/core \
+test/mem/obj/Debug/src/core/cpu \
+test/flags/src \
+test/cpu/src \
+test/cpu/obj/Debug/src/util \
+test/cpu/obj/Debug/src \
+test/cpu/obj/Debug/src/core \
+test/cpu/obj/Debug/src/core/cpu \
+src/util \
+src/sys/sdl \
+src/sys/cli \
+src \
+src/debug \
+src/core \
+src/core/mem \
+src/core/mem/mbc \
+src/core/mem/io \
+src/core/mem/io/lcd \
+src/core/cpu \
+rom \
+build/bin/sdl_release/src/util \
+build/bin/sdl_release/src/sys/sdl \
+build/bin/sdl_release/src/sys/cli \
+build/bin/sdl_release/src \
+build/bin/sdl_release/src/debug \
+build/bin/sdl_release/src/core \
+build/bin/sdl_release/src/core/mem \
+build/bin/sdl_release/src/core/mem/mbc \
+build/bin/sdl_release/src/core/mem/io \
+build/bin/sdl_release/src/core/mem/io/lcd \
+build/bin/sdl_release/src/core/cpu \
+build/bin/sdl_debug/src/util \
+build/bin/sdl_debug/src/sys/sdl \
+build/bin/sdl_debug/src/sys/cli \
+build/bin/sdl_debug/src \
+build/bin/sdl_debug/src/debug \
+build/bin/sdl_debug/src/core \
+build/bin/sdl_debug/src/core/mem \
+build/bin/sdl_debug/src/core/mem/mbc \
+build/bin/sdl_debug/src/core/mem/io \
+build/bin/sdl_debug/src/core/mem/io/lcd \
+build/bin/sdl_debug/src/core/cpu \
+build/bin/cli_release/src/util \
+build/bin/cli_release/src/sys/cli \
+build/bin/cli_release/src \
+build/bin/cli_release/src/debug \
+build/bin/cli_release/src/core \
+build/bin/cli_release/src/core/mem \
+build/bin/cli_release/src/core/mem/mbc \
+build/bin/cli_release/src/core/mem/io \
+build/bin/cli_release/src/core/mem/io/lcd \
+build/bin/cli_release/src/core/io \
+build/bin/cli_release/src/core/io/lcd \
+build/bin/cli_release/src/core/etc \
+build/bin/cli_release/src/core/cpu \
+build/bin/cli_release/debug \
+build/bin/cli_debug/src/util \
+build/bin/cli_debug/src/sys/cli \
+build/bin/cli_debug/src \
+build/bin/cli_debug/src/debug \
+build/bin/cli_debug/src/core \
+build/bin/cli_debug/src/core/mem \
+build/bin/cli_debug/src/core/mem/mbc \
+build/bin/cli_debug/src/core/mem/io \
+build/bin/cli_debug/src/core/mem/io/lcd \
+build/bin/cli_debug/src/core/io \
+build/bin/cli_debug/src/core/io/lcd \
+build/bin/cli_debug/src/core/etc \
+build/bin/cli_debug/src/core/cpu \
+build/bin/cli_debug/debug \
+
