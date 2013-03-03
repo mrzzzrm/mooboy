@@ -2,4 +2,4 @@ build/
 *.depend
 *.layout
 src/*/*.cbTemp
-sdl_release/
+sdl_release/*
