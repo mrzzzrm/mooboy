@@ -66,6 +66,7 @@ op_chunk *op_create_chunk(u8 op) {
         case 0x2F: PUSH_FUNC(op_cpl); break;
         case 0x37: PUSH_FUNC(op_scf); break;
         case 0x3F: PUSH_FUNC(op_ccf); break;
+        case 0x76: PUSH_FUNC(op_halt); break;
         case 0xC3:
             PUSH_FUNC(op_opl_iw);
             PUSH_FUNC(op_jp);
@@ -179,17 +180,12 @@ op_chunk *op_create_chunk(u8 op) {
                         break;
                     }
                 break;
-                case 0x01: // 01XX XXXX
-                    if(op == 0x76) { // 0111 0110
-                        PUSH_FUNC(op_halt);
-                    }
-                    else { // 01XX XXXX except 0111 0110
-                        chunk_opr_stdb(c, op & 0x07);
-                        chunk_opl_stdb(c, (op & 0x38)>>3);
-                        PUSH_FUNC(op_ld_b);
-                        if(c->opl.w == &HL || c->opr.w == &HL)
-                            MCS(2);
-                    }
+                case 0x01: // 01XX XXXX except 0111 0110
+                    chunk_opr_stdb(c, op & 0x07);
+                    chunk_opl_stdb(c, (op & 0x38)>>3);
+                    PUSH_FUNC(op_ld_b);
+                    if(c->opl.w == &HL || c->opr.w == &HL)
+                        MCS(2);
                 break;
                 case 0x02: // 10XX XXXX
                     c->opl.b = &A;
@@ -202,7 +198,7 @@ op_chunk *op_create_chunk(u8 op) {
                     switch(op & 0x07) { // 11XX X(111)
                         case 0x01: // 11XX X001
                             c->opl.w = WREG_AF((op&0x30)>>4);
-                            PUSH_FUNC(op_pop);
+                            PUSH_FUNC(op == 0xF1 ? op_pop_af : op_pop);
                             MCS(3);
                         break;
                         case 0x04: // 11XX X100

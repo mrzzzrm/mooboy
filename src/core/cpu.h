@@ -19,6 +19,7 @@
 
         u32 cc;
         u32 mcs_per_second;
+        u8 halted, stopped;
     } cpu_t;
 
     extern cpu_t cpu;

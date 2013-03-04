@@ -143,6 +143,12 @@ void op_pop(op_chunk *c)  {
     OPLW = pop();
 }
 
+void op_pop_af(op_chunk *c)  {
+    debug_trace_op("POP"); debug_trace_opl(&OPLW, 2, 0);
+    OPLW = pop();
+    F &= 0xF0;
+}
+
 void op_add_b(op_chunk *c) {
     debug_trace_op("ADD"); debug_trace_opl(&OPLB, 1, 0); debug_trace_opr(&OPRB, 1, 0);
 
@@ -203,7 +209,7 @@ void op_inc_b(op_chunk *c) {
     u16 r = (u16)OPLB + 1;
     F = FZZ((u8)r) |
         (FHBIT & ((OPLB ^ r) << 1)) |
-        (FCBIT & (r >> 4));
+        FC;
     OPLB = r;
 }
 
@@ -214,7 +220,7 @@ void op_dec_b(op_chunk *c) {
     F = FZZ((u8)r) |
         FNBIT |
         (FHBIT & ((OPLB ^ r) << 1)) |
-        (FCBIT & (r >> 4));
+        FC;
     OPLB = r;
 }
 
@@ -404,19 +410,18 @@ void op_scf(op_chunk *c) {
 
 void op_halt(op_chunk *c) {
     debug_trace_op("HALT");
-    // TODO!
+    cpu.halted = 1;
 }
 
 void op_stop(op_chunk *c) {
     debug_trace_op("STOP");
-    // TODO!
+    cpu.stopped = 1;
 }
 
 void op_di(op_chunk *c) {
     debug_trace_op("DI"); //debug_int_ime(0);
     if(cpu.ime != IME_OFF)
         cpu.ime = IME_DOWN;
-
 }
 
 void op_ei(op_chunk *c) {

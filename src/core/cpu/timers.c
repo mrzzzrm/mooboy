@@ -14,9 +14,6 @@ void timers_reset() {
 }
 
 void timers_step(u8 mcs) {
-    static u32 _mcs = 0;
-    _mcs += mcs;
-
     if(cpu.tac & 0x04) {
         tima_cc += mcs;
         u16 per_tick = MCS_PER_TIMA[cpu.tac & 0x03];

@@ -21,7 +21,7 @@ void cpu_reset() {
     SP = 0xFFFE;
     PC = 0x0100;
 
-    cpu.ime = 0x00;
+    cpu.ime = 0xFF;
     cpu.irq = 0x00;
     cpu.ie = 0xFF;
 
@@ -32,6 +32,8 @@ void cpu_reset() {
 
     cpu.cc = 0;
     cpu.mcs_per_second = 1048576;
+    cpu.halted = 0;
+    cpu.stopped = 0;
 
     timers_reset();
 }
@@ -89,8 +91,9 @@ u8 cpu_step() {
     u8 mcs;
 
     mcs = cpu_exec(FETCHB);
-    handle_ints();
+
     step_timers(mcs);
+    handle_ints();
 
     return mcs;
 }

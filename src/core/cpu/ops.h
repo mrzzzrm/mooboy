@@ -27,6 +27,7 @@
     void op_ld_imsp(op_chunk *c);
     void op_push(op_chunk *c);
     void op_pop(op_chunk *c);
+    void op_pop_af(op_chunk *c);
 
     // Alu Arithmetic
     void op_add_b(op_chunk *c);
