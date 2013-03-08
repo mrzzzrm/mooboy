@@ -76,7 +76,7 @@ static inline void step_timers(u8 mcs) {
     }
 }
 
-u8 cpu_exec(u8 op) {
+inline u8 cpu_exec(u8 op) {
     u32 old_mcs = cpu.cc;
 
 	op_chunk *c = op_chunk_map[op];

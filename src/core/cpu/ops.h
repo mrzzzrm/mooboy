@@ -10,6 +10,7 @@
     void op_opl_iw(op_chunk *c);
     void op_opl_addio(op_chunk *c);
     void op_opr_memread(op_chunk *c);
+    void op_opr_memcall(op_chunk *c);
     void op_opr_ib(op_chunk *c);
     void op_opr_iw(op_chunk *c);
     void op_opr_addio(op_chunk *c);
@@ -53,6 +54,10 @@
     void op_rr(op_chunk *c);
     void op_rlc(op_chunk *c);
     void op_rrc(op_chunk *c);
+    void op_rla(op_chunk *c);
+    void op_rra(op_chunk *c);
+    void op_rlca(op_chunk *c);
+    void op_rrca(op_chunk *c);
     void op_sla(op_chunk *c);
     void op_sra(op_chunk *c);
     void op_srl(op_chunk *c);

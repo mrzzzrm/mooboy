@@ -73,6 +73,20 @@ void op_opr_memread(op_chunk *c) {
     c->funcs[xc.sp++](&xc);
 }
 
+void op_opr_memcall(op_chunk *c) {
+    debug_trace_opl(&OPRW, 2, 1);
+
+    op_chunk xc = *c;
+    u16 adr = OPRW;
+
+    static_byte = mem_readb(adr);
+    xc.opr.b = &static_byte;
+    xc.op = c->op;
+    xc.opl = c->opl;
+    c->funcs[xc.sp++](&xc);
+    mem_writeb(adr, static_byte);
+}
+
 void op_opr_ib(op_chunk *c) {
     static_byte = mem_readb(PC++);
     debug_trace_opr_data(static_byte);
@@ -163,7 +177,7 @@ void op_add_w(op_chunk *c) {
     debug_trace_op("ADD"); debug_trace_opl(&OPLW, 2, 0); debug_trace_opr(&OPRW, 2, 0);
 
     u32 r = (u32)OPLW + (u32)OPRW;
-    F = FZZ((u16)r) |
+    F = FZ |
         (FHBIT & ((OPLW ^ OPRW ^ r) >> 7)) |
         (FCBIT & (r >> 12));
     OPLW = (u16)r;
@@ -278,31 +292,36 @@ void op_cp(op_chunk *c) {
 void op_daa(op_chunk *c) {
     debug_trace_op("DAA");
 
+    u16 a = A;
     if(FN) {
-        if (FC) {
-            A -= 0x60;
-        }
         if (FH) {
-            A -= 0x06;
+            a -= 0x06;
+            a &= 0xFF;
+        }
+        if (FC) {
+            a -= 0x60;
         }
     }
     else {
-        if (FC || (A & 0xFF) > 0x99) {
-            A += 0x60;
-            F |= FCBIT;
+        if (FH || (a & 0x0F) > 0x09) {
+            a += 0x06;
         }
-        if (FH || (A & 0x0F) > 0x09) {
-            A += 0x06;
+        if (FC || a > 0x9F) {
+            a += 0x60;
         }
     }
-    F |= FN | FZZ(A);
+    F &= ~(FH | FZ);
+    F |= (a > 0xFF) ? FC : 0;
+    F |= a & FZ;
+
+    A = a;
 }
 
 void op_cpl(op_chunk *c) {
     debug_trace_op("CPL");
 
     A ^= 0xFF;
-    F = FNBIT | FHBIT;
+    F = FZ | FNBIT | FHBIT | FC;
 }
 
 void op_rl(op_chunk *c) {
@@ -335,6 +354,26 @@ void op_rrc(op_chunk *c) {
     F = FZZ(OPLB) | FCB7(OPLB);
 }
 
+void op_rla(op_chunk *c) {
+    op_rl(c);
+    F &= ~FZBIT;
+}
+
+void op_rra(op_chunk *c) {
+    op_rr(c);
+    F &= ~FZBIT;
+}
+
+void op_rlca(op_chunk *c) {
+    op_rlc(c);
+    F &= ~FZBIT;
+}
+
+void op_rrca(op_chunk *c) {
+    op_rrc(c);
+    F &= ~FZBIT;
+}
+
 void op_sla(op_chunk *c) {
     debug_trace_op("SLA"); debug_trace_opl(&OPLB, 1, 0);
 
@@ -347,7 +386,7 @@ void op_sra(op_chunk *c) {
     debug_trace_op("SRA"); debug_trace_opl(&OPLB, 1, 0);
 
     u8 fc = FCB0(OPLB);
-    u8 msb = OPLB | 0x80;
+    u8 msb = OPLB & 0x80;
     OPLB >>= 1;
     OPLB |= msb;
     F = FZZ(OPLB) | fc;
@@ -391,7 +430,7 @@ void op_set(op_chunk *c) {
 void op_res(op_chunk *c) {
     debug_trace_op("RES"); debug_trace_opl(&OPLD, 1, 0); debug_trace_opr(&OPRB, 1, 0);
 
-    OPRB ^= 1<<OPLD;
+    OPRB &= ~(1<<OPLD);
 }
 
 void op_nop(op_chunk *c) {

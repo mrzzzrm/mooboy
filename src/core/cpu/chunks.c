@@ -172,10 +172,10 @@ op_chunk *op_create_chunk(u8 op) {
                         case 0x07: // 00XX X111
                             c->opl.b = &A;
                             if(op&0x10) {
-                                PUSH_FUNC(op&0x08 ? op_rr : op_rl);
+                                PUSH_FUNC(op&0x08 ? op_rra : op_rla);
                             }
                             else {
-                                PUSH_FUNC(op&0x08 ? op_rrc : op_rlc);
+                                PUSH_FUNC(op&0x08 ? op_rrca : op_rlca);
                             }
                         break;
                     }
@@ -292,6 +292,19 @@ op_chunk *op_create_chunk(u8 op) {
 	return c;
 }
 
+static void chunk_cb_opl_stdb(op_chunk *c, u8 b) {
+    chunk_opl_stdb(c, b);
+}
+
+static void chunk_cb_opr_stdb(op_chunk *c, u8 b) {
+    if(b == 0x06) {
+        PUSH_FUNC(op_opr_memcall);
+        c->opr.w = &HL;
+    }
+    else {
+        c->opr.b = BREG(b);
+    }
+}
 
 op_chunk *op_create_cb_chunk(u8 op) {
     op_chunk *c = malloc(sizeof(op_chunk));
@@ -300,10 +313,10 @@ op_chunk *op_create_cb_chunk(u8 op) {
 	c->sp = 0;
 
     if(HN <= 3) {
-        chunk_opl_stdb(c, op & 0x07);
+        chunk_cb_opl_stdb(c, op & 0x07);
     }
     else {
-        chunk_opr_stdb(c, op & 0x07);
+        chunk_cb_opr_stdb(c, op & 0x07);
     }
 
 	switch(HN) {
@@ -330,7 +343,6 @@ op_chunk *op_create_cb_chunk(u8 op) {
 
     return c;
 }
-
 
 void op_create_chunks() {
     unsigned int b;
