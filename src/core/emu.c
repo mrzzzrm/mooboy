@@ -38,7 +38,6 @@ bool emu_load(u8 *data, size_t size) {
 }
 
 bool emu_run() {
-
     debug_init();
     for(;;) {
         unsigned int t;

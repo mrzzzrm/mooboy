@@ -134,10 +134,13 @@ void op_ldhl_spi(op_chunk *c) {
     debug_trace_op("LDHL SP,#");
 
     s8 o = (s8)FETCHB;
-    u32 r = SP + o;
+    u32 r = (u32)SP + o;
 
-    F = FHBIT & (r >> 11);
-    F |= FCBIT & (((SP & 0xF) + (o & 0xF)) << 1);
+    F = 0;
+    if ((r & 0xFF) < (SP & 0xFF))
+      F |= FCBIT;
+    if ((r & 0xF) < (SP & 0xF))
+      F |= FHBIT;
 
     HL = (u16)r;
 }
@@ -256,8 +259,12 @@ void op_add_spi(op_chunk *c) {
     s8 o = (s8)FETCHB;
     u32 r = (u32)SP + o;
 
-    F = FHBIT & (r >> 11);
-    F |= FCBIT & (((SP & 0xF) + (o & 0xF)) << 1);
+    F = 0x00;
+    if ((r & 0xFF) < (SP & 0xFF))
+      F |= FCBIT;
+    if ((r & 0xF) < (SP & 0xF))
+      F |= FHBIT;
+
     SP = r;
 }
 
@@ -449,12 +456,10 @@ void op_scf(op_chunk *c) {
 
 void op_halt(op_chunk *c) {
     debug_trace_op("HALT");
-    cpu.halted = 1;
 }
 
 void op_stop(op_chunk *c) {
     debug_trace_op("STOP");
-    cpu.stopped = 1;
 }
 
 void op_di(op_chunk *c) {

@@ -32,8 +32,6 @@ void cpu_reset() {
 
     cpu.cc = 0;
     cpu.mcs_per_second = 1048576;
-    cpu.halted = 0;
-    cpu.stopped = 0;
 
     timers_reset();
 }
