@@ -72,8 +72,8 @@ static void mbc3_control(u16 adr, u8 val) {
                 case 0x00: case 0x01: case 0x02: case 0x03:
                     mbc.xrambank = ram.xbanks[val];
                 break;
-                default:
-                    exit(1);
+                default:;
+                    //exit(1);
             }
         break;
         case 6: case 7: // TODO: Latch Clock Data
@@ -84,18 +84,21 @@ static void mbc3_control(u16 adr, u8 val) {
 }
 
 static void mbc5_control(u16 adr, u8 val) {
-    switch(adr>>12) {
+    switch(adr >> 12) {
         case 0: case 1: // En/disable RAM
         break;
-        case 2: case 3: // Select lower 8 bit of ROM bank
+        case 2:  // Select lower 8 bit of ROM bank
             mbc5.rombank &= 0xFF00;
             mbc5.rombank |= val;
             mbc.rombank = rom.banks[mbc5.rombank];
         break;
-        case 4: case 5: // Select upper 1 bit of ROM bank
-            mbc5.rombank &= 0x00FF;
-            mbc5.rombank |= (val&0x01) << 8;
+        case 3: // Select upper 1 bit of ROM bank
+            mbc5.rombank &= 0xFEFF;
+            mbc5.rombank |= val<<8;
             mbc.rombank = rom.banks[mbc5.rombank];
+        break;
+        case 4: case 5:
+            mbc.xrambank = ram.xbanks[val & 0x0F];
         break;
     }
 }
@@ -103,7 +106,15 @@ static void mbc5_control(u16 adr, u8 val) {
 void mbc_set_type(u8 type) {
     void (*control_funcs[])(u16, u8) = {mbc0_control, mbc1_control, mbc2_control, mbc3_control, mbc5_control};
 
-    mbc.control_func = control_funcs[type];
+    switch(type) {
+        case 0: mbc.control_func = mbc0_control; break;
+        case 1: mbc.control_func = mbc1_control; break;
+        case 2: mbc.control_func = mbc2_control; break;
+        case 3: mbc.control_func = mbc3_control; break;
+        case 5: mbc.control_func = mbc5_control; break;
+
+        default: abort();
+    }
     fprintf(stderr, "MBC-type is %i\n", (int)type);
 }
 
@@ -111,7 +122,7 @@ u8 mbc_upper_read(u16 adr) {
     adr -= 0xA000;
 
     if(mbc.type == 3 && mbc3.mode == 0) {
-        exit(4);
+        //exit(4);
         // TODO: RTC
         return 0;
     }
@@ -129,7 +140,7 @@ void mbc_upper_write(u16 adr, u8 val) {
 
     if(mbc.type == 3 && mbc3.mode == 0) {
         // TODO: RTC
-        exit(5);
+        //exit(5);
     }
     else {
         mbc.xrambank[adr] = val;

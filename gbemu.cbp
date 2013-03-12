@@ -11,7 +11,7 @@
 				<Option object_output="build/bin/cli_release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="--rom ./rom/pokebluzelda.gb" />
+				<Option parameters="--rom ./rom/gelb.gbc" />
 				<Compiler>
 					<Add option="-g" />
 					<Add directory="src/core" />
@@ -23,7 +23,7 @@
 				<Option object_output="build/bin/cli_debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="--rom ./rom/pokeblue.gb" />
+				<Option parameters="--rom ./rom/gelb.gbc" />
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-DDEBUG" />
@@ -36,7 +36,7 @@
 				<Option object_output="build/bin/sdl_release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="--rom ./rom/cpu_instrs.gb" />
+				<Option parameters="--rom ./rom/gelb.gbc" />
 				<Compiler>
 					<Add option="-g" />
 					<Add directory="src/core" />
@@ -52,7 +52,7 @@
 				<Option object_output="build/bin/sdl_debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="--rom ./rom/cpu_instrs.gb" />
+				<Option parameters="--rom ./rom/gelb.gbc" />
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-DDEBUG" />

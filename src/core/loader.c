@@ -11,7 +11,7 @@ static u8 rom_bankcount(u8 ref) {
         return ((u8[]){72, 80, 96})[ref - 0x52];
     }
     else {
-        fprintf(stderr, "ROM-bankcount ref: %.2X\n", ref);
+        fprintf(stderr, "ROM-bankcount ref unknown: %.2X\n", ref);
         return 0;
     }
 }
@@ -74,12 +74,15 @@ static void init_rombanks(u8 ref, u8 *data, u32 datasize) {
         assert_corrupt(mbc.romsize * 0x4000 == datasize, "Datasize doesn't match rom-internally specified size");
     rom.banks = realloc(rom.banks, mbc.romsize * sizeof(*rom.banks));
     memcpy(rom.banks, data, datasize);
+
+    fprintf(stderr, "ROM-size set to %d banks\n", mbc.romsize);
 }
 
 static void init_xrambanks(u8 ref) {
     switch(ref) {
         case 0x00:
-            ram.xbanks = realloc(ram.xbanks, sizeof(*ram.xbanks) * 1);
+            mbc.ramsize = 1;
+            ram.xbanks = realloc(ram.xbanks, sizeof(*ram.xbanks) * mbc.ramsize);
         break;
         case 0x01: case 0x02:
             mbc.ramsize = 1;
@@ -92,6 +95,8 @@ static void init_xrambanks(u8 ref) {
         default:
             assert_corrupt(1, "No such RAM size");
     }
+
+    fprintf(stderr, "Cardridge-RAM set to %d banks\n", mbc.ramsize);
 }
 
 bool load_rom(u8 *data, uint datasize) {
