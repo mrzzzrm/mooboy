@@ -102,13 +102,16 @@ static void mbc5_control(u16 adr, u8 val) {
         break;
         case 3: // Select upper 1 bit of ROM bank
             mbc5.rombank &= 0xFEFF;
-            mbc5.rombank |= val<<8;
+            mbc5.rombank |= ((u16)val)<<8;
             mbc.rombank = rom.banks[mbc5.rombank];
         break;
         case 4: case 5:
+            assert(val < 0x04);
             mbc.xrambank = ram.xbanks[val & 0x0F];
         break;
     }
+
+    assert(mbc5.rombank < 0x1E0);
 }
 
 void mbc_set_type(u8 type) {

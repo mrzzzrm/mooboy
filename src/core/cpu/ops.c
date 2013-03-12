@@ -298,6 +298,7 @@ void op_cp(op_chunk *c) {
 
 void op_daa(op_chunk *c) {
     debug_trace_op("DAA");
+    fprintf(stderr, "DAA called\n");
 
     u16 a = A;
     if(FN) {

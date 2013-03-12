@@ -34,7 +34,7 @@ static u8 obp1map[4];
 static u8 obj_height;
 static u8 obj_size_mode;
 
-static void render_obj_line(u8 *line, u8 tx, u8 ty, u8 fbx, u8 *palette, u8 bgpriority) {
+static void render_obj_line(u8 *line, u8 tx, u8 fbx, u8 *palette, u8 bgpriority) {
     u16 fb_cursor = (lcd.ly * LCD_WIDTH) + fbx;
     u16 line_end = (lcd.ly + 1) * LCD_WIDTH;
     u8 rshift = 7 - tx;
@@ -53,10 +53,10 @@ static void render_obj_line(u8 *line, u8 tx, u8 ty, u8 fbx, u8 *palette, u8 bgpr
     }
 }
 
-static void render_obj_line_reversed(u8 *line, u8 tx, u8 ty, u8 fbx, u8 *palette, u8 bgpriority) {
+static void render_obj_line_reversed(u8 *line, u8 tx, u8 fbx, u8 *palette, u8 bgpriority) {
     u16 fb_cursor = (lcd.ly * LCD_WIDTH) + fbx;
     u16 line_end = (lcd.ly + 1) * LCD_WIDTH;
-    u8 rshift = 0;
+    u8 rshift = tx;
     bgpriority = bgpriority ? 0 : 1;
 
     for(; tx < TILE_WIDTH && fb_cursor < line_end; tx++, fb_cursor++) {
@@ -114,6 +114,7 @@ static void render_obj(u8 *obj) {
     u8 *line_data;
     u8 obj_line, tile_index;
     s16 fbx;
+    u8 tx;
 
     obj_line = lcd.ly - (POSY(obj) - 16);
     if(YFLIP(obj)) {
@@ -128,11 +129,19 @@ static void render_obj(u8 *obj) {
     line_data = &mbc.vrambank[tile_index*0x10 + obj_line*0x02];
     fbx = POSX(obj) - 8;
 
-    if(XFLIP(obj)) {
-        render_obj_line_reversed(line_data, 0, 0, fbx, PALETTEMAP(obj), BGPRIORITY(obj));
+    if(fbx < 0) {
+        tx = -fbx;
+        fbx = 0;
     }
     else {
-        render_obj_line(line_data, 0, 0, fbx, PALETTEMAP(obj), BGPRIORITY(obj));
+        tx = 0;
+    }
+
+    if(XFLIP(obj)) {
+        render_obj_line_reversed(line_data, tx, fbx, PALETTEMAP(obj), BGPRIORITY(obj));
+    }
+    else {
+        render_obj_line(line_data, tx, fbx, PALETTEMAP(obj), BGPRIORITY(obj));
     }
 }
 

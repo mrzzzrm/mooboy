@@ -3,3 +3,4 @@ build/
 *.layout
 src/*/*.cbTemp
 sdl_release/*
+rom/*
