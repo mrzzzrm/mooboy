@@ -1,6 +1,10 @@
 #include "mbc.h"
+#include "mbc/rtc.h"
 #include "mem.h"
+#include <assert.h>
 
+#define MBC3_MAP_RAM 0x00
+#define MBC3_MAP_RTC 0x01
 
 static struct {
     u8 mode;
@@ -67,18 +71,22 @@ static void mbc3_control(u16 adr, u8 val) {
         case 2: case 3: // Select ROM bank
             mbc.rombank = rom.banks[(val & 0x7F) == 0 ? 0x01 : (val & 0x7F)];
         break;
-        case 4: case 5: // TODO: Select RAM bank or RTC register
+        case 4: case 5: // Select RAM bank or RTC register
             switch(val) {
                 case 0x00: case 0x01: case 0x02: case 0x03:
                     mbc.xrambank = ram.xbanks[val];
+                    mbc3.mode = MBC3_MAP_RAM;
                 break;
-                default:;
-                    //exit(1);
+                case 0x08: case 0x09: case 0x0A: case 0x0B: case 0x0C:
+                    rtc_map_register(val);
+                    mbc3.mode = MBC3_MAP_RTC;
+                break;
+                default:
+                    assert(0);
             }
         break;
-        case 6: case 7: // TODO: Latch Clock Data
-            fprintf(stderr, "Latched clock data\n");
-            //exit(2);
+        case 6: case 7: // Latch Clock Data (First write 0x00, then 0x01)
+            rtc_latch(val);
         break;
     }
 }
@@ -104,8 +112,6 @@ static void mbc5_control(u16 adr, u8 val) {
 }
 
 void mbc_set_type(u8 type) {
-    void (*control_funcs[])(u16, u8) = {mbc0_control, mbc1_control, mbc2_control, mbc3_control, mbc5_control};
-
     switch(type) {
         case 0: mbc.control_func = mbc0_control; break;
         case 1: mbc.control_func = mbc1_control; break;
@@ -119,14 +125,11 @@ void mbc_set_type(u8 type) {
 }
 
 u8 mbc_upper_read(u16 adr) {
-    adr -= 0xA000;
-
-    if(mbc.type == 3 && mbc3.mode == 0) {
-        //exit(4);
-        // TODO: RTC
-        return 0;
+    if(mbc.type == 3 && mbc3.mode == MBC3_MAP_RTC) {
+        return rtc.latched[rtc.mapped];
     }
     else {
+        adr -= 0xA000;
         return mbc.xrambank[adr];
     }
 }
@@ -136,13 +139,11 @@ void mbc_lower_write(u16 adr, u8 val) {
 }
 
 void mbc_upper_write(u16 adr, u8 val) {
-    adr -= 0xA000;
-
-    if(mbc.type == 3 && mbc3.mode == 0) {
-        // TODO: RTC
-        //exit(5);
+    if(mbc.type == 3 && mbc3.mode == MBC3_MAP_RTC) {
+        rtc_write(val);
     }
     else {
+        adr -= 0xA000;
         mbc.xrambank[adr] = val;
     }
 }

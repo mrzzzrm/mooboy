@@ -1,21 +1,26 @@
 #include "rtc.h"
 #include "cpu.h"
 
+#define S 0x00
+#define M 0x01
+#define H 0x02
+#define DL 0x03
+#define DH 0x04
+
 rtc_t rtc;
 
 
-
 static void rtc_next_day() {
-    u16 d = rtc.dl | ((rtc.dh & 0x01) << 8);
+    u16 d = rtc.ticking[DL] | ((rtc.ticking[DH] & 0x01) << 8);
     d++;
     if(d >= 0x200) { // rtc day overflow
         d = 0;
-        rtc.dh |= 0x80;
+        rtc.ticking[DH] |= 0x80;
     }
 }
 
 static void rtc_tick(u8 r) {
-    static u8 *regs[] = {&rtc.s, &rtc.m, &rtc.h};
+    static u8 *regs[] = {&rtc.ticking[S], &rtc.ticking[M], &rtc.ticking[H]};
     if(r < 3) {
         (*regs[r])++;
         if(*regs[r] > 59) {
@@ -29,20 +34,38 @@ static void rtc_tick(u8 r) {
 }
 
 void rtc_reset() {
-    rtc.s = 0;
-    rtc.m = 0;
-    rtc.h = 0;
-    rtc.dl = 0;
-    rtc.dh = 0;
-    rtc.mapped = 0;
-    rtc.last_tick = 0;
+    memset(&rtc, 0x00, sizeof(rtc));
 }
 
 void rtc_step() {
     u32 mcs = cpu.cc - rtc.last_tick;
-    if(rtc.dh & 0x40 || mcs < cpu.mcs_per_second) { // Halt bit set or next tick not yet reached
+    if(rtc.ticking[DH] & 0x40 || mcs < cpu.mcs_per_second) { // Halt bit set or next tick not yet reached
         return;
     }
 
     rtc_tick(0);
 }
+
+void rtc_map_register(u8 val) {
+    rtc.mapped = val - 0x08;
+}
+
+void rtc_latch(u8 val) {
+    switch(val) {
+        case 0x00: rtc.prelatched = 1; break;
+        case 0x01:
+            if(rtc.prelatched) {
+                memcpy(rtc.latched, rtc.ticking, sizeof(rtc.latched));
+            }
+            rtc.prelatched = 0;
+        break;
+
+        default:
+            rtc.prelatched = 0;
+    }
+}
+
+void rtc_write(u8 val) {
+    rtc.ticking[rtc.mapped] = val;
+}
+

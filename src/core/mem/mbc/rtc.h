@@ -4,9 +4,10 @@
     #include <util/defines.h>
 
     typedef struct {
-        u8 s, m, h;
-        u8 dl, dh;
+        u8 latched[5];
+        u8 ticking[5];
         u8 mapped;
+        u8 prelatched;
         u32 last_tick;
     } rtc_t;
 
@@ -14,5 +15,10 @@
 
     void rtc_reset();
     void rtc_step();
+    void rtc_map_register(u8 val);
+    void rtc_latch(u8 val);
+    void rtc_write(u8 val);
+
+
 
 #endif

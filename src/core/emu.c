@@ -1,6 +1,7 @@
 #include "emu.h"
 #include "cpu/defines.h"
 #include "mem/io/lcd.h"
+#include "mem/mbc/rtc.h"
 #include "debug/debug.h"
 #include "loader.h"
 #include "sys/sys.h"
@@ -15,6 +16,7 @@ static void emu_reset() {
 
 static void emu_step() {
     cpu_step();
+    rtc_step();
     lcd_step();
 }
 
