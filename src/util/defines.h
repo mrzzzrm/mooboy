@@ -1,5 +1,5 @@
-#ifndef DEFINES_H
-#define DEFINES_H
+#ifndef UTIL_DEFINES_H
+#define UTIL_DEFINES_H
 
     #include <inttypes.h>
     #include <stddef.h>
@@ -16,8 +16,8 @@
     typedef unsigned int uint;
 
     typedef int bool;
-    #define true (1)
-    #define false (0)
+    #define TRUE (1)
+    #define FALSE (0)
 
 
 #endif

@@ -1,7 +1,10 @@
 #include "loader.h"
-#include "_assert.h"
+#include <stdio.h>
+#include <assert.h>
+#include <string.h>
+#include <stdlib.h>
 #include "mem.h"
-#include "mem/mbc.h"
+#include "mbc.h"
 
 static u8 rom_bankcount(u8 ref) {
     if(ref <= 8) {
@@ -20,6 +23,9 @@ static void init_mbc(u8 ref) {
     u8 ln = ref & 0x0F;
     u8 hn = ref >> 4;
 
+    mbc.has_battery = 0;
+    mbc.has_rtc = 0;
+
     if(hn == 0x00) {
         switch(ln) {
             case 0x0:
@@ -27,23 +33,27 @@ static void init_mbc(u8 ref) {
             break;
             case 0x1: case 0x2: case 0x3:
                 mbc_set_type(1);
+                if(ln == 0x03) {
+                    mbc.has_battery = 1;
+                }
             break;
             case 0x5: case 0x6:
                 mbc_set_type(2);
+                if(ln == 0x06) {
+                    mbc.has_battery = 1;
+                }
             break;
             case 0x8: case 0x9:
-                // TODO: Implement
-                assert_unsupported(1, "ROM + RAM (+ Battery) MBC not yet supported");
+                assert(0); // TODO
             break;
             case 0xB: case 0xC: case 0xD:
-                // TODO: Implement
-                assert_unsupported(1, "MMM01 MBC not yet supported");
+                assert(0); // TODO
             break;
             case 0xF:
                 mbc_set_type(3);
             break;
             default:
-                assert_corrupt(1, "No such MBC - type");
+                assert(0);
         }
     }
     else if(hn == 0x01) {
@@ -60,7 +70,7 @@ static void init_mbc(u8 ref) {
                 mbc_set_type(5);
             break;
             default:
-                assert_corrupt(1, "No such MBC - type");
+                assert(0);
         }
     }
     else {
@@ -69,44 +79,45 @@ static void init_mbc(u8 ref) {
 }
 
 static void init_rombanks(u8 ref, u8 *data, u32 datasize) {
-    mbc.romsize = rom_bankcount(ref);
-        assert_corrupt(mbc.romsize != 0, "Unknown romsize ref");
-        assert_corrupt(mbc.romsize * 0x4000 == datasize, "Datasize doesn't match rom-internally specified size");
-    rom.banks = realloc(rom.banks, mbc.romsize * sizeof(*rom.banks));
-    memcpy(rom.banks, data, datasize);
+    card.romsize = rom_bankcount(ref);
+        assert(card.romsize != 0);
+        assert(card.romsize * 0x4000 == datasize);
+    card.rombanks = realloc(card.rombanks, card.romsize * sizeof(*card.rombanks));
+    memcpy(card.rombanks, data, datasize);
 
-    fprintf(stderr, "ROM-size set to %d banks\n", mbc.romsize);
+    fprintf(stderr, "ROM-size set to %d banks\n", card.romsize);
 }
 
 static void init_xrambanks(u8 ref) {
     switch(ref) {
         case 0x00:
-            mbc.ramsize = 1;
-            ram.xbanks = realloc(ram.xbanks, sizeof(*ram.xbanks) * mbc.ramsize);
+            card.sramsize = 1;
+            card.srambanks = realloc(card.srambanks, sizeof(*card.srambanks) * card.sramsize);
         break;
         case 0x01: case 0x02:
-            mbc.ramsize = 1;
-            ram.xbanks = realloc(ram.xbanks, sizeof(*ram.xbanks) * mbc.ramsize);
+            card.sramsize = 1;
+            card.srambanks = realloc(card.srambanks, sizeof(*card.srambanks) * card.sramsize);
         break;
         case 0x03:
-            mbc.ramsize = 4;
-            ram.xbanks = realloc(ram.xbanks, sizeof(*ram.xbanks) * mbc.ramsize);
+            card.sramsize = 4;
+            card.srambanks = realloc(card.srambanks, sizeof(*card.srambanks) * card.sramsize);
         break;
         default:
-            assert_corrupt(1, "No such RAM size");
+            assert(0);
     }
 
-    fprintf(stderr, "Cardridge-RAM set to %d banks\n", mbc.ramsize);
+    fprintf(stderr, "Cardridge-RAM set to %d banks\n", card.sramsize);
 }
 
-bool load_rom(u8 *data, uint datasize) {
-    assert_corrupt(datasize > 0x014F, "ROM too small for header");
+void load_rom(u8 *data, uint datasize) {
+    assert(datasize > 0x014F);
 
     init_mbc(data[0x0147]);
     init_rombanks(data[0x0148], data, datasize);
     init_xrambanks(data[0x0149]);
 
-    return true;
+    mbc.rombank = card.rombanks[1];
+    mbc.srambank = card.srambanks[0];
 }
 
 

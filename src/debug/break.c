@@ -2,8 +2,9 @@
 #include "sym.h"
 #include "debug.h"
 #include "utils.h"
-#include "cpu/defines.h"
+#include "defines.h"
 #include <assert.h>
+#include <stdio.h>
 
 #define BREAK {dbg.console = 1;}
 

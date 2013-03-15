@@ -13,8 +13,8 @@ void close() {
 void init(int argc, const char **argv) {
     atexit(&close);
 
-    emu_init();
     sys_init(argc, argv);
+    emu_init();
 }
 
 void error() {
@@ -22,29 +22,36 @@ void error() {
     sys_error();
 }
 
-void load_romfile(char *romname) {
-    char rompath[256];
+void load_romfile() {
+    const char *rompath;
     u8 *romdata;
     size_t romsize;
 
-    sprintf(rompath, "rom/%s", romname);
+    if((rompath = sys_get_rompath()) == NULL) {
+        error();
+    }
     printf("Loading ROM: %s\n", rompath);
     if((romdata = io_load_binary(rompath, &romsize)) == NULL) {
+        err_set(ERR_ROM_NOT_FOUND);
         error();
     }
     printf("Firing emu with romdata (size=%i)\n", romsize);
-    emu_load_rom(romdata, romsize);
+    if(!emu_load(romdata, romsize)) {
+        error();
+    }
     free(romdata);
 }
 
 int main(int argc, const char **argv) {
-    char rom[256];
-
-
     init(argc, argv);
-    sprintf(rom, "gold.gbc");
-    load_romfile(rom);
-    emu_run();
+    while(sys_running()) {
+        if(sys_new_rom()) {
+            load_romfile();
+        }
+        if(!emu_run()) {
+            error();
+        }
+    }
     close();
 
     return EXIT_SUCCESS;

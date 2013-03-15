@@ -6,8 +6,8 @@
 #include "dump.h"
 #include "disasm.h"
 #include "cpu.h"
-#include "mem/io/lcd.h"
-#include "cpu/defines.h"
+#include "lcd.h"
+#include "defines.h"
 #include "run.h"
 #include "mon.h"
 #include "sym.h"
@@ -58,12 +58,12 @@ static void (*on_lcdstat)(u8 iflag);
 
 static void snap_mem(u8 *mem) {
     if(dbg.monitor.mode == MONITOR_MEMORY_CELL) {
-        mem[dbg.monitor.mem] = mem_readb(dbg.monitor.mem);
+        mem[dbg.monitor.mem] = mem_read_byte(dbg.monitor.mem);
     }
     else {
         unsigned int i;
         for(i = dbg.monitor.from; i <= dbg.monitor.to; i++) {
-            mem[i] = mem_readb(i);
+            mem[i] = mem_read_byte(i);
         }
     }
 }
@@ -135,7 +135,7 @@ static void dump_vram(FILE *f) {
     for(y = 0; y < 256; y++) {
         fprintf(f, "  ");
         for(x = 0; x < 32; x++) {
-            fprintf(f, "%X ", ram.vbanks[0][y*32+x]);
+            fprintf(f, "%X ", ram.vrambanks[0][y*32+x]);
         }
         fprintf(f, "\n");
     }
@@ -247,7 +247,7 @@ static void handle_cmd(const char *str) {
             to = strtol(&end[1], NULL, 16);
         }
         for(adr = from; adr <= to; adr++) {
-            fprintf(stderr, "%.4X: %.2X\n", adr, mem_readb(adr));
+            fprintf(stderr, "%.4X: %.2X\n", adr, mem_read_byte(adr));
         }
     }
     else if(begeq("dasm", str)) {

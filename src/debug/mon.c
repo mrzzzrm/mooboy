@@ -35,7 +35,7 @@ static range *add_range(u16 start, u16 end) {
 static void update_range(range *r, u8 *buf) {
     unsigned int a;
     for(a = r->start; a <= r->end; a++) {
-        buf[a] = mem_readb(a);
+        buf[a] = mem_read_byte(a);
     }
 }
 

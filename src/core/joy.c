@@ -1,14 +1,12 @@
 #include <assert.h>
 #include "cpu.h"
-#include "cpu/defines.h"
+#include "defines.h"
 #include "joy.h"
 
 #define SELECT_DIRECTION_BIT 0x10
 #define SELECT_ACTION_BIT 0x20
 
 joy_t joy;
-
-static u8 state;
 
 void joy_init() {
     joy.state = 0xFF;

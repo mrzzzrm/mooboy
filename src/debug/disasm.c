@@ -4,7 +4,7 @@
 #include "mem.h"
 #include "cpu/ops.h"
 #include "cpu/chunks.h"
-#include "cpu/defines.h"
+#include "defines.h"
 
 static char out[256];
 static char op[16];
@@ -14,8 +14,8 @@ static char op[16];
 #define OP(func, n) if(f == (func)) {sprintf(op, "%s", (n)); return; }
 
 
-void set_op(op_chunk *c) {
-    void (*f)(op_chunk*) = c->funcs[c->sp++];
+void set_op(op_chunk_t *c) {
+    void (*f)(op_chunk_t*) = c->funcs[c->sp++];
     OP(op_ld_b, "LD");
     OP(op_ld_w, "LDW");
     OP(op_ldx, "LDX");
@@ -69,7 +69,7 @@ void set_op(op_chunk *c) {
 }
 
 const char *disasm(u16 adr) {
-    op_chunk *c = op_chunk_map[mem_readb(adr)];
+    op_chunk_t *c = op_chunk_map[mem_read_byte(adr)];
     c->sp = 0;
     set_op(c);
 

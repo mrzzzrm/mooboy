@@ -3,8 +3,8 @@
 #include <SDL/SDL_gfxPrimitives.h>
 #include "util/cmd.h"
 #include "core/cpu.h"
-#include "core/mem/io/lcd.h"
-#include "core/mem/io/joy.h"
+#include "core/lcd.h"
+#include "core/joy.h"
 #include "util/err.h"
 
 #define FB_WIDTH 160
@@ -70,11 +70,11 @@ void sys_close() {
 }
 
 bool sys_running()  {
-    return true;
+    return TRUE;
 }
 
 bool sys_new_rom()  {
-    return true;
+    return TRUE;
 }
 
 const char *sys_get_rompath() {

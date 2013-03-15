@@ -1,20 +1,20 @@
-#ifndef MEM_MBC_H
-#define MEM_MBC_H
+#ifndef MBC_H
+#define MBC_H
 
     #include "util/defines.h"
 
     typedef struct mbc_s {
-        uint type;
+        u16 type;
 
-        void (*control_func)(u16, u8);
-
-        uint romsize;
-        uint ramsize;
+        void (*upper_write_func)(u16, u8);
 
         u8 *rombank;
-        u8 *irambank;
-        u8 *xrambank;
+        u8 *wrambank;
+        u8 *srambank;
         u8 *vrambank;
+        
+        u8 has_rtc;
+        u8 has_battery;
     } mbc_t;
 
     extern mbc_t mbc;

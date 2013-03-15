@@ -15,11 +15,11 @@ void sys_close() {
 }
 
 bool sys_running()  {
-    return true;
+    return TRUE;
 }
 
 bool sys_new_rom()  {
-    return true;
+    return TRUE;
 }
 
 const char *sys_get_rompath() {

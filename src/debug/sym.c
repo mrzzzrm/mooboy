@@ -3,7 +3,7 @@
 #include "cpu.h"
 #include "debug.h"
 #include "sys/sys.h"
-#include "cpu/defines.h"
+#include "defines.h"
 #include "util/defines.h"
 #include <stdio.h>
 #include <assert.h>

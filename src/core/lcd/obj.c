@@ -1,6 +1,6 @@
 #include "obj.h"
 #include "mem.h"
-#include "mem/io/lcd.h"
+#include "lcd.h"
 
 #define MAX_PER_LINE 10
 #define OBJ_SIZE 4
@@ -126,7 +126,7 @@ static void render_obj(u8 *obj) {
         tile_index &= 0xFE;
     }
 
-    line_data = &mbc.vrambank[tile_index*0x10 + obj_line*0x02];
+    line_data = &ram.vrambank[tile_index*0x10 + obj_line*0x02];
     fbx = POSX(obj) - 8;
 
     if(fbx < 0) {

@@ -1,7 +1,7 @@
 #include "dump.h"
 #include <stdio.h>
 #include "utils.h"
-#include "mem/io/lcd.h"
+#include "lcd.h"
 
 static void dump_fb() {
     unsigned int x,y;

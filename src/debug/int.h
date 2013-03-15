@@ -2,7 +2,7 @@
 #define DEBUG_INT_H
 
     #include "util/defines.h"
-    #include "cpu/defines.h"
+    #include "defines.h"
 
     void int_init();
     void int_update();

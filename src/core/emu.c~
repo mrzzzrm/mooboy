@@ -1,10 +1,7 @@
 #include "emu.h"
-#include "defines.h"
-#include "lcd.h"
-#include "rtc.h"
-#include "timers.h"
-#include "joy.h"
-#include "ints.h"
+#include "cpu/defines.h"
+#include "mem/io/lcd.h"
+#include "mem/mbc/rtc.h"
 #include "debug/debug.h"
 #include "loader.h"
 #include "sys/sys.h"
@@ -21,17 +18,16 @@ void emu_close() {
     mem_close();
 }
 
-void emu_reset() {
+static void emu_reset() {
     mem_reset();
     cpu_reset();
     lcd_reset();
-    timers_reset();
-    rtc_reset();
 }
 
+
 void emu_load_rom(u8 *data, size_t size) {
+    load_rom(data, size));
     emu_reset();
-    load_rom(data, size);
 }
 
 void emu_run_standby() {
@@ -43,11 +39,10 @@ void emu_run_standby() {
             debug_before();
 
             lcd_step();
-            rtc_step(1);
-            timers_step(1);
-
+            timers_step(mcs);
+            
             if(ints_handle_standby()) {
-               standby = 0;
+               standby = 0; 
             }
 
             debug_after();
@@ -64,9 +59,8 @@ void emu_run() {
             debug_update();
             debug_before();
 
-            u8 mcs = cpu_step();
+            cpu_step();
             lcd_step();
-            rtc_step(mcs);
             timers_step(mcs);
             ints_handle();
 

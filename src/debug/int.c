@@ -1,6 +1,7 @@
 #include "int.h"
+#include <stdio.h>
 #include "debug.h"
-#include "cpu/defines.h"
+#include "defines.h"
 
 void int_init() {
 

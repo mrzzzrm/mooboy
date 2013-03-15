@@ -38,12 +38,14 @@ void rtc_reset() {
 }
 
 void rtc_step() {
-    u32 mcs = cpu.cc - rtc.last_tick;
-    if(rtc.ticking[DH] & 0x40 || mcs < cpu.mcs_per_second) { // Halt bit set or next tick not yet reached
-        return;
-    }
+    if(mbc.type == 3) {
+        u32 mcs = cpu.cc - rtc.last_tick;
+        if(rtc.ticking[DH] & 0x40 || mcs < cpu.mcs_per_second) { // Halt bit set or next tick not yet reached
+            return;
+        }
 
-    rtc_tick(0);
+        rtc_tick(0);
+    }
 }
 
 void rtc_map_register(u8 val) {

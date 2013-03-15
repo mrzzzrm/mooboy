@@ -1,12 +1,13 @@
 #include "io.h"
-#include "io/lcd.h"
+#include "lcd.h"
+#include "lcd/maps.h"
+#include "lcd/obj.h"
 #include "cpu.h"
-#include "cpu/timers.h"
-#include "cpu/defines.h"
-#include "_assert.h"
+#include "timers.h"
+#include "defines.h"
 #include "util/defines.h"
 #include "debug/debug.h"
-#include "io/joy.h"
+#include "joy.h"
 
 u8 io_read(u16 adr) {
     u8 r = adr &  0x00FF;
@@ -19,10 +20,10 @@ u8 io_read(u16 adr) {
         case 0x01: break;
         case 0x02: break;
 
-        case 0x04: return cpu.div; break;
-        case 0x05: return cpu.tima; break;
-        case 0x06: return cpu.tma; break;
-        case 0x07: return cpu.tac; break;
+        case 0x04: return timers.div; break;
+        case 0x05: return timers.tima; break;
+        case 0x06: return timers.tma; break;
+        case 0x07: return timers.tac; break;
         case 0x0F: return cpu.irq; break;
 
         /* TODO: Sound */
@@ -87,10 +88,10 @@ void io_write(u16 adr, u8 val) {
         case 0x01: break;
         case 0x02: break;
 
-        case 0x04: cpu.div = 0x00; break;
-        case 0x05: cpu.tima = 0x00; break;
-        case 0x06: cpu.tma = val; break;
-        case 0x07: cpu.tac = val; break;
+        case 0x04: timers.div = 0x00; break;
+        case 0x05: timers.tima = 0x00; break;
+        case 0x06: timers.tma = val; break;
+        case 0x07: timers.tac = val; break;
         case 0x0F: cpu.irq = val; break;
 
         /* TODO: Sound */

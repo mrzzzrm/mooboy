@@ -2,7 +2,7 @@
 #include "debug.h"
 #include "disasm.h"
 #include "cpu.h"
-#include "cpu/defines.h"
+#include "defines.h"
 #include <stdio.h>
 
 void monitor_cell(u16 adr) {

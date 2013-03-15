@@ -1,8 +1,10 @@
 #include "lcd.h"
+#include <string.h>
 #include "cpu.h"
 #include "mem.h"
-#include "cpu/defines.h"
+#include "defines.h"
 #include "util/defines.h"
+#include "lcd/obj.h"
 #include "lcd/maps.h"
 #include "debug/debug.h"
 
@@ -164,12 +166,12 @@ void lcd_dma(u8 v) {
     u16 src;
 
     for(src = ((u16)v)<<8, b = 0; b < 0x9F; b++, src++) {
-        ram.oam[b] = mem_readb(src);
+        ram.oam[b] = mem_read_byte(src);
     }
 }
 
 void lcd_c_dirty() {
-    lcd.bgmap = &mbc.vrambank[lcd.c & LCDC_BG_MAP_BIT ? 0x1C00 : 0x1800];
-    lcd.wndmap = &mbc.vrambank[lcd.c & LCDC_WND_MAP_BIT ? 0x1C00 : 0x1800];
+    lcd.bgmap = &ram.vrambank[lcd.c & LCDC_BG_MAP_BIT ? 0x1C00 : 0x1800];
+    lcd.wndmap = &ram.vrambank[lcd.c & LCDC_WND_MAP_BIT ? 0x1C00 : 0x1800];
 }
 
