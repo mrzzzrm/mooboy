@@ -69,7 +69,6 @@
 			<Add option="-Wall" />
 			<Add directory="src" />
 		</Compiler>
-		<Unit filename="src/core/_assert.h" />
 		<Unit filename="src/core/cpu.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -78,59 +77,59 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/cpu/chunks.h" />
-		<Unit filename="src/core/cpu/defines.h" />
 		<Unit filename="src/core/cpu/ops.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/cpu/ops.h" />
-		<Unit filename="src/core/cpu/timers.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/core/cpu/timers.h" />
+		<Unit filename="src/core/defines.h" />
 		<Unit filename="src/core/emu.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/emu.h" />
+		<Unit filename="src/core/ints.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/ints.h" />
+		<Unit filename="src/core/io.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/io.h" />
+		<Unit filename="src/core/joy.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/joy.h" />
+		<Unit filename="src/core/lcd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/lcd.h" />
+		<Unit filename="src/core/lcd/maps.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/lcd/maps.h" />
+		<Unit filename="src/core/lcd/obj.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/lcd/obj.h" />
 		<Unit filename="src/core/loader.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/loader.h" />
+		<Unit filename="src/core/mbc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/mbc.h" />
 		<Unit filename="src/core/mem.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/mem.h" />
-		<Unit filename="src/core/mem/io.c">
+		<Unit filename="src/core/rtc.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/core/mem/io.h" />
-		<Unit filename="src/core/mem/io/joy.c">
+		<Unit filename="src/core/rtc.h" />
+		<Unit filename="src/core/timers.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/core/mem/io/joy.h" />
-		<Unit filename="src/core/mem/io/lcd.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/core/mem/io/lcd.h" />
-		<Unit filename="src/core/mem/io/lcd/maps.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/core/mem/io/lcd/maps.h" />
-		<Unit filename="src/core/mem/io/lcd/obj.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/core/mem/io/lcd/obj.h" />
-		<Unit filename="src/core/mem/io/lcd/tile.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/core/mem/io/lcd/tile.h" />
-		<Unit filename="src/core/mem/mbc.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/core/mem/mbc.h" />
-		<Unit filename="src/core/mem/mbc/rtc.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/core/mem/mbc/rtc.h" />
+		<Unit filename="src/core/timers.h" />
 		<Unit filename="src/debug/break.c">
 			<Option compilerVar="CC" />
 		</Unit>
