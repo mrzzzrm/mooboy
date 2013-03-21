@@ -61,7 +61,7 @@ void sys_init(int argc, const char** argv) {
     last_sec = SDL_GetTicks();
     cmd_init(argc, argv);
 
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     SDL_Surface *screen = SDL_SetVideoMode(800, 720, 24, SDL_DOUBLEBUF);
 }
 

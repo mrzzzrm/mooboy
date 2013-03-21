@@ -8,6 +8,7 @@
 #include "debug/debug.h"
 #include "loader.h"
 #include "sys/sys.h"
+#include "sound.h"
 
 #define QUANTUM 1000
 
@@ -15,10 +16,12 @@ void emu_init() {
     mem_init();
     cpu_init();
     joy_init();
+    sound_init();
 }
 
 void emu_close() {
     mem_close();
+    sound_close();
 }
 
 void emu_reset() {
@@ -27,6 +30,7 @@ void emu_reset() {
     lcd_reset();
     timers_reset();
     rtc_reset();
+    sound_reset();
 }
 
 void emu_load_rom(u8 *data, size_t size) {
@@ -35,8 +39,7 @@ void emu_load_rom(u8 *data, size_t size) {
 }
 
 void emu_run_standby() {
-    u8 standby = 1;
-    while(standby) {
+    for(;;) {
         unsigned int t;
         for(t = 0; t < QUANTUM && standby; t++) {
             debug_update();
@@ -45,9 +48,11 @@ void emu_run_standby() {
             lcd_step();
             rtc_step(1);
             timers_step(1);
+            sound_step();
 
             if(ints_handle_standby()) {
-               standby = 0;
+                debug_after();
+                return;
             }
 
             debug_after();
@@ -68,6 +73,7 @@ void emu_run() {
             lcd_step();
             rtc_step(mcs);
             timers_step(mcs);
+            sound_step();
             ints_handle();
 
             debug_after();

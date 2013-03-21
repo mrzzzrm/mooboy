@@ -28,27 +28,49 @@ u8 io_read(u16 adr) {
 
         /* TODO: Sound */
         case 0x10: break;
-        case 0x11: break;
+        case 0x11: /*break*/;
         case 0x12: break;
         case 0x13: break;
         case 0x14: break;
-        case 0x16: break;
-        case 0x17: break;
-        case 0x18: break;
-        case 0x19: break;
-        case 0x1A: break;
-        case 0x1B: break;
-        case 0x1C: break;
-        case 0x1D: break;
-        case 0x1E: break;
-        case 0x20: break;
-        case 0x21: break;
-        case 0x22: break;
-        case 0x23: break;
-        case 0x24: break;
-        case 0x25: break;
-        case 0x26: break;
-        case 0x30: break;
+
+        case 0x16: /*break*/;
+        case 0x17: /*break*/;
+        case 0x19: /*break*/;
+
+        case 0x1A: /*break*/;
+        case 0x1B: /*break*/;
+        case 0x1C: /*break*/;
+        case 0x1D: /*break*/;
+        case 0x1E: /*break*/;
+
+        case 0x20: /*break*/;
+        case 0x21: /*break*/;
+        case 0x22: /*break*/;
+        case 0x23: /*break*/;
+
+        case 0x24: /*break*/;
+        case 0x25: /*break*/;
+        case 0x26: /*break*/;
+
+        case 0x30: /*break*/;
+        case 0x31: /*break*/;
+        case 0x32: /*break*/;
+        case 0x33: /*break*/;
+        case 0x34: /*break*/;
+        case 0x35: /*break*/;
+        case 0x36: /*break*/;
+        case 0x37: /*break*/;
+        case 0x38: /*break*/;
+        case 0x39: /*break*/;
+        case 0x3A: /*break*/;
+        case 0x3B: /*break*/;
+        case 0x3C: /*break*/;
+        case 0x3D: /*break*/;
+        case 0x3E: /*break*/;
+        case 0x3F: /*break*/;
+
+
+        break;
 
         case 0x40: return lcd.c; break;
         case 0x41: return lcd.stat; break;
@@ -95,28 +117,51 @@ void io_write(u16 adr, u8 val) {
         case 0x0F: cpu.irq = val; break;
 
         /* TODO: Sound */
-        case 0x10: break;
-        case 0x11: break;
-        case 0x12: break;
-        case 0x13: break;
-        case 0x14: break;
-        case 0x16: break;
-        case 0x17: break;
-        case 0x18: break;
-        case 0x19: break;
-        case 0x1A: break;
-        case 0x1B: break;
-        case 0x1C: break;
-        case 0x1D: break;
-        case 0x1E: break;
-        case 0x20: break;
-        case 0x21: break;
-        case 0x22: break;
-        case 0x23: break;
-        case 0x24: break;
-        case 0x25: break;
-        case 0x26: break;
-        case 0x30: break;
+        case 0x10: sound_write_nr10(val); break;
+        case 0x11: sound_write_nr11(val); break;
+        case 0x12: sound_write_nr12(val); break;
+        case 0x13: sound_write_nr13(val); break;
+        case 0x14: sound_write_nr14(val); break;
+
+        case 0x16: /*break*/;
+        case 0x17: /*break*/;
+        case 0x19: /*break*/;
+
+        case 0x1A: /*break*/;
+        case 0x1B: /*break*/;
+        case 0x1C: /*break*/;
+        case 0x1D: /*break*/;
+        case 0x1E: /*break*/;
+
+        case 0x20: /*break*/;
+        case 0x21: /*break*/;
+        case 0x22: /*break*/;
+        case 0x23: /*break*/;
+
+        case 0x24: sound_write_nr50(val); break;
+        case 0x25: sound_write_nr51(val); break;
+        case 0x26: sound_write_nr52(val); break;
+
+        case 0x30: /*break*/;
+        case 0x31: /*break*/;
+        case 0x32: /*break*/;
+        case 0x33: /*break*/;
+        case 0x34: /*break*/;
+        case 0x35: /*break*/;
+        case 0x36: /*break*/;
+        case 0x37: /*break*/;
+        case 0x38: /*break*/;
+        case 0x39: /*break*/;
+        case 0x3A: /*break*/;
+        case 0x3B: /*break*/;
+        case 0x3C: /*break*/;
+        case 0x3D: /*break*/;
+        case 0x3E: /*break*/;
+        case 0x3F: /*break*/;
+//        if(r != 0x24 && r != 0x25)
+//        printf("Write to sound reg %.2X: %.2X\n", r, val);
+
+        break;
 
         case 0x40:
             lcd.c = val;

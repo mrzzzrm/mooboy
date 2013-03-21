@@ -1,28 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <SDL/SDL.h>
 
 #include "core/emu.h"
 #include "sys/sys.h"
 #include "util/err.h"
 
-void close() {
+static void close() {
     emu_close();
     sys_close();
 }
 
-void init(int argc, const char **argv) {
+static void init(int argc, const char **argv) {
     atexit(&close);
 
     emu_init();
     sys_init(argc, argv);
 }
 
-void error() {
+static void error() {
     printf("Error: %s\n", err_msg());
     sys_error();
 }
 
-void load_romfile(char *romname) {
+static void load_romfile(char *romname) {
     char rompath[256];
     u8 *romdata;
     size_t romsize;
@@ -42,7 +43,7 @@ int main(int argc, const char **argv) {
 
 
     init(argc, argv);
-    sprintf(rom, "gold.gbc");
+    sprintf(rom, "gelb.gbc");
     load_romfile(rom);
     emu_run();
     close();

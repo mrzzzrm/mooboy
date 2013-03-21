@@ -126,6 +126,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/rtc.h" />
+		<Unit filename="src/core/sound.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/sound.h" />
 		<Unit filename="src/core/timers.c">
 			<Option compilerVar="CC" />
 		</Unit>
