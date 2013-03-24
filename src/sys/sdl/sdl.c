@@ -9,10 +9,12 @@
 
 #define FB_WIDTH 160
 #define FB_HEIGHT 144
-
+#define DELAY_THRESHOLD 10
 
 static unsigned int invoke_count;
-static unsigned int last_cc;
+static unsigned int last_sec_cc;
+static unsigned int last_delay_cc;
+static time_t delay_start;
 static time_t last_sec;
 
 u32 palette[] = {
@@ -54,10 +56,26 @@ static void update_joypad() {
    }
 }
 
+static void handle_delay() {
+    if(delay_start == 0) {
+        delay_start = SDL_GetTicks();
+    }
+
+    long should_cc = ((long)SDL_GetTicks() - (long)delay_start)*(long)(cpu.freq/1000);
+    long is_cc = cpu.cc;
+    long cc_ahead = is_cc - should_cc;
+    long ms_ahead = (is_cc - should_cc) / ((long)cpu.freq/1000);
+
+    if(ms_ahead >= DELAY_THRESHOLD) {
+        SDL_Delay(DELAY_THRESHOLD);
+    }
+}
 
 void sys_init(int argc, const char** argv) {
     invoke_count = 0;
-    last_cc = 0;
+    last_sec_cc = 0;
+    last_delay_cc = 0;
+    delay_start = 0;
     last_sec = SDL_GetTicks();
     cmd_init(argc, argv);
 
@@ -98,12 +116,13 @@ void sys_invoke() {
     invoke_count++;
     if(SDL_GetTicks() - last_sec > 1000) {
         last_sec = SDL_GetTicks();
-        fprintf(stderr, "Invokes: %i %f%%\n", invoke_count, (double)(cpu.cc - last_cc)/10000.0);
+        fprintf(stderr, "Invokes: %i %f%%\n", invoke_count, (double)(cpu.cc - last_sec_cc)/10000.0);
         invoke_count = 0;
-        last_cc = cpu.cc;
+        last_sec_cc = cpu.cc;
     }
 
     update_joypad();
+    handle_delay();
 }
 
 void sys_fb_ready() {

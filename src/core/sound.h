@@ -4,25 +4,44 @@
     #include "util/defines.h"
 
     typedef struct {
+        u32 freq;
+        u16 bufsize;
+        u8 samplesize;
+        u8 *buffer;
+
         u8 enabled;
         u8 so1_volume;
         u8 so2_volume;
     } sound_t;
 
     typedef struct {
-        u16 frequency;
+        u16 freq;
         u8 duty;
         u8 length_counter;
         u8 length_expiration;
+        u8 volume;
+        u8 env_mode;
+        u8 env_period;
 
+        u8 enabled;
         u8 so1_enabled, so2_enabled;
+    } ch1_t;
 
-        u8 *buffer;
-    } sound_channel_1_t;
+    typedef struct {
+        u8 period;
+        u8 negate;
+        u8 shift;
+
+        u16 shadow;
+        u8 enable;
+    } sweep_t;
+
+
 
 
     extern sound_t sound;
-    extern sound_channel_1_t sound_channel_1;
+    extern ch1_t ch1;
+    extern sweep_t sweep;
 
     void sound_init();
     void sound_close();

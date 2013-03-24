@@ -16,7 +16,7 @@ typedef struct cpu_s {
     u8 ime, irq, ie;
 
     u32 cc;
-    u32 mcs_per_second;
+    u32 freq;
 } cpu_t;
 
 extern cpu_t cpu;

@@ -43,7 +43,7 @@ int main(int argc, const char **argv) {
 
 
     init(argc, argv);
-    sprintf(rom, "gelb.gbc");
+    sprintf(rom, "gold.gbc");
     load_romfile(rom);
     emu_run();
     close();

@@ -26,7 +26,7 @@ void cpu_reset() {
     cpu.ie = 0xFF;
 
     cpu.cc = 0;
-    cpu.mcs_per_second = 1048576;
+    cpu.freq = 1048576;
 }
 
 inline u8 cpu_exec(u8 op) {
@@ -36,6 +36,8 @@ inline u8 cpu_exec(u8 op) {
 	c->sp = 0;
 	c->funcs[c->sp++](c);
 	cpu.cc += c->mcs;
+    if(c->mcs>6)
+    printf("Alert!!!");
 
 	return cpu.cc - old_mcs;
 }

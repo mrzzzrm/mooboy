@@ -7,7 +7,7 @@
 #include "chunks.h"
 #include "debug/debug.h"
 
-#define CPU_MCS(mcs) cpu.cc += (mcs)
+#define CPU_MCS(mcs) cpu.cc += (mcs);
 
 static u8 static_byte;
 static u16 static_word;

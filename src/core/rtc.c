@@ -41,11 +41,11 @@ void rtc_reset() {
 void rtc_step(u8 mcs) {
     if(mbc.type == 3) {
         rtc.cc += mcs;
-        if(rtc.ticking[DH] & 0x40 || rtc.cc < cpu.mcs_per_second) { // Halt bit set or next tick not yet reached
+        if(rtc.ticking[DH] & 0x40 || rtc.cc < cpu.freq) { // Halt bit set or next tick not yet reached
             return;
         }
         else {
-            rtc.cc -= cpu.mcs_per_second;
+            rtc.cc -= cpu.freq;
             rtc_tick(0);
         }
     }

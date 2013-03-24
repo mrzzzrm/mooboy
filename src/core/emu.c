@@ -41,7 +41,7 @@ void emu_load_rom(u8 *data, size_t size) {
 void emu_run_standby() {
     for(;;) {
         unsigned int t;
-        for(t = 0; t < QUANTUM && standby; t++) {
+        for(t = 0; t < QUANTUM; t++) {
             debug_update();
             debug_before();
 
