@@ -5,13 +5,19 @@
 
     typedef struct {
         u32 freq;
-        u16 bufsize;
-        u8 samplesize;
-        u8 *buffer;
+        u16 buf_size;
+        u16 buf_start;
+        u16 buf_end;
+        u8 *buf;
+        u8 sample_size;
 
         u8 enabled;
         u8 so1_volume;
         u8 so2_volume;
+
+        u8 last_timer_step;
+        u32 next_sample;
+        u32 next_sample_cc;
     } sound_t;
 
     typedef struct {
@@ -20,12 +26,15 @@
         u8 length_counter;
         u8 length_expiration;
         u8 volume;
-        u8 env_mode;
-        u8 env_period;
 
         u8 enabled;
         u8 so1_enabled, so2_enabled;
     } ch1_t;
+
+    typedef struct {
+        u8 period;
+        u8 mode;
+    } env_t;
 
     typedef struct {
         u8 period;
@@ -37,10 +46,9 @@
     } sweep_t;
 
 
-
-
     extern sound_t sound;
     extern ch1_t ch1;
+    extern env_t env1;
     extern sweep_t sweep;
 
     void sound_init();

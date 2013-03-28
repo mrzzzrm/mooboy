@@ -73,7 +73,7 @@ static u8 step_mode(u8 m1) {
         if(lc < DUR_MODE_2)
             return 0x02;
         else if(lc < DUR_MODE_2 + DUR_MODE_3)
-            return 0x02;
+            return 0x03;
         else
             return 0x00;
     }
@@ -83,8 +83,9 @@ static u8 step_mode(u8 m1) {
 }
 
 static inline void stat_irq(u8 flag) {
-    if(lcd.stat & flag)
+    if(lcd.stat & flag) {
         cpu.irq |= IF_LCDSTAT;
+    }
 }
 
 void lcd_reset() {

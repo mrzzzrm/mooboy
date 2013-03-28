@@ -36,8 +36,6 @@ inline u8 cpu_exec(u8 op) {
 	c->sp = 0;
 	c->funcs[c->sp++](c);
 	cpu.cc += c->mcs;
-    if(c->mcs>6)
-    printf("Alert!!!");
 
 	return cpu.cc - old_mcs;
 }

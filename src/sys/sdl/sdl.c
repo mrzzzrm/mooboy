@@ -69,6 +69,7 @@ static void handle_delay() {
     if(ms_ahead >= DELAY_THRESHOLD) {
         SDL_Delay(DELAY_THRESHOLD);
     }
+
 }
 
 void sys_init(int argc, const char** argv) {
@@ -114,9 +115,10 @@ void sys_error() {
 
 void sys_invoke() {
     invoke_count++;
-    if(SDL_GetTicks() - last_sec > 1000) {
+    time_t dur = SDL_GetTicks() - last_sec;
+    if(dur > 1000) {
         last_sec = SDL_GetTicks();
-        fprintf(stderr, "Invokes: %i %f%%\n", invoke_count, (double)(cpu.cc - last_sec_cc)/10000.0);
+        fprintf(stderr, "Invokes: %i %.2f%%\n", invoke_count, ((double)(cpu.cc - last_sec_cc)*100.0f*dur)/(cpu.freq*1000));
         invoke_count = 0;
         last_sec_cc = cpu.cc;
     }
