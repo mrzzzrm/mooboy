@@ -123,15 +123,16 @@ void io_write(u16 adr, u8 val) {
         case 0x13: sound_write_nr13(val); break;
         case 0x14: sound_write_nr14(val); break;
 
-        case 0x16: break;
-        case 0x17: break;
-        case 0x19: break;
+        case 0x16: sound_write_nr21(val); break;
+        case 0x17: sound_write_nr22(val); break;
+        case 0x18: sound_write_nr23(val); break;
+        case 0x19: sound_write_nr24(val); break;
 
-        case 0x1A: break;
-        case 0x1B: break;
-        case 0x1C: break;
-        case 0x1D: break;
-        case 0x1E: break;
+        case 0x1A: sound_write_nr30(val); break;
+        case 0x1B: sound_write_nr31(val); break;
+        case 0x1C: sound_write_nr32(val); break;
+        case 0x1D: sound_write_nr33(val); break;
+        case 0x1E: sound_write_nr34(val); break;
 
         case 0x20: break;
         case 0x21: break;
@@ -142,25 +143,11 @@ void io_write(u16 adr, u8 val) {
         case 0x25: sound_write_nr51(val); break;
         case 0x26: sound_write_nr52(val); break;
 
-        case 0x30: break;
-        case 0x31: break;
-        case 0x32: break;
-        case 0x33: break;
-        case 0x34: break;
-        case 0x35: break;
-        case 0x36: break;
-        case 0x37: break;
-        case 0x38: break;
-        case 0x39: break;
-        case 0x3A: break;
-        case 0x3B: break;
-        case 0x3C: break;
-        case 0x3D: break;
-        case 0x3E: break;
-        case 0x3F: break;
-//        if(r != 0x24 && r != 0x25)
-//        printf("Write to sound reg %.2X: %.2X\n", r, val);
-
+        case 0x30: case 0x31: case 0x32: case 0x33:
+        case 0x34: case 0x35: case 0x36: case 0x37:
+        case 0x38: case 0x39: case 0x3A: case 0x3B:
+        case 0x3C: case 0x3D: case 0x3E: case 0x3F:
+            sound_write_wave(r - 0x30, val);
         break;
 
         case 0x40:

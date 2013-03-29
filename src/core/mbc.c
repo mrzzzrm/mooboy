@@ -49,6 +49,8 @@ static void mbc1_lower_write(u16 adr, u8 val) {
         case 0x6: case 0x7: // RAM or ROM banking mode
             mbc1.mode = val & 0x01;
         break;
+        default:
+            assert(0);
     }
 }
 
@@ -61,6 +63,8 @@ static void mbc2_lower_write(u16 adr, u8 val) {
                 mbc.rombank = card.rombanks[val & 0x0F];
             }
         break;
+        default:
+            assert(0);
     }
 }
 
@@ -88,6 +92,8 @@ static void mbc3_lower_write(u16 adr, u8 val) {
         case 6: case 7: // Latch Clock Data (First write 0x00, then 0x01)
             rtc_latch(val);
         break;
+        default:
+            assert(0);
     }
 }
 
@@ -109,6 +115,8 @@ static void mbc5_lower_write(u16 adr, u8 val) {
             assert(val < 0x04);
             mbc.srambank = card.srambanks[val & 0x0F];
         break;
+        default:
+            assert(0);
     }
 
     assert(mbc5.rombank < 0x1E0);
@@ -121,7 +129,6 @@ void mbc_set_type(u8 type) {
         case 2: mbc.lower_write_func = mbc2_lower_write; break;
         case 3: mbc.lower_write_func = mbc3_lower_write; break;
         case 5: mbc.lower_write_func = mbc5_lower_write; break;
-
         default:
             assert(0);
     }

@@ -6,6 +6,7 @@
 #include "core/lcd.h"
 #include "core/joy.h"
 #include "util/err.h"
+#include "core/sound.h"
 
 #define FB_WIDTH 160
 #define FB_HEIGHT 144
@@ -56,6 +57,53 @@ static void update_joypad() {
    }
 }
 
+static u16 get_available_samples() {
+    u16 r;
+    sound_lock();
+    if(sound.buf_start > sound.buf_end) {
+        r = sound.buf_size - (sound.buf_start - sound.buf_end) + 1;
+    }
+    else {
+        r = sound.buf_end - sound.buf_start;
+    }
+    sound_unlock();
+
+    return r;
+}
+
+void move_buf(void *nichtVerwendet, Uint8 *stream, int length) {
+    sound_lock();
+    u16 requested_samples = length / (sound.sample_size * 2);
+    u16 available_samples;
+    u16 served_samples;
+
+    while((available_samples = get_available_samples()) < requested_samples) {
+        sound_mix();
+    }
+
+    if(sound.buf_start > sound.buf_end) {
+        served_samples = sound.buf_size - sound.buf_start;
+        if(served_samples >= requested_samples) {
+            memcpy(stream, &sound.buf[sound.buf_start*2*2], length);
+        }
+        else {
+            u16 bytes = served_samples * sound.sample_size * 2;
+            memcpy(&stream[0], &sound.buf[sound.buf_start*2*2], bytes);
+            memcpy(&stream[bytes], &sound.buf[0], (requested_samples - served_samples) * sound.sample_size * 2);
+        }
+    }
+    else {
+        memcpy(stream, &sound.buf[sound.buf_start*2*2], length);
+    }
+
+
+    sound.buf_start += requested_samples;
+    sound.buf_start %= sound.buf_size;
+    sound_unlock();
+
+//    moved += requested_samples;
+}
+
 static void handle_delay() {
     if(delay_start == 0) {
         delay_start = SDL_GetTicks();
@@ -82,6 +130,21 @@ void sys_init(int argc, const char** argv) {
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     SDL_Surface *screen = SDL_SetVideoMode(800, 720, 24, SDL_DOUBLEBUF);
+
+    /* Format: 16 Bit, stereo, 22 KHz */
+    SDL_AudioSpec format;
+    format.freq = sound.freq;
+    format.format = AUDIO_U16;
+    format.channels = 2;
+    format.samples = 512;
+    format.callback = move_buf;
+    format.userdata = NULL;
+
+    if (SDL_OpenAudio(&format, NULL) < 0 ) {
+        fprintf(stderr, "Audio-Gerät konnte nicht geöffnet werden: %s\n", SDL_GetError());
+        exit(1);
+    }
+    SDL_PauseAudio(0);
 }
 
 void sys_close() {

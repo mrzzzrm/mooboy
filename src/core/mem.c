@@ -50,7 +50,6 @@ u8 mem_read_byte(u16 adr) {
         case 0xE:
             mem_read_byte(adr - 0x2000);
         break;
-
         case 0xF:
             if(adr < 0xFE00) {
                 return mem_read_byte(adr - 0x2000);
@@ -125,9 +124,6 @@ void mem_write_byte(u16 adr, u8 val) {
                 cpu.ie = val;
             }
         break;
-
-        default:
-            assert(0);
     }
 }
 
