@@ -116,7 +116,6 @@ void io_write(u16 adr, u8 val) {
         case 0x07: timers.tac = val; break;
         case 0x0F: cpu.irq = val; break;
 
-        /* TODO: Sound */
         case 0x10: sound_write_nr10(val); break;
         case 0x11: sound_write_nr11(val); break;
         case 0x12: sound_write_nr12(val); break;

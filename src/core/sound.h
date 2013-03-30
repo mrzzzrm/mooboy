@@ -46,13 +46,17 @@
 
     typedef struct {
         u8 on;
-        u8 freq;
-        u8 volume;
+        u16 freq;
+        u8 shift;
         u8 length;
         u8 expires;
         u8 data[0x10];
     } wave_t;
 
+    typedef struct {
+        u8 length;
+
+    } noise_t;
 
     extern sound_t sound;
     extern sqw_t ch1, ch2;

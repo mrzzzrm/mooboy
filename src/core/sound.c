@@ -19,31 +19,6 @@ static SDL_mutex *mutex;
 static long moved = 0;
 static long mixed = 0;
 
-static u16 sweep_calc() {
-//    u16 tmp = sweep.shadow >> sweep.shift;
-//    if(sweep.negate) {
-//        tmp = ~tmp;
-//    }
-//    if(sweep.shadow + tmp > 0x0800) {
-//        ch1.on = 0;
-//    }
-//    return sweep.shadow + tmp;
-}
-
-static void ch1_trigger() {
-////    if(ch1.length_counter == 0) {
-////        length_counter = 0x40;
-////    }
-//
-//    // Sweep
-//    sweep.shadow = ch1.freq;
-//    sweep.enable = sweep.period || sweep.shift;
-//
-//    if(sweep.shift != 0) {
-//        sweep.shadow = sweep_calc();
-//    }
-}
-
 static void tick_length_counter(sqw_t *sqw) {
     if(sqw->length > 0) {
         sqw->length--;
@@ -56,6 +31,12 @@ static void tick_length_counter(sqw_t *sqw) {
 static void tick_length_counters() {
     tick_length_counter(&ch1);
     tick_length_counter(&ch2);
+    if(wave.length > 0) {
+        wave.length--;
+        if(wave.expires && wave.length == 0) {
+            wave.on = 0;
+        }
+    }
 }
 
 static void tick_sweep() {
@@ -71,14 +52,6 @@ static void tick_sweep() {
             sweep.tick = 0;
         }
     }
-//    if(sweep.enable && sweep.period != 0) {
-//        u16 tmp = sweep_calc();
-//        if(tmp < 0x0800 && sweep.shift != 0) {
-//           sweep.shadow = tmp;
-//           ch1.freq = tmp;
-//           sweep_calc();
-//        }
-//    }
 }
 
 static void tick_envelope(env_t *env, u8 *volume) {
@@ -133,10 +106,10 @@ static sample_t sqw_mix(sqw_t *ch) {
     wavesam = sound.sample % wavelen;
 
     switch(ch->duty) {
-        case 0x00: amp = wavesam <= wavelen>>3 ? 0x0000 : 0x00FF; break;
-        case 0x01: amp = wavesam <= wavelen>>2 ? 0x0000 : 0x00FF; break;
-        case 0x02: amp = wavesam <= wavelen>>1 ? 0x0000 : 0x0FF; break;
-        case 0x03: amp = wavesam <= (wavelen>>2)*3 ? 0x0000 : 0x00FF; break;
+        case 0x00: amp = wavesam <= wavelen>>3 ? 0x0000 : 0x0100; break;
+        case 0x01: amp = wavesam <= wavelen>>2 ? 0x0000 : 0x0100; break;
+        case 0x02: amp = wavesam <= wavelen>>1 ? 0x0000 : 0x0100; break;
+        case 0x03: amp = wavesam <= (wavelen>>2)*3 ? 0x0000 : 0x0100; break;
     }
 
     amp *= ch->volume;
@@ -149,24 +122,31 @@ static sample_t sqw_mix(sqw_t *ch) {
 
 static sample_t wave_mix() {
     sample_t r = {0,0};
-    u8 sample, mask, val;
+    u8 sample, mask;
+    u16 amp;
+    int wavelen;
+    int wavesam;
+    int realsam;
 
-//    if(!wave.on) {
-//        return r;
-//    }
+    if(!wave.on || wave.shift == 0) {
+        return r;
+    }
 
-    sample = sound.sample % 0x20;
-    if(sample % 2 == 0) {
-        val = wave.data[sample>>1] >> 4;
+    wavelen = sound.freq / (65536/(2048-wave.freq));
+    wavesam = (sound.sample % wavelen);
+    realsam = (wavesam*0x20)/wavelen;
+
+    if(realsam%2 == 0) {
+        amp = wave.data[realsam>>1] >> 4;
     }
     else {
-        val = wave.data[sample>>1] & 0x0F;
+        amp = wave.data[realsam>>1] & 0x0F;
     }
-    val *= 0x100;
+    amp >>= (wave.shift-1);
+    amp *= 0x100;
 
-    r.l = val;
-    r.r = val;
-
+    r.l = amp;
+    r.r = amp;
     return r;
 }
 
@@ -197,24 +177,10 @@ void sound_reset() {
     sound.next_sample_cc = 0;
 
     memset(&ch1, 0x00, sizeof(ch1));
-    env1.sweep = 0;
-    env1.dir = 0;
-
-    ch2.on = 1;
-    ch2.freq = 0x00;
-    ch2.duty = 0x00;
-    ch2.volume = 0x00;
-    ch2.length = 0x00;
-    ch2.expires = 0x00;
-    env2.sweep = 0;
-    env2.dir = 0;
-
-    sweep.period = 0x00;
-    sweep.dir = 0x00;
-    sweep.tick = 0x00;
-    sweep.shift = 0x00;
-//    sweep.shadow = 0x00;
-//    sweep.enable = 0x00;
+    memset(&env1, 0x00, sizeof(env1));
+    memset(&sweep, 0x00, sizeof(sweep));
+    memset(&ch2, 0x00, sizeof(ch2));
+    memset(&env2, 0x00, sizeof(env2));
 }
 
 void sound_step() {
@@ -254,25 +220,25 @@ void sound_mix() {
         u16 *buf = sound.buf;
 
         if(!sound.enabled) {
-            buf[sound.buf_end*2 + 0] = 0;
-            buf[sound.buf_end*2 + 1] = 0;
-            SDL_mutexV(mutex);
-            return;
+            buf[sound.buf_end*2 + 0] = 0x8000;
+            buf[sound.buf_end*2 + 1] = 0x8000;
         }
-        if((sound.buf_end + 1) % sound.buf_size == sound.buf_start) {
-            printf("WARNING: Sound-Buffer overrun!\n");
-            return;
+        else {
+            if((sound.buf_end + 1) % sound.buf_size == sound.buf_start) {
+                printf("WARNING: Sound-Buffer overrun!\n");
+                sound.buf_start = 0;
+                sound.buf_end = 0;
+            }
+
+            samples[0] = sqw_mix(&ch1);
+            samples[1] = sqw_mix(&ch2);
+            samples[2] = wave_mix();
+
+//            buf[sound.buf_end*2 + 0] = (samples[0].l + samples[1].l + samples[2].l)/3;
+//            buf[sound.buf_end*2 + 1] = (samples[0].r + samples[1].r + samples[2].r)/3;
+            buf[sound.buf_end*2 + 0] = samples[2].l;
+            buf[sound.buf_end*2 + 1] = samples[2].r;
         }
-
-        samples[0] = sqw_mix(&ch1);
-        samples[1] = sqw_mix(&ch2);
-        samples[2] = wave_mix();
-
-        buf[sound.buf_end*2 + 0] = (samples[0].l + samples[1].l + samples[2].l)/3;
-        buf[sound.buf_end*2 + 1] = (samples[0].r + samples[1].r + samples[2].r)/3;
-//        buf[sound.buf_end*2 + 0] = samples[2].l;
-//        buf[sound.buf_end*2 + 1] = samples[2].r;
-
         sound.buf_end++;
         sound.buf_end %= sound.buf_size;
         sound.sample++;
@@ -344,7 +310,7 @@ void sound_write_nr31(u8 val) {
 }
 
 void sound_write_nr32(u8 val) {
-    wave.volume = (val & 0x60) >> 5;
+    wave.shift = (val & 0x60) >> 5;
 }
 
 void sound_write_nr33(u8 val) {
@@ -354,9 +320,9 @@ void sound_write_nr33(u8 val) {
 
 void sound_write_nr34(u8 val) {
     wave.freq &= 0x00FF;
-    wave.freq |= val<<8;
+    wave.freq |= (val&0x07)<<8;
     wave.expires = val & 0x40;
-    wave.on |= val & 0x80;
+    //wave.on |= val & 0x80;
 }
 
 void sound_write_wave(u8 i, u8 val) {
