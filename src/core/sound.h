@@ -54,15 +54,23 @@
     } wave_t;
 
     typedef struct {
+        u8 on;
+        u8 volume;
         u8 length;
-
+        u8 expires;
+        u8 shift;
+        u8 width;
+        u8 divr;
+        u16 lsfr;
+        u8 amp;
     } noise_t;
 
     extern sound_t sound;
     extern sqw_t ch1, ch2;
-    extern env_t env1, env2;
+    extern env_t env1, env2, env3;
     extern sweep_t sweep;
     extern wave_t wave;
+    extern noise_t noise;
 
     void sound_init();
     void sound_close();
@@ -91,6 +99,11 @@
     void sound_write_nr33(u8 val);
     void sound_write_nr34(u8 val);
     void sound_write_wave(u8 i, u8 val);
+
+    void sound_write_nr41(u8 val);
+    void sound_write_nr42(u8 val);
+    void sound_write_nr43(u8 val);
+    void sound_write_nr44(u8 val);
 
     void sound_write_nr50(u8 val);
     void sound_write_nr51(u8 val);

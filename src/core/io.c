@@ -133,10 +133,10 @@ void io_write(u16 adr, u8 val) {
         case 0x1D: sound_write_nr33(val); break;
         case 0x1E: sound_write_nr34(val); break;
 
-        case 0x20: break;
-        case 0x21: break;
-        case 0x22: break;
-        case 0x23: break;
+        case 0x20: sound_write_nr41(val); break;
+        case 0x21: sound_write_nr42(val); break;
+        case 0x22: sound_write_nr43(val); break;
+        case 0x23: sound_write_nr44(val); break;
 
         case 0x24: sound_write_nr50(val); break;
         case 0x25: sound_write_nr51(val); break;

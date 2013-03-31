@@ -1,5 +1,6 @@
 #include "sound.h"
 #include "cpu.h"
+#include <stdlib.h>
 #include <SDL/SDL.h>
 
 typedef struct {
@@ -10,9 +11,9 @@ sound_t sound;
 sqw_t ch1;
 sqw_t ch2;
 sweep_t sweep;
-env_t env1;
-env_t env2;
+env_t env1, env2, env3;
 wave_t wave;
+noise_t noise;
 
 static SDL_mutex *mutex;
 
@@ -35,6 +36,12 @@ static void tick_length_counters() {
         wave.length--;
         if(wave.expires && wave.length == 0) {
             wave.on = 0;
+        }
+    }
+    if(noise.length > 0) {
+        noise.length--;
+        if(noise.expires && noise.length == 0) {
+            noise.on = 0;
         }
     }
 }
@@ -76,6 +83,7 @@ static void tick_envelope(env_t *env, u8 *volume) {
 static void tick_envelopes() {
     tick_envelope(&env1, &ch1.volume);
     tick_envelope(&env2, &ch2.volume);
+    tick_envelope(&env3, &noise.volume);
  }
 
 static void timer_step() {
@@ -150,6 +158,49 @@ static sample_t wave_mix() {
     return r;
 }
 
+static sample_t noise_mix() {
+    sample_t r = {0,0};
+    u32 freq;
+    u16 amp;
+    int wavelen;
+
+    if(!noise.on || noise.volume == 0) {
+        return r;
+    }
+
+    if(noise.divr == 0) {
+        freq = (524288 * 2) >> (noise.shift+1);
+    }
+    else {
+        freq = (524288 / noise.divr) >> (noise.shift+1);
+    }
+    wavelen = sound.freq / freq;
+    if(wavelen == 0) {
+        return r;
+    }
+    if(sound.sample / wavelen != (sound.sample+1) / wavelen) {
+        u8 b = ((noise.lsfr+0x0001) & 0x03) >= 0x0002 ? 1 : 0;
+        noise.lsfr >>= 1;
+        noise.lsfr &= 0xBFFF;
+        noise.lsfr |= b << 14;
+        if(noise.width) {
+            noise.lsfr &= 0xFFBF;
+            noise.lsfr |= b << 6;
+        }
+    }
+    if(noise.lsfr & 0x0001) {
+        amp = 0x0000;
+    }
+    else {
+        amp = 0x0100 * noise.volume;
+    }
+
+
+    r.l = amp;
+    r.r = amp;
+    return r;
+}
+
 void sound_init() {
     mutex = SDL_CreateMutex();
 
@@ -181,6 +232,10 @@ void sound_reset() {
     memset(&sweep, 0x00, sizeof(sweep));
     memset(&ch2, 0x00, sizeof(ch2));
     memset(&env2, 0x00, sizeof(env2));
+    memset(&wave, 0x00, sizeof(wave));
+    memset(&noise, 0x00, sizeof(noise));
+
+    noise.lsfr = 0xFFFF;
 }
 
 void sound_step() {
@@ -189,7 +244,7 @@ void sound_step() {
         last_out = SDL_GetTicks();
     }
     if(SDL_GetTicks() - last_out > 1000) {
-//        fprintf(stderr, "Moved %i | Mixed %i\n", moved, mixed);
+//      fprintf(stderr, "Moved %i | Mixed %i\n", moved, mixed);
         moved -= 44100;
         mixed -= 44100;
         last_out += 1000;
@@ -233,11 +288,12 @@ void sound_mix() {
             samples[0] = sqw_mix(&ch1);
             samples[1] = sqw_mix(&ch2);
             samples[2] = wave_mix();
+            samples[3] = noise_mix();
 
-//            buf[sound.buf_end*2 + 0] = (samples[0].l + samples[1].l + samples[2].l)/3;
-//            buf[sound.buf_end*2 + 1] = (samples[0].r + samples[1].r + samples[2].r)/3;
-            buf[sound.buf_end*2 + 0] = samples[2].l;
-            buf[sound.buf_end*2 + 1] = samples[2].r;
+            buf[sound.buf_end*2 + 0] = (samples[0].l + samples[1].l + samples[2].l + samples[3].l)/4;
+            buf[sound.buf_end*2 + 1] = (samples[0].r + samples[1].r + samples[2].r + samples[3].r)/4;
+//            buf[sound.buf_end*2 + 0] = samples[3].l;
+//            buf[sound.buf_end*2 + 1] = samples[3].r;
         }
         sound.buf_end++;
         sound.buf_end %= sound.buf_size;
@@ -327,6 +383,30 @@ void sound_write_nr34(u8 val) {
 
 void sound_write_wave(u8 i, u8 val) {
     wave.data[i] = val;
+}
+
+void sound_write_nr41(u8 val) {
+    noise.length = 64-(val & 0x3F);
+}
+
+void sound_write_nr42(u8 val) {
+    noise.volume = val >> 4;
+    env3.dir = val & 0x08;
+    env3.sweep = val & 0x07;
+}
+
+void sound_write_nr43(u8 val) {
+    noise.shift = val >> 4;
+    noise.width = val & 0x08;
+    noise.divr = val & 0x07;
+}
+
+void sound_write_nr44(u8 val) {
+    noise.expires = val & 0x40;
+    if(val & 0x80) {
+        noise.on = 1;
+        noise.length = noise.length == 0 ? 0x40 : noise.length;
+    }
 }
 
 void sound_write_nr50(u8 val) {

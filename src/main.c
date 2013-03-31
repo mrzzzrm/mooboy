@@ -42,7 +42,7 @@ int main(int argc, const char **argv) {
     char rom[256];
 
     init(argc, argv);
-    sprintf(rom, "kirby.gb");
+    sprintf(rom, "mario2.gb");
     load_romfile(rom);
     emu_run();
     close();
