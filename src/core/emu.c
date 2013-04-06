@@ -66,8 +66,8 @@ void emu_run() {
     for(;;) {
         unsigned int t;
         for(t = 0; t < QUANTUM; t++) {
-            debug_update();
-            debug_before();
+//            debug_update();
+//            debug_before();
 
             u8 mcs = cpu_step();
             lcd_step();
@@ -76,7 +76,7 @@ void emu_run() {
             sound_step();
             ints_handle();
 
-            debug_after();
+//            debug_after();
         }
         sys_invoke();
     }

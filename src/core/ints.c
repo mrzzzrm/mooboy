@@ -33,13 +33,6 @@ void ints_handle() {
 }
 
 int ints_handle_standby() {
-    switch(cpu.ime) {
-        case IME_ON: break;
-        case IME_UP: cpu.ime = IME_ON; return 0;
-        case IME_DOWN: cpu.ime = IME_OFF; return 0;
-        case IME_OFF: return 0;
-    }
-
     u8 i;
     for(i = 0; i < 5; i++) {
         if(cpu.irq & cpu.ie & (1 << i)) {

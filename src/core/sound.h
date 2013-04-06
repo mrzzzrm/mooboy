@@ -23,19 +23,23 @@
     } sound_t;
 
     typedef struct {
-        u8 on;
-        u16 freq;
-        u8 duty;
-        u8 volume;
         u8 length;
         u8 expires;
-    } sqw_t;
+    } counter_t;
 
     typedef struct {
         u8 sweep;
         u8 tick;
         u8 dir;
     } env_t;
+
+    typedef struct {
+        u8 on;
+        u16 freq;
+        u8 duty;
+        u8 volume;
+        counter_t counter;
+    } sqw_t;
 
     typedef struct {
         u8 period;
@@ -48,21 +52,18 @@
         u8 on;
         u16 freq;
         u8 shift;
-        u8 length;
-        u8 expires;
         u8 data[0x10];
+        counter_t counter;
     } wave_t;
 
     typedef struct {
         u8 on;
         u8 volume;
-        u8 length;
-        u8 expires;
         u8 shift;
         u8 width;
         u8 divr;
         u16 lsfr;
-        u8 amp;
+        counter_t counter;
     } noise_t;
 
     extern sound_t sound;
@@ -82,31 +83,6 @@
     void sound_unlock();
     void sound_mix();
 
-    void sound_write_nr10(u8 val);
-    void sound_write_nr11(u8 val);
-    void sound_write_nr12(u8 val);
-    void sound_write_nr13(u8 val);
-    void sound_write_nr14(u8 val);
-
-    void sound_write_nr21(u8 val);
-    void sound_write_nr22(u8 val);
-    void sound_write_nr23(u8 val);
-    void sound_write_nr24(u8 val);
-
-    void sound_write_nr30(u8 val);
-    void sound_write_nr31(u8 val);
-    void sound_write_nr32(u8 val);
-    void sound_write_nr33(u8 val);
-    void sound_write_nr34(u8 val);
-    void sound_write_wave(u8 i, u8 val);
-
-    void sound_write_nr41(u8 val);
-    void sound_write_nr42(u8 val);
-    void sound_write_nr43(u8 val);
-    void sound_write_nr44(u8 val);
-
-    void sound_write_nr50(u8 val);
-    void sound_write_nr51(u8 val);
-    void sound_write_nr52(u8 val);
+    void sound_write(u16 adr, u8 val);
 
 #endif

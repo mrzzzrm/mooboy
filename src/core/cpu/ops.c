@@ -299,30 +299,28 @@ void op_cp(op_chunk_t *c) {
 
 void op_daa(op_chunk_t *c) {
     debug_trace_op("DAA");
-    fprintf(stderr, "DAA called\n");
 
-    u16 a = A;
-    if(FN) {
-        if (FH) {
-            a -= 0x06;
-            a &= 0xFF;
-        }
-        if (FC) {
-            a -= 0x60;
-        }
+    int a = A;
+
+    if (!FN) {
+        if (FH || (a & 0xF) > 9)
+            a += 0x06;
+        if (FC || a > 0x9F)
+            a += 0x60;
     }
     else {
-        if (FH || (a & 0x0F) > 0x09) {
-            a += 0x06;
-        }
-        if (FC || a > 0x9F) {
-            a += 0x60;
-        }
+        if (FH)
+            a = (a - 6) & 0xFF;
+        if (FC)
+            a -= 0x60;
     }
-    F &= ~(FH | FZ);
-    F |= (a > 0xFF) ? FC : 0;
-    F |= a & FZ;
 
+    F &= ~(FHBIT | FZBIT);
+    if ((a & 0x100) == 0x100)
+        F |= FCBIT;
+    a &= 0xFF;
+    if (a == 0)
+        F |= FZBIT;
     A = a;
 }
 
@@ -458,10 +456,12 @@ void op_scf(op_chunk_t *c) {
 
 void op_halt(op_chunk_t *c) {
     debug_trace_op("HALT");
+    emu_run_standby();
 }
 
 void op_stop(op_chunk_t *c) {
     debug_trace_op("STOP");
+    emu_run_standby();
 }
 
 void op_di(op_chunk_t *c) {

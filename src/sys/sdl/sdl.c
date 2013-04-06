@@ -134,7 +134,7 @@ void sys_init(int argc, const char** argv) {
     /* Format: 16 Bit, stereo, 22 KHz */
     SDL_AudioSpec format;
     format.freq = sound.freq;
-    format.format = AUDIO_U16;
+    format.format = AUDIO_S16;
     format.channels = 2;
     format.samples = 512;
     format.callback = move_buf;

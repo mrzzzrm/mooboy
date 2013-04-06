@@ -105,7 +105,7 @@ u8 io_read(u16 adr) {
 void io_write(u16 adr, u8 val) {
     u8 r = adr & 0x00FF;
     switch(r) {
-        /* TODO: Joypad */
+        /* Joypad */
         case 0x00: joy_select_col(val); break;
         case 0x01: break;
         case 0x02: break;
@@ -116,37 +116,17 @@ void io_write(u16 adr, u8 val) {
         case 0x07: timers.tac = val; break;
         case 0x0F: cpu.irq = val; break;
 
-        case 0x10: sound_write_nr10(val); break;
-        case 0x11: sound_write_nr11(val); break;
-        case 0x12: sound_write_nr12(val); break;
-        case 0x13: sound_write_nr13(val); break;
-        case 0x14: sound_write_nr14(val); break;
-
-        case 0x16: sound_write_nr21(val); break;
-        case 0x17: sound_write_nr22(val); break;
-        case 0x18: sound_write_nr23(val); break;
-        case 0x19: sound_write_nr24(val); break;
-
-        case 0x1A: sound_write_nr30(val); break;
-        case 0x1B: sound_write_nr31(val); break;
-        case 0x1C: sound_write_nr32(val); break;
-        case 0x1D: sound_write_nr33(val); break;
-        case 0x1E: sound_write_nr34(val); break;
-
-        case 0x20: sound_write_nr41(val); break;
-        case 0x21: sound_write_nr42(val); break;
-        case 0x22: sound_write_nr43(val); break;
-        case 0x23: sound_write_nr44(val); break;
-
-        case 0x24: sound_write_nr50(val); break;
-        case 0x25: sound_write_nr51(val); break;
-        case 0x26: sound_write_nr52(val); break;
-
-        case 0x30: case 0x31: case 0x32: case 0x33:
-        case 0x34: case 0x35: case 0x36: case 0x37:
-        case 0x38: case 0x39: case 0x3A: case 0x3B:
-        case 0x3C: case 0x3D: case 0x3E: case 0x3F:
-            sound_write_wave(r - 0x30, val);
+        case 0x10: case 0x11: case 0x12: case 0x13:
+        case 0x14: case 0x16: case 0x17: case 0x18:
+        case 0x19: case 0x1A: case 0x1B: case 0x1C:
+        case 0x1D: case 0x1E: case 0x20: case 0x21:
+        case 0x22: case 0x23: case 0x24: case 0x25:
+        case 0x26: case 0x30: case 0x31: case 0x32:
+        case 0x33: case 0x34: case 0x35: case 0x36:
+        case 0x37: case 0x38: case 0x39: case 0x3A:
+        case 0x3B: case 0x3C: case 0x3D: case 0x3E:
+        case 0x3F:
+            sound_write(adr, val);
         break;
 
         case 0x40:
