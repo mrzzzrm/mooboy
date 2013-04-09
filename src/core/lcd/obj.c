@@ -28,7 +28,6 @@
 
 #define OBJPTR(index) (&ram.oam[(index)*OBJ_SIZE])
 
-
 static u8 obp0map[4];
 static u8 obp1map[4];
 static u8 obj_height;
@@ -110,6 +109,13 @@ static unsigned int establish_render_priority(u8 **objs, unsigned int count) {
     return count > MAX_PER_LINE ? MAX_PER_LINE : count;
 }
 
+static void obpmap_dirty(u8 obp, u8 *obpmap) {
+    u8 rc;
+    for(rc = 0; rc < 4; rc++) {
+        obpmap[rc] = (obp & (0x3 << (rc<<1))) >> (rc<<1);
+    }
+}
+
 static void render_obj(u8 *obj) {
     u8 *line_data;
     u8 obj_line, tile_index;
@@ -158,13 +164,6 @@ void lcd_render_obj_line() {
 
     for(o = 0; o < obj_count; o++) {
         render_obj(obj_indexes[o]);
-    }
-}
-
-static void obpmap_dirty(u8 obp, u8 *obpmap) {
-    u8 rc;
-    for(rc = 0; rc < 4; rc++) {
-        obpmap[rc] = (obp & (0x3 << (rc<<1))) >> (rc<<1);
     }
 }
 

@@ -1,4 +1,5 @@
 #include "mem.h"
+#include "defines.h"
 #include <assert.h>
 #include <string.h>
 #include "io.h"
@@ -33,6 +34,7 @@ u8 mem_read_byte(u16 adr) {
             return card.rombanks[0][adr];
         break;
         case 0x4: case 0x5: case 0x6: case 0x7:
+        //printf("Accessing bank %i\n", mbc1.rombank);
             return mbc.rombank[adr - 0x4000];
         break;
         case 0x8: case 0x9:
@@ -122,6 +124,7 @@ void mem_write_byte(u16 adr, u8 val) {
             else {
                 debug_int_ie(val);
                 cpu.ie = val;
+                //printf("%.4X: INT enable %.2X\n", PC-1, val);
             }
         break;
     }

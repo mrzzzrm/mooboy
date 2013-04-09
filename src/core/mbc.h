@@ -15,7 +15,24 @@ typedef struct mbc_s {
     u8 has_battery;
 } mbc_t;
 
+
+typedef struct {
+    u8 mode;
+    u8 rombank;
+} mbc1_t;
+
+typedef struct {
+    u8 mode;
+} mbc3_t;
+
+typedef struct {
+    u16 rombank;
+} mbc5_t;
+
 extern mbc_t mbc;
+extern mbc1_t mbc1;
+extern mbc3_t mbc3;
+extern mbc5_t mbc5;
 
 void mbc_set_type(u8 type);
 

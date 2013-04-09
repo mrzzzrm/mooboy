@@ -416,16 +416,16 @@ static void debug_trace_opx(char *str, void *ptr, int len, int mem) {
 }
 
 void debug_trace_opl(void *ptr, int len, int mem) {
-    if(ctrace.opl_set)
-        return;
+//    if(ctrace.opl_set)
+//        return;
 
     debug_trace_opx(ctrace.opl, ptr, len, mem);
     ctrace.opl_set = 1;
 }
 
 void debug_trace_opr(void *ptr, int len, int mem)  {
-    if(ctrace.opr_set)
-        return;
+//    if(ctrace.opr_set)
+//        return;
 
     debug_trace_opx(ctrace.opr, ptr, len, mem);
     ctrace.opr_set = 1;

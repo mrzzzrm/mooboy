@@ -21,7 +21,7 @@ void joy_set_button(u8 button, u8 state) {
         }
         else {
             joy.state ^= button;
-            cpu.irq |= IF_JOYPAD;
+            //cpu.irq |= IF_JOYPAD;
         }
     }
 }

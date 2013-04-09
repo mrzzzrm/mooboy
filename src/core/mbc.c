@@ -7,20 +7,11 @@
 #define MBC3_MAP_RAM 0x00
 #define MBC3_MAP_RTC 0x01
 
-static struct {
-    u8 mode;
-    u8 rombank;
-} mbc1;
-
-static struct {
-    u8 mode;
-} mbc3;
-
-static struct {
-    u16 rombank;
-} mbc5;
 
 mbc_t mbc;
+mbc1_t mbc1;
+mbc3_t mbc3;
+mbc5_t mbc5;
 
 
 static void mbc0_lower_write(u16 adr, u8 val) {
@@ -33,13 +24,15 @@ static void mbc1_lower_write(u16 adr, u8 val) {
         break;
         case 0x2: case 0x3: // Select lower ROM bank bits
             mbc1.rombank &= 0xE0;
-            mbc1.rombank |= (val & 0x1F) == 0 ? 0x01 : (val & 0x1F);
+            mbc1.rombank |= (val & 0x1F) == 0x00 ? 0x01 : (val & 0x1F);
+            //printf("ROMbankL set to %i\n", mbc1.rombank);
             mbc.rombank = card.rombanks[mbc1.rombank];
         break;
         case 0x4: case 0x5:
             if(mbc1.mode == 0) { // Upper ROM bank bits
                 mbc1.mode &= 0x1F;
                 mbc1.mode |= (val & 0x03) << 5;
+                //printf("ROMbankU set to %i\n", mbc1.rombank);
                 mbc.rombank = card.rombanks[mbc1.rombank];
             }
             else { // Cartridge RAM bits

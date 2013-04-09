@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include <stdio.h>
 #include "lcd.h"
 #include "rtc.h"
 #include "mbc.h"
@@ -21,9 +22,9 @@ void cpu_reset() {
     SP = 0xFFFE;
     PC = 0x0100;
 
-    cpu.ime = 0xFF;
+    cpu.ime = IME_ON;
     cpu.irq = 0x00;
-    cpu.ie = 0xFF;
+    cpu.ie = 0x00;
 
     cpu.cc = 0;
     cpu.freq = 1048576;
@@ -31,7 +32,6 @@ void cpu_reset() {
 
 inline u8 cpu_exec(u8 op) {
     u32 old_mcs = cpu.cc;
-
 	op_chunk_t *c = op_chunk_map[op];
 	c->sp = 0;
 	c->funcs[c->sp++](c);
@@ -41,6 +41,8 @@ inline u8 cpu_exec(u8 op) {
 }
 
 u8 cpu_step() {
-    return cpu_exec(FETCH_BYTE);
+    //printf("@%.4X %i\n", PC, lcd.ly);
+    u8 op = FETCH_BYTE;
+    return cpu_exec(op);
 }
 

@@ -98,8 +98,10 @@ static sample_t sqw_mix(sqw_t *ch) {
         return r;
     }
 
-    assert(ch->freq != 2048);
     wavelen = sound.freq / (131072 / (2048 - ch->freq));
+    if(wavelen == 0) {
+        return r;
+    }
     wavesam = sound.sample % wavelen;
 
     switch(ch->duty) {

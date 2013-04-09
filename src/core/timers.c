@@ -3,7 +3,7 @@
 #include "defines.h"
 #include "cpu.h"
 
-#define MCS_PER_DIVT 64
+#define MCS_PER_DIVT 32
 
 timers_t timers;
 

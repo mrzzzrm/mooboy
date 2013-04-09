@@ -114,7 +114,9 @@ void io_write(u16 adr, u8 val) {
         case 0x05: timers.tima = 0x00; break;
         case 0x06: timers.tma = val; break;
         case 0x07: timers.tac = val; break;
-        case 0x0F: cpu.irq = val; break;
+        case 0x0F: cpu.irq = val;
+       //printf("%.4X: Manual INT %.2X request\n", PC-1,val);
+        break;
 
         case 0x10: case 0x11: case 0x12: case 0x13:
         case 0x14: case 0x16: case 0x17: case 0x18:

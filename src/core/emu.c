@@ -39,21 +39,25 @@ void emu_load_rom(u8 *data, size_t size) {
 }
 
 void emu_run_standby() {
+    int c = 0;
     for(;;) {
         unsigned int t;
         for(t = 0; t < QUANTUM; t++) {
             debug_update();
             debug_before();
 
+            if(ints_handle_standby()) {
+                //printf("  > Been halted for %i\n", c);
+                debug_after();
+                return;
+            }
+
             lcd_step();
             rtc_step(1);
             timers_step(1);
             sound_step();
-
-            if(ints_handle_standby()) {
-                debug_after();
-                return;
-            }
+            cpu.cc++;
+            c++;
 
             debug_after();
         }
@@ -66,17 +70,17 @@ void emu_run() {
     for(;;) {
         unsigned int t;
         for(t = 0; t < QUANTUM; t++) {
-//            debug_update();
-//            debug_before();
+            debug_update();
+            debug_before();
 
+            ints_handle();
             u8 mcs = cpu_step();
             lcd_step();
             rtc_step(mcs);
             timers_step(mcs);
             sound_step();
-            ints_handle();
 
-//            debug_after();
+            debug_after();
         }
         sys_invoke();
     }
