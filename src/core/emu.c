@@ -48,7 +48,7 @@ void emu_run_standby() {
             debug_before();
 
             if(ints_handle_standby()) {
-                printf("  > Been halted for %i\n", c);
+                //printf("  > Been halted for %i\n", c);
                 debug_after();
                 return;
             }

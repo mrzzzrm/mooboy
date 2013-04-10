@@ -118,12 +118,12 @@ void mem_write_byte(u16 adr, u8 val) {
             else if(adr >= 0xFF00 && adr < 0xFF80) { // IO Registers
                 return io_write(adr, val);
             }
-            else if(adr >= 0xFF80 && adr < 0xFFFE) { // HiRAM
+            else if(adr >= 0xFF80 && adr < 0xFFFF) { // HiRAM
                 ram.hram[adr - 0xFF80] = val;
             }
             else {
                 debug_int_ie(val);
-                cpu.ie = val;
+                cpu.ie = val & 0x1F;
                 //printf("%.4X: INT enable %.2X\n", PC-1, val);
             }
         break;

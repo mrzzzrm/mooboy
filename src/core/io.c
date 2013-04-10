@@ -97,8 +97,8 @@ u8 io_read(u16 adr) {
         case 0x6A: break;
         case 0x6B: break;
 
-        default:
-            printf("Unknown IO read: %.2X\n", r);
+        default:;
+            //printf("Unknown IO read: %.2X\n", r);
     }
 
     return 0xFF; // Avoids nasty warnings, precious
@@ -139,7 +139,7 @@ void io_write(u16 adr, u8 val) {
         break;
         case 0x41: lcd.stat = (lcd.stat & 0x03) | (val & 0x78); break;
         case 0x42: lcd.scy = val; break;
-        case 0x43: lcd.scx = val; printf("%.4X: SCX=%.2X\n", PC-1, val); break;
+        case 0x43: lcd.scx = val; break;
         case 0x45:
             lcd.lyc = val;
         break;
@@ -172,7 +172,7 @@ void io_write(u16 adr, u8 val) {
         case 0x6A: break;
         case 0x6B: break;
 
-        default:
-            printf("Unknown IO write: %.2X=%.2X\n", r, val);
+        default:;
+            //printf("Unknown IO write: %.2X=%.2X\n", r, val);
     }
 }

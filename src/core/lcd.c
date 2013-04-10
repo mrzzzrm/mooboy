@@ -23,13 +23,6 @@
 #define SIF_OAM    0x20
 #define SIF_LYC    0x40
 
-#define STAT_MODE       (lcd.stat & 0x03)
-#define STAT_CFLAG      (lcd.stat & 0x04)
-#define STAT_HBLANK_IRQ (lcd.stat & 0x08)
-#define STAT_VBLANK_IRQ (lcd.stat & 0x10)
-#define STAT_OAM_IRQ    (lcd.stat & 0x20)
-#define STAT_LYC_IRQ    (lcd.stat & 0x40)
-
 #define STAT_SET_MODE(m)  (lcd.stat = (lcd.stat & 0xFC) | (m))
 #define STAT_SET_CFLAG(c) (lcd.stat = (lcd.stat & 0xFB) | ((c) << 2))
 
@@ -55,6 +48,7 @@ static void swap_fb() {
 }
 
 static void draw_line() {
+    //printf("Line %i\n", lcd.ly);
     if(lcd.c & LCDC_BG_ENABLE_BIT) {
         lcd_render_bg_line();
     }
@@ -69,7 +63,7 @@ static void draw_line() {
 static inline void stat_irq(u8 flag) {
     if((lcd.c & LCDC_DISPLAY_ENABLE_BIT) && (lcd.stat & flag)) {
         cpu.irq |= IF_LCDSTAT;
-        printf("%.4X: LCDSTAT-INT %.2X %i\n", PC-1, flag, lcd.ly);
+        //printf("%.4X: LCDSTAT-INT %.2X %i %.2X %.2X\n", PC-1, flag, lcd.ly, cpu.ie, cpu.ime == IME_ON);
     }
 }
 
@@ -78,6 +72,7 @@ static u8 step_mode(u8 m1) {
 
     u16 fc = cpu.cc % DUR_FULL_REFRESH;
     lcd.ly = fc / DUR_SCANLINE;
+    STAT_SET_CFLAG(lcd.ly == lcd.lyc ? 1 : 0);
 
     if(lcd.ly < 144) {
         u16 lc = fc % DUR_SCANLINE;
@@ -125,17 +120,16 @@ void lcd_step() {
 
     if(lcd.ly == lcd.lyc) {
         stat_irq(SIF_LYC);
-        STAT_SET_CFLAG(1);
-    }
-    else {
-        STAT_SET_CFLAG(0);
     }
 
     if(m1 != m2) {
         //debug_sym_lcd_mode_change(m1, m2);
         switch(m2) {
             case 0x00:
-                stat_irq(SIF_HBLANK);
+                //stat_irq(SIF_HBLANK);
+                if(lcd.c & LCDC_DISPLAY_ENABLE_BIT) {
+                    draw_line();
+                }
             break;
             case 0x01:
                 cpu.irq |= IF_VBLANK;
@@ -147,9 +141,6 @@ void lcd_step() {
                 stat_irq(SIF_OAM);
             break;
             case 0x03:
-                if(lcd.c & LCDC_DISPLAY_ENABLE_BIT) {
-                    draw_line();
-                }
             break;
         }
     }
@@ -158,7 +149,7 @@ void lcd_step() {
 void lcd_dma(u8 v) {
     u8 b;
     u16 src;
-    printf("DMA!\n");
+
     for(src = ((u16)v)<<8, b = 0; b < 0x9F; b++, src++) {
         ram.oam[b] = mem_read_byte(src);
     }
