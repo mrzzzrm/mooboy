@@ -86,9 +86,7 @@
     void sound_unlock();
     void sound_mix();
 
-    void sound_write(u16 adr, u8 val);
-
-    u8 sound_nr51();
-    u8 sound_nr52();
+    void sound_write(u8 sadr, u8 val);
+    u8 sound_read(u8 sadr);
 
 #endif

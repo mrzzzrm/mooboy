@@ -74,6 +74,7 @@ static u8 step_mode(u8 m1) {
     lcd.ly = fc / DUR_SCANLINE;
     STAT_SET_CFLAG(lcd.ly == lcd.lyc ? 1 : 0);
 
+
     if(lcd.ly < 144) {
         u16 lc = fc % DUR_SCANLINE;
         if(lc < DUR_MODE_2)
@@ -118,15 +119,12 @@ void lcd_step() {
     m2 = step_mode(m1);
     STAT_SET_MODE(m2);
 
-    if(lcd.ly == lcd.lyc) {
-        stat_irq(SIF_LYC);
-    }
 
     if(m1 != m2) {
         //debug_sym_lcd_mode_change(m1, m2);
         switch(m2) {
             case 0x00:
-                //stat_irq(SIF_HBLANK);
+                stat_irq(SIF_HBLANK);
                 if(lcd.c & LCDC_DISPLAY_ENABLE_BIT) {
                     draw_line();
                 }
@@ -139,6 +137,9 @@ void lcd_step() {
             break;
             case 0x02:
                 stat_irq(SIF_OAM);
+                if(lcd.ly == lcd.lyc) {
+                    stat_irq(SIF_LYC);
+                }
             break;
             case 0x03:
             break;
@@ -150,7 +151,7 @@ void lcd_dma(u8 v) {
     u8 b;
     u16 src;
 
-    for(src = ((u16)v)<<8, b = 0; b < 0x9F; b++, src++) {
+    for(src = ((u16)v)<<8, b = 0; b < 0xA0; b++, src++) {
         ram.oam[b] = mem_read_byte(src);
     }
 }

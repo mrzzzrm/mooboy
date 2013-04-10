@@ -1,5 +1,6 @@
 #include "sound.h"
 #include "cpu.h"
+#include "defines.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <SDL/SDL.h>
@@ -274,8 +275,8 @@ void sound_mix() {
     SDL_mutexV(mutex);
 }
 
-void sound_write(u16 adr, u8 val) {
-    switch(adr & 0x00FF) {
+void sound_write(u8 sadr, u8 val) {
+    switch(sadr) {
         case 0x10:
             sweep.period = (val & 0x70) >> 4;
             sweep.dir = (val & 0x08) >> 3;
@@ -378,26 +379,97 @@ void sound_write(u16 adr, u8 val) {
         case 0x34: case 0x35: case 0x36: case 0x37:
         case 0x38: case 0x39: case 0x3A: case 0x3B:
         case 0x3C: case 0x3D: case 0x3E: case 0x3F:
-            wave.data[adr - 0xFF30] = val;
+            wave.data[sadr - 0x30] = val;
         break;
     }
 }
 
-u8 sound_nr51() {
-    return
-        (ch1.l ? 0x01 : 0x00) | (ch1.r ? 0x10 : 0x00) |
-        (ch2.l ? 0x02 : 0x00) | (ch2.r ? 0x20 : 0x00) |
-        (wave.l ? 0x04 : 0x00) | (wave.r ? 0x40 : 0x00) |
-        (noise.l ? 0x08 : 0x00) | (noise.r ? 0x80 : 0x00);
+u8 sound_read(u8 sadr) {
+    switch(sadr) {
+        case 0x10:
+            return (sweep.period << 4) | (sweep.dir << 3) | sweep.shift;
+        break;
+        case 0x11:
+            return ch1.duty << 6;
+        break;
+        case 0x12:
+            return (ch1.volume << 4) || (env1.dir << 3) | env1.sweep;
+        break;
+        case 0x13:
+            return 0x00;
+        break;
+        case 0x14:
+            return ch1.counter.expires;
+        break;
+        case 0x16:
+            return ch2.duty << 6;
+        break;
+        case 0x17:
+            return (ch2.volume << 4) | (env2.dir << 3) | env2.sweep;
+        break;
+        case 0x18:
+            return 0x00;
+        break;
+        case 0x19:
+            return ch2.counter.expires;
+        break;
+        case 0x1A:
+            return wave.on;
+        break;
+        case 0x1B:
+            return wave.counter.length;
+        break;
+        case 0x1C:
+            return wave.shift << 5;
+        break;
+        case 0x1D:
+            return 0x00;
+        break;
+        case 0x1E:
+            return wave.counter.expires;
+        break;
+        case 0x20:
+            return noise.counter.length;
+        break;
+        case 0x21:
+            return (noise.volume << 4) | (env3.dir << 3) | (env3.sweep);
+        break;
+        case 0x22:
+            return (noise.shift << 4) || (noise.width) | (noise.divr);
+        break;
+        case 0x23:
+            return noise.counter.expires;
+        break;
+        case 0x24:
+            return sound.so1_volume | (sound.so2_volume << 4);
+        break;
+        case 0x25:
+            return
+            (ch1.l ? 0x01 : 0x00) | (ch1.r ? 0x10 : 0x00) |
+            (ch2.l ? 0x02 : 0x00) | (ch2.r ? 0x20 : 0x00) |
+            (wave.l ? 0x04 : 0x00) | (wave.r ? 0x40 : 0x00) |
+            (noise.l ? 0x08 : 0x00) | (noise.r ? 0x80 : 0x00);
+        break;
+        case 0x26:
+            return
+            (sound.on ? 0x80 : 0x00) |
+            (noise.on ? 0x08 : 0x00) |
+            (wave.on ? 0x04 : 0x00) |
+            (ch2.on ? 0x02 : 0x00) |
+            (ch1.on ? 0x01 : 0x00);
+        break;
+
+        case 0x30: case 0x31: case 0x32: case 0x33:
+        case 0x34: case 0x35: case 0x36: case 0x37:
+        case 0x38: case 0x39: case 0x3A: case 0x3B:
+        case 0x3C: case 0x3D: case 0x3E: case 0x3F:
+            return wave.data[sadr - 0x30];
+        break;
+
+        default:
+            printf("%.4X: Unhandled sound read @ %.2X\n", PC-1, sadr);
+    }
 }
 
-u8 sound_nr52() {
-    return
-        (sound.on ? 0x80 : 0x00) |
-        (noise.on ? 0x08 : 0x00) |
-        (wave.on ? 0x04 : 0x00) |
-        (ch2.on ? 0x02 : 0x00) |
-        (ch1.on ? 0x01 : 0x00);
-}
 
 

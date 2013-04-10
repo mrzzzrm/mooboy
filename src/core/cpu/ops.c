@@ -459,8 +459,9 @@ void op_scf(op_chunk_t *c) {
 
 void op_halt(op_chunk_t *c) {
     debug_trace_op("HALT");
-    //printf("%.4X: HALT (with IME = %i)\n", PC-1, cpu.ime == IME_ON ? 1 : 0);
+  //  printf("%.4X: HALT (with IME = %i)\n", PC-1, cpu.ime == IME_ON ? 1 : 0);
     if(cpu.ime == IME_OFF) {
+
     }
     else {
         emu_run_standby();
@@ -469,7 +470,7 @@ void op_halt(op_chunk_t *c) {
 
 void op_stop(op_chunk_t *c) {
     debug_trace_op("STOP");
-    assert(0);
+    printf("ALERT ALERT ALERT ---- STOP CALLED ---- ALERT ALERT ALERT\n");
     //emu_run_standby();
 }
 
@@ -564,7 +565,6 @@ void op_reti(op_chunk_t *c) {
     PC = pop();
     //debug_int_ime(1);
     cpu.ime = IME_ON;
-    //cpu.ie = 0xFF;
 }
 
 

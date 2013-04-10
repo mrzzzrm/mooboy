@@ -196,10 +196,7 @@ void sys_fb_ready() {
     SDL_Surface *s = SDL_GetVideoSurface();
 
     for(y = 0; y < FB_HEIGHT; y++) {
-        for(x = 0; x < FB_WIDTH; x++) {
-            u8 gbc = lcd.clean_fb[y*FB_WIDTH + x];
-
-//            if(gbc == 0)
+        for(x = 0; x < FB_WIDTH; x++) {//            if(gbc == 0)
 //                boxColor(s, x*5, y*5, x*5+4, y*5+4, ((x/8)%2==0 && (y/8)%2==0) || ((x/8)%2==1 && (y/8)%2==1) ? 0x220000ff : 0x000000ff);
 //            else
                 boxColor(s, x*3, y*3, x*3+2, y*3+2, palette[lcd.clean_fb[y*FB_WIDTH + x] % 4]);

@@ -13,6 +13,8 @@
 
 #define QUANTUM 1000
 
+static unsigned int t;
+
 void emu_init() {
     mem_init();
     cpu_init();
@@ -42,8 +44,7 @@ void emu_load_rom(u8 *data, size_t size) {
 void emu_run_standby() {
     int c = 0;
     for(;;) {
-        unsigned int t;
-        for(t = 0; t < QUANTUM; t++) {
+        for(; t < QUANTUM; t++) {
             debug_update();
             debug_before();
 
@@ -53,24 +54,25 @@ void emu_run_standby() {
                 return;
             }
 
+            cpu.cc++;
             lcd_step();
             rtc_step(1);
             timers_step(1);
             sound_step();
-            cpu.cc++;
             c++;
 
             debug_after();
         }
+        t = 0;
         sys_invoke();
     }
 }
 
 void emu_run() {
     debug_init();
+    t = 0;
     for(;;) {
-        unsigned int t;
-        for(t = 0; t < QUANTUM; t++) {
+        for(; t < QUANTUM; t++) {
             debug_update();
             debug_before();
 
@@ -83,6 +85,7 @@ void emu_run() {
 
             debug_after();
         }
+        t = 0;
         sys_invoke();
     }
 }

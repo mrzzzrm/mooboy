@@ -1,6 +1,7 @@
 #include "mem.h"
 #include "defines.h"
 #include <assert.h>
+#include <stdio.h>
 #include <string.h>
 #include "io.h"
 #include "cpu.h"
@@ -64,7 +65,7 @@ u8 mem_read_byte(u16 adr) {
             else if(adr >= 0xFF00 && adr < 0xFF80) { // IO Registers
                 return io_read(adr);
             }
-            else if(adr >= 0xFF80 && adr < 0xFFFE) { // HiRAM
+            else if(adr >= 0xFF80 && adr < 0xFFFF) { // HiRAM
                 return ram.hram[adr - 0xFF80];
             }
             else {
@@ -122,9 +123,9 @@ void mem_write_byte(u16 adr, u8 val) {
                 ram.hram[adr - 0xFF80] = val;
             }
             else {
-                debug_int_ie(val);
+                //debug_int_ie(val & 0x1F);
                 cpu.ie = val & 0x1F;
-                //printf("%.4X: INT enable %.2X\n", PC-1, val);
+                printf("%.4X: INTs enabled: %.2X\n", PC-1, cpu.ie);
             }
         break;
     }
