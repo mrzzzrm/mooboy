@@ -5,6 +5,7 @@
 #include "core/emu.h"
 #include "sys/sys.h"
 #include "util/err.h"
+#include "util/io.h"
 
 static void close() {
     emu_close();
@@ -42,7 +43,7 @@ int main(int argc, const char **argv) {
     char rom[256];
 
     init(argc, argv);
-    sprintf(rom, "dracula.gb");
+    sprintf(rom, "mario.gb");
     load_romfile(rom);
     emu_run();
     close();

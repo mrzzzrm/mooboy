@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include "cpu.h"
+#include "emu.h"
 #include "mem.h"
 #include "defines.h"
 #include "chunks.h"
@@ -458,32 +459,31 @@ void op_scf(op_chunk_t *c) {
 
 void op_halt(op_chunk_t *c) {
     debug_trace_op("HALT");
-   // printf("%.4X: HALT (with IME = %i)\n", PC-1, cpu.ime == IME_ON ? 1 : 0);
+    printf("%.4X: HALT (with IME = %i)\n", PC-1, cpu.ime == IME_ON ? 1 : 0);
 //    if(cpu.ime == IME_OFF) {
-//        printf("%.4X: Not halted\n", PC);
 //    }
 //    else {
-//        printf("%.4X: Halted\n", PC);
         emu_run_standby();
 //    }
 }
 
 void op_stop(op_chunk_t *c) {
     debug_trace_op("STOP");
+    assert(0);
     //emu_run_standby();
 }
 
 void op_di(op_chunk_t *c) {
     debug_trace_op("DI"); //debug_int_ime(0);
-    //printf("%.4X: DI\n", PC-1);
-//    if(cpu.ime = IME_ON) {
-//        cpu.ime = IME_DOWN;
-//    }
+    printf("%.4X: DI\n", PC-1);
+    if(cpu.ime == IME_ON) {
+        cpu.ime = IME_DOWN;
+    }
 }
 
 void op_ei(op_chunk_t *c) {
     debug_trace_op("EI"); //debug_int_ime(1);
-    //printf("%.4X: EI\n", PC-1);
+    printf("%.4X: EI\n", PC-1);
     if(cpu.ime == IME_OFF) {
         cpu.ime = IME_UP;
     }
@@ -560,7 +560,7 @@ void op_ret(op_chunk_t *c) {
 
 void op_reti(op_chunk_t *c) {
     debug_trace_op("RETI");
-    //printf("%.4X: RETI\n", PC-1);
+    printf("%.4X: RETI\n", PC-1);
     PC = pop();
     //debug_int_ime(1);
     cpu.ime = IME_ON;

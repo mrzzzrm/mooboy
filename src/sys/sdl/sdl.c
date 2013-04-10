@@ -49,6 +49,7 @@ static void update_joypad() {
                 case SDLK_s:    joy_set_button(JOY_BUTTON_B, state); break;
                 case SDLK_w:    joy_set_button(JOY_BUTTON_START, state); break;
                 case SDLK_d:    joy_set_button(JOY_BUTTON_SELECT, state); break;
+                default: break;
             }
         }
         else if(event.type == SDL_QUIT) {

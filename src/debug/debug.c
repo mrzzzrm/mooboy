@@ -16,6 +16,8 @@
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 dbg_t dbg;
 
@@ -199,7 +201,7 @@ static void handle_cmd(const char *str) {
 
 
 
-    if(begeq("rc", str)) {
+    if(begeq("pc", str)) {
         switch(str[2]) {
             case '=': dbg.run.mode = RUN_UNTIL_CURSOR_EQ; break;
             case '>': dbg.run.mode = RUN_UNTIL_CURSOR_GE; break;

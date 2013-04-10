@@ -2,17 +2,20 @@
 #include <assert.h>
 #include <stdio.h>
 #include "cpu.h"
+#include "debug/debug.h"
 #include "defines.h"
 #include "util/defines.h"
 
 static inline void exec_int(u8 i) {
-    static u16 isr[] = {0x40, 0x48, 0x50, 0x58, 0x60};
-
     debug_int_exec(1 << i);
+
+    cpu.irq &= ~(1 << i);
+    cpu.ime = IME_OFF;
 
     SP -= 2;
     mem_write_word(SP, PC);
-    PC = isr[i];
+
+    PC = 0x40 + (i<<3);
 }
 
 void ints_handle() {
@@ -28,9 +31,7 @@ void ints_handle() {
     u8 i;
     for(i = 0; i < 5; i++) {
         if(cpu.irq & cpu.ie & (1 << i)) {
-            //printf("%.4X: INT %i\n", PC-1, i);
-            cpu.irq &= ~(1 << i);
-            cpu.ime = IME_OFF;
+            printf("%.4X: INT %i\n", PC-1, i);
             exec_int(i);
             return;
         }
@@ -41,10 +42,10 @@ int ints_handle_standby() {
     u8 i;
     for(i = 0; i < 5; i++) {
         if(cpu.irq & (1 << i)) {
-            //printf("%.4X: Halted INT %i\n", PC-1, i);
-            cpu.irq &= ~(1 << i);
-            cpu.ime = IME_OFF;
-            exec_int(i);
+            printf("%.4X: Halted INT %i\n", PC-1, i);
+            if(cpu.ime == IME_ON) {
+                exec_int(i);
+            }
             return 1;
         }
     }

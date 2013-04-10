@@ -4,6 +4,8 @@
 #include "utils.h"
 #include "defines.h"
 #include <assert.h>
+#include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 
 #define BREAK {dbg.console = 1;}

@@ -13,7 +13,7 @@
         u8 *buf;
         u8 sample_size;
 
-        u8 enabled;
+        u8 on;
         u8 so1_volume;
         u8 so2_volume;
 
@@ -35,6 +35,7 @@
 
     typedef struct {
         u8 on;
+        u8 l, r;
         u16 freq;
         u8 duty;
         u8 volume;
@@ -50,6 +51,7 @@
 
     typedef struct {
         u8 on;
+        u8 l, r;
         u16 freq;
         u8 shift;
         u8 data[0x10];
@@ -58,6 +60,7 @@
 
     typedef struct {
         u8 on;
+        u8 l, r;
         u8 volume;
         u8 shift;
         u8 width;
@@ -84,5 +87,8 @@
     void sound_mix();
 
     void sound_write(u16 adr, u8 val);
+
+    u8 sound_nr51();
+    u8 sound_nr52();
 
 #endif

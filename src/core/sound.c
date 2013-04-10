@@ -121,7 +121,6 @@ static sample_t sqw_mix(sqw_t *ch) {
 
 static sample_t wave_mix() {
     sample_t r = {0,0};
-    u8 sample, mask;
     u16 amp;
     int wavelen;
     int wavesam;
@@ -210,7 +209,7 @@ void sound_close() {
 }
 
 void sound_reset() {
-    sound.enabled = 1;
+    sound.on = 1;
     sound.so1_volume = 7;
     sound.so2_volume = 7;
     sound.last_timer_step = 0;
@@ -247,12 +246,10 @@ void sound_unlock() {
 
 void sound_mix() {
     sample_t samples[4];
-    u16 cursor;
-
     SDL_mutexP(mutex);
-        u16 *buf = sound.buf;
+        u16 *buf = (u16*)sound.buf;
 
-        if(!sound.enabled) {
+        if(!sound.on) {
             buf[sound.buf_end*2 + 0] = 0x0000;
             buf[sound.buf_end*2 + 1] = 0x0000;
         }
@@ -368,11 +365,13 @@ void sound_write(u16 adr, u8 val) {
             sound.so2_volume = val >> 4;
         break;
         case 0x25:
-
+            ch1.l =   val & 0x01; ch1.r =   val & 0x10;
+            ch2.l =   val & 0x02; ch2.r =   val & 0x20;
+            wave.l =  val & 0x04; wave.r =  val & 0x40;
+            noise.l = val & 0x08; noise.r = val & 0x80;
         break;
-
         case 0x26:
-            sound.enabled = val & 0x80;
+            sound.on = val & 0x80;
         break;
 
         case 0x30: case 0x31: case 0x32: case 0x33:
@@ -383,4 +382,22 @@ void sound_write(u16 adr, u8 val) {
         break;
     }
 }
+
+u8 sound_nr51() {
+    return
+        (ch1.l ? 0x01 : 0x00) | (ch1.r ? 0x10 : 0x00) |
+        (ch2.l ? 0x02 : 0x00) | (ch2.r ? 0x20 : 0x00) |
+        (wave.l ? 0x04 : 0x00) | (wave.r ? 0x40 : 0x00) |
+        (noise.l ? 0x08 : 0x00) | (noise.r ? 0x80 : 0x00);
+}
+
+u8 sound_nr52() {
+    return
+        (sound.on ? 0x80 : 0x00) |
+        (noise.on ? 0x08 : 0x00) |
+        (wave.on ? 0x04 : 0x00) |
+        (ch2.on ? 0x02 : 0x00) |
+        (ch1.on ? 0x01 : 0x00);
+}
+
 

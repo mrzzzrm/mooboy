@@ -1,9 +1,11 @@
 #include "io.h"
+#include <stdio.h>
 #include "lcd.h"
 #include "lcd/maps.h"
 #include "lcd/obj.h"
 #include "cpu.h"
 #include "timers.h"
+#include "sound.h"
 #include "defines.h"
 #include "util/defines.h"
 #include "debug/debug.h"
@@ -27,50 +29,47 @@ u8 io_read(u16 adr) {
         case 0x0F: return cpu.irq; break;
 
         /* TODO: Sound */
-        case 0x10: break;
-        case 0x11: break;
-        case 0x12: break;
-        case 0x13: break;
-        case 0x14: break;
-
-        case 0x16: break;
-        case 0x17: break;
-        case 0x19: break;
-
-        case 0x1A: break;
-        case 0x1B: break;
-        case 0x1C: break;
-        case 0x1D: break;
-        case 0x1E: break;
-
-        case 0x20: break;
-        case 0x21: break;
-        case 0x22: break;
-        case 0x23: break;
-
-        case 0x24: break;
-        case 0x25: break;
-        case 0x26: break;
-
-        case 0x30: break;
-        case 0x31: break;
-        case 0x32: break;
-        case 0x33: break;
-        case 0x34: break;
-        case 0x35: break;
-        case 0x36: break;
-        case 0x37: break;
-        case 0x38: break;
-        case 0x39: break;
-        case 0x3A: break;
-        case 0x3B: break;
-        case 0x3C: break;
-        case 0x3D: break;
-        case 0x3E: break;
-        case 0x3F: break;
-
-
-        break;
+//        case 0x10: break;
+//        case 0x11: break;
+//        case 0x12: break;
+//        case 0x13: break;
+//        case 0x14: break;
+//
+//        case 0x16: break;
+//        case 0x17: break;
+//        case 0x19: break;
+//
+//        case 0x1A: break;
+//        case 0x1B: break;
+//        case 0x1C: break;
+//        case 0x1D: break;
+//        case 0x1E: break;
+//
+//        case 0x20: break;
+//        case 0x21: break;
+//        case 0x22: break;
+//        case 0x23: break;
+//
+        case 0x24: return sound.so1_volume | (sound.so2_volume << 4); break;
+        case 0x25: return sound_nr51(); break;
+        case 0x26: return sound_nr52(); break;
+//
+//        case 0x30: break;
+//        case 0x31: break;
+//        case 0x32: break;
+//        case 0x33: break;
+//        case 0x34: break;
+//        case 0x35: break;
+//        case 0x36: break;
+//        case 0x37: break;
+//        case 0x38: break;
+//        case 0x39: break;
+//        case 0x3A: break;
+//        case 0x3B: break;
+//        case 0x3C: break;
+//        case 0x3D: break;
+//        case 0x3E: break;
+//        case 0x3F: break;
 
         case 0x40: return lcd.c; break;
         case 0x41: return lcd.stat; break;
@@ -97,6 +96,9 @@ u8 io_read(u16 adr) {
         case 0x69: break;
         case 0x6A: break;
         case 0x6B: break;
+
+        default:
+            printf("Unknown IO read: %.2X\n", r);
     }
 
     return 0xFF; // Avoids nasty warnings, precious
@@ -135,10 +137,9 @@ void io_write(u16 adr, u8 val) {
             lcd.c = val;
             lcd_c_dirty();
         break;
-        case 0x41: lcd.stat = val; break;
+        case 0x41: lcd.stat = (lcd.stat & 0x03) | (val & 0x78); break;
         case 0x42: lcd.scy = val; break;
-        case 0x43: lcd.scx = val; break;
-        case 0x44: lcd.ly = val; break;
+        case 0x43: lcd.scx = val; printf("%.4X: SCX=%.2X\n", PC-1, val); break;
         case 0x45:
             lcd.lyc = val;
         break;
@@ -170,5 +171,8 @@ void io_write(u16 adr, u8 val) {
         case 0x69: break;
         case 0x6A: break;
         case 0x6B: break;
+
+        default:
+            printf("Unknown IO write: %.2X=%.2X\n", r, val);
     }
 }

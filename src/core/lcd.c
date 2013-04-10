@@ -1,6 +1,8 @@
 #include "lcd.h"
 #include <string.h>
+#include <stdio.h>
 #include "cpu.h"
+#include "sys/sys.h"
 #include "mem.h"
 #include "defines.h"
 #include "util/defines.h"
@@ -65,9 +67,9 @@ static void draw_line() {
 }
 
 static inline void stat_irq(u8 flag) {
-    if(lcd.stat & flag) {
+    if((lcd.c & LCDC_DISPLAY_ENABLE_BIT) && (lcd.stat & flag)) {
         cpu.irq |= IF_LCDSTAT;
-        //printf("  LCDSTST %.2X %i\n", flag, lcd.ly);
+        printf("%.4X: LCDSTAT-INT %.2X %i\n", PC-1, flag, lcd.ly);
     }
 }
 
