@@ -99,6 +99,9 @@ static sample_t sqw_mix(sqw_t *ch) {
         return r;
     }
 
+    if(ch->freq == 2048) {
+        return r;
+    }
     wavelen = sound.freq / (131072 / (2048 - ch->freq));
     if(wavelen == 0) {
         return r;
@@ -114,9 +117,8 @@ static sample_t sqw_mix(sqw_t *ch) {
 
     amp *= ch->volume;
 
-    r.l = amp;
-    r.r = amp;
-
+    r.l = ch->l ? amp : 0;
+    r.r = ch->r ? amp : 0;
     return r;
 }
 
@@ -147,8 +149,8 @@ static sample_t wave_mix() {
     }
     amp >>= (wave.shift-1);
 
-    r.l = amp;
-    r.r = amp;
+    r.l = wave.l ? amp : 0;
+    r.r = wave.r ? amp : 0;
     return r;
 }
 
@@ -186,8 +188,8 @@ static sample_t noise_mix() {
 
     amp = noise.lsfr & 0x0001 ? 0x0 : noise.volume;
 
-    r.l = amp;
-    r.r = amp;
+    r.l = noise.l ? amp : 0;
+    r.r = noise.r ? amp : 0;
     return r;
 }
 
@@ -265,8 +267,14 @@ void sound_mix() {
             samples[1] = sqw_mix(&ch2);
             samples[2] = wave_mix();
             samples[3] = noise_mix();
-            buf[sound.buf_end*2 + 0] = (samples[0].l + samples[1].l + samples[2].l + samples[3].l)*sound.so1_volume*0x40;
-            buf[sound.buf_end*2 + 1] = (samples[0].r + samples[1].r + samples[2].r + samples[3].r)*sound.so2_volume*0x40;
+            if(0) {
+                buf[sound.buf_end*2 + 0] = (samples[0].l + samples[1].l + samples[2].l + samples[3].l)*sound.so1_volume*0x40;
+                buf[sound.buf_end*2 + 1] = (samples[0].r + samples[1].r + samples[2].r + samples[3].r)*sound.so2_volume*0x40;
+            }
+            else {
+                buf[sound.buf_end*2 + 0] = 0;
+                buf[sound.buf_end*2 + 1] = 0;
+            }
 
         }
         sound.buf_end++;

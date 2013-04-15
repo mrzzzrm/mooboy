@@ -14,7 +14,7 @@
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
 static u8 tx, ty, tc, tr;
-static u8 bgpmap[4];
+static u8 *dmg_scan;
 
 
 static inline void set_map_cursor(u8 mx, u8 my) {
@@ -24,81 +24,81 @@ static inline void set_map_cursor(u8 mx, u8 my) {
     tr = my / TILE_HEIGHT;
 }
 
-static inline u8 *get_signed_tile_line(u8 *tdt, u8 *tdp, u8 ty) {
-    return &tdt[((s8)(*tdp)*0x10) + ty*2];
+static inline u8 *get_signed_tile_line(u8 *tdt, s8 tdp, u8 ty) {
+    return &tdt[tdp*0x10 + ty*2];
 }
 
-static inline u8 *get_unsigned_tile_line(u8 *tdt, u8 *tdp, u8 ty) {
-    return &tdt[(*tdp)*0x10 + ty*2];
+static inline u8 *get_unsigned_tile_line(u8 *tdt, u8 tdp, u8 ty) {
+    return &tdt[tdp*0x10 + ty*2];
 }
 
-static void lcd_render_tile_line(u8 *line, u8 tx, u8 ty, u8 fbx, u8 *palette, int crap) {
-    u16 fb_cursor = (lcd.ly * LCD_WIDTH) + fbx;
+static void scan_tile_line(u8 *line, u8 tx, u8 ty, u8 sx) {
+    u16 scan_cursor = sx;
     u16 line_end = (lcd.ly + 1) * LCD_WIDTH;
     u8 rshift = 7 - tx;
 
-    for(; tx < TILE_WIDTH && fb_cursor < line_end; tx++, fb_cursor++) {
+    for(; tx < TILE_WIDTH && scan_cursor < line_end; tx++, scan_cursor++) {
         u8 lsb = (line[0] >> rshift) & 0x01;
         u8 msb = (line[1] >> rshift) & 0x01;
 
-        lcd.working_fb[fb_cursor] = palette[lsb + (msb << 1)];// + crap*4;
+        dmg_scan[scan_cursor] = lsb + (msb << 1);
         rshift--;
     }
 }
 
-static void render_map_line_signed_tdt(u8 *map, u8 mx, u8 my, u8 fbx, int crap) {
+static void dmg_scan_signed_tdt(u8 *map, u8 mx, u8 my, u8 sx) {
     u8 *tdt = &ram.vrambank[0x1000];
     u8 *tdp = &map[tr * MAP_COLUMNS + tc];
 
-    lcd_render_tile_line(get_signed_tile_line(tdt, tdp, ty), tx, ty, fbx, bgpmap, crap);
+    scan_tile_line(get_signed_tile_line(tdt, *(s8*)tdp, ty), tx, ty, sx);
     tc++;
     tc %= 32;
-    for(fbx += (TILE_WIDTH-tx); fbx < LCD_WIDTH; fbx += TILE_WIDTH) {
+    for(sx += (TILE_WIDTH-tx); sx < LCD_WIDTH; sx += TILE_WIDTH) {
         tdp = &map[tr * MAP_COLUMNS + tc];
-        lcd_render_tile_line(get_signed_tile_line(tdt, tdp, ty), 0, ty, fbx, bgpmap, crap);
+        scan_tile_line(get_signed_tile_line(tdt, *(s8*)tdp, ty), 0, ty, sx);
         tc++;
         tc %= 32;
     }
 }
 
-static void render_map_line_unsigned_tdt(u8 *map, u8 mx, u8 my, u8 fbx, int crap) {
+static void dmg_scan_unsigned_tdt(u8 *map, u8 mx, u8 my, u8 sx) {
     u8 *tdt = &ram.vrambank[0x0000];
     u8 *tdp = &map[tr * MAP_COLUMNS + tc];
 
-    lcd_render_tile_line(get_unsigned_tile_line(tdt, tdp, ty), tx, ty, fbx, bgpmap, crap);
+    scan_tile_line(get_unsigned_tile_line(tdt, *tdp, ty), tx, ty, sx);
     tc++;
     tc %= 32;
-    for(fbx += (TILE_WIDTH-tx); fbx < LCD_WIDTH; fbx += TILE_WIDTH) {
+    for(sx += (TILE_WIDTH-tx); sx < LCD_WIDTH; sx += TILE_WIDTH) {
         tdp = &map[tr * MAP_COLUMNS + tc];
-        lcd_render_tile_line(get_unsigned_tile_line(tdt, tdp, ty), 0, ty, fbx, bgpmap, crap);
+        scan_tile_line(get_unsigned_tile_line(tdt, *tdp, ty), 0, ty, sx);
         tc++;
         tc %= 32;
     }
 }
 
-void lcd_render_bg_line() {
+void dmg_scan_bg() {
     u8 mx = lcd.scx;
     u8 my = lcd.scy + lcd.ly;
     set_map_cursor(mx, my);
 
     if(lcd.c & LCDC_TILE_DATA_BIT)
-        render_map_line_unsigned_tdt(lcd.bgmap, mx, my, 0, 0);
+        dmg_scan_unsigned_tdt(lcd.bg_map, mx, my, 0);
     else
-        render_map_line_signed_tdt(lcd.bgmap, mx, my, 0, 0);
+        dmg_scan_signed_tdt(lcd.bg_map, mx, my, 0);
 }
 
-void lcd_render_wnd_line() {
-    u8 fbx, mx, my;
+void dmg_scan_wnd() {
+    u8 sx, mx, my;
 
     if(lcd.wy > lcd.ly) {
         return;
     }
     if(lcd.wx <= 7) {
-        fbx = 0;
+        sx = 0;
         mx = lcd.wx - 7;
     }
     else {
-        fbx = lcd.wx - 7;
+        sx = lcd.wx - 7;
         mx = 0;
     }
 
@@ -106,16 +106,20 @@ void lcd_render_wnd_line() {
     set_map_cursor(mx, my);
 
     if(lcd.c & LCDC_TILE_DATA_BIT)
-        render_map_line_unsigned_tdt(lcd.wndmap, mx, my, fbx, 1);
+        dmg_scan_unsigned_tdt(lcd.wnd_map, mx, my, sx);
     else
-        render_map_line_signed_tdt(lcd.wndmap, mx, my, fbx, 1);
+        dmg_scan_signed_tdt(lcd.wnd_map, mx, my, sx);
 }
 
-void lcd_bgpmap_dirty() {
-    u8 rc;
+void lcd_dmg_scan_bg(u8 *_scan) {
+    dmg_scan = _scan;
 
-    for(rc = 0; rc < 4; rc++) {
-        bgpmap[rc] = (lcd.bgp & (0x3 << (rc<<1))) >> (rc<<1);
+    if(lcd.c & LCDC_BG_ENABLE_BIT) {
+        dmg_scan_bg();
+    }
+    if(lcd.c & LCDC_WND_ENABLE_BIT) {
+        dmg_scan_wnd();
     }
 }
+
 

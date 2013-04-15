@@ -104,23 +104,14 @@ static void print_bits8(u8 v) {
     }
 }
 
-static void dump_fb(FILE *f, u8 *fb) {
-    unsigned int x, y;
-    for(y = 0; y < 144; y++) {
-        for(x = 0; x < 160; x++) {
-            fprintf(f, "%i", fb[y*160 + x]);
-        }
-        fprintf(f, "\n");
-    }
-}
 
 
 static void dump_fbs() {
     FILE *f = fopen("fbs.txt", "w");
     assert(f != NULL);
 
-    fprintf(f, "Clean-FB:\n"); dump_fb(f, lcd.clean_fb);
-    fprintf(f, "Working-FB:\n"); dump_fb(f, lcd.working_fb);
+//    fprintf(f, "Clean-FB:\n"); dump_fb(f, lcd.clean_fb);
+//    fprintf(f, "Working-FB:\n"); dump_fb(f, lcd.working_fb);
 
     fclose(f);
 }

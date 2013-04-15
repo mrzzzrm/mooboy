@@ -41,7 +41,6 @@ inline u8 cpu_exec(u8 op) {
 }
 
 u8 cpu_step() {
-    //printf("@%.4X %i\n", PC, lcd.ly);
     u8 op = FETCH_BYTE;
     return cpu_exec(op);
 }

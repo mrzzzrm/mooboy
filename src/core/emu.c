@@ -13,6 +13,8 @@
 
 #define QUANTUM 1000
 
+hw_t hw;
+
 static unsigned int t;
 
 void emu_init() {
@@ -28,6 +30,8 @@ void emu_close() {
 }
 
 void emu_reset() {
+    hw.type = DMG_HW;
+
     mem_reset();
     cpu_reset();
     lcd_reset();

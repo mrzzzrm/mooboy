@@ -24,12 +24,10 @@
 #define XFLIP(obj)  ((obj)[OBJ_FLAGS_OFFSET] & OBJ_XFLIP_BIT)
 #define YFLIP(obj)  ((obj)[OBJ_FLAGS_OFFSET] & OBJ_YFLIP_BIT)
 #define BGPRIORITY(obj)  ((obj)[OBJ_FLAGS_OFFSET] & OBJ_BG_PRIORITY_BIT)
-#define PALETTEMAP(obj)  (((obj)[OBJ_FLAGS_OFFSET] & OBJ_PALETTE_BIT) ? obp1map : obp0map)
+#define PALETTEMAP(obj)  (((obj)[OBJ_FLAGS_OFFSET] & OBJ_PALETTE_BIT) ? lcd.obp_map[1] : lcd.obp_map[0])
 
 #define OBJPTR(index) (&ram.oam[(index)*OBJ_SIZE])
 
-static u8 obp0map[4];
-static u8 obp1map[4];
 static u8 obj_height;
 static u8 obj_size_mode;
 
@@ -52,7 +50,7 @@ static void render_obj_line(u8 *line, u8 tx, u8 fbx, u8 *palette, u8 bgpriority)
     }
 }
 
-static void render_obj_line_reversed(u8 *line, u8 tx, u8 fbx, u8 *palette, u8 bgpriority) {
+static void render_obj_line_flipped(u8 *line, u8 tx, u8 fbx, u8 *palette, u8 bgpriority) {
     u16 fb_cursor = (lcd.ly * LCD_WIDTH) + fbx;
     u16 line_end = (lcd.ly + 1) * LCD_WIDTH;
     u8 rshift = tx;
@@ -109,12 +107,6 @@ static unsigned int establish_render_priority(u8 **objs, unsigned int count) {
     return count > MAX_PER_LINE ? MAX_PER_LINE : count;
 }
 
-static void obpmap_dirty(u8 obp, u8 *obpmap) {
-    u8 rc;
-    for(rc = 0; rc < 4; rc++) {
-        obpmap[rc] = (obp & (0x3 << (rc<<1))) >> (rc<<1);
-    }
-}
 
 static void render_obj(u8 *obj) {
     u8 *line_data;
@@ -132,7 +124,7 @@ static void render_obj(u8 *obj) {
         tile_index &= 0xFE;
     }
 
-    line_data = &ram.vrambank[tile_index*0x10 + obj_line*0x02];
+    line_data = &ram.vrambanks[0][tile_index*0x10 + obj_line*0x02];
     fbx = POSX(obj) - 8;
 
     if(fbx < 0) {
@@ -144,7 +136,7 @@ static void render_obj(u8 *obj) {
     }
 
     if(XFLIP(obj)) {
-        render_obj_line_reversed(line_data, tx, fbx, PALETTEMAP(obj), BGPRIORITY(obj));
+        render_obj_line_flipped(line_data, tx, fbx, PALETTEMAP(obj), BGPRIORITY(obj));
     }
     else {
         render_obj_line(line_data, tx, fbx, PALETTEMAP(obj), BGPRIORITY(obj));
@@ -167,12 +159,8 @@ void lcd_render_obj_line() {
     }
 }
 
-void lcd_obp0map_dirty() {
-    obpmap_dirty(lcd.obp0, obp0map);
-}
+void lcd_dmg_scan_obj(dmg_obj_scan_t *scan) {
 
-void lcd_obp1map_dirty() {
-    obpmap_dirty(lcd.obp1, obp1map);
 }
 
 

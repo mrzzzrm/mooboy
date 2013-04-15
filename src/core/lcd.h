@@ -25,15 +25,21 @@ typedef struct {
     u8 ly;
     u8 lyc;
     u8 wx, wy;
-    u8 bgp, obp0, obp1;
+    u8 bgp, obp[2];
+    u8 bgpd[0x40], obpd[0x40];
+    u8 bgps, bgpi;
+    u8 obps, obpi;
     /* TODO: CGB registers */
 
-    u8 fb[2][144*160];
-    u8 *clean_fb;
-    u8 *working_fb;
+    u16 fb[2][144*160];
+    u16 *clean_fb;
+    u16 *working_fb;
 
-    u8 *bgmap;
-    u8 *wndmap;
+    u8 *bg_map;
+    u8 *wnd_map;
+
+    u8 bgp_map[4];
+    u8 obp_map[2][4];
 } lcd_t;
 
 extern lcd_t lcd;
@@ -44,5 +50,8 @@ void lcd_step();
 void lcd_dma(u8 v);
 
 void lcd_c_dirty();
+void lcd_obp0_dirty();
+void lcd_obp1_dirty();
+void lcd_bgp_dirty();
 
 #endif

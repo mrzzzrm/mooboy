@@ -25,14 +25,20 @@ static void mbc1_lower_write(u16 adr, u8 val) {
         case 0x2: case 0x3: // Select lower ROM bank bits
             mbc1.rombank &= 0xE0;
             mbc1.rombank |= (val & 0x1F) == 0x00 ? 0x01 : (val & 0x1F);
-            //printf("ROMbankL set to %i\n", mbc1.rombank);
+            if(mbc1.rombank >= card.romsize) {
+                printf("Ignored setting of ROM-bank %i\n", mbc1.rombank);
+                mbc1.rombank = 1;
+            }
             mbc.rombank = card.rombanks[mbc1.rombank];
         break;
         case 0x4: case 0x5:
             if(mbc1.mode == 0) { // Upper ROM bank bits
                 mbc1.mode &= 0x1F;
                 mbc1.mode |= (val & 0x03) << 5;
-                //printf("ROMbankU set to %i\n", mbc1.rombank);
+                if(mbc1.rombank >= card.romsize) {
+                printf("Ignored setting of ROM-bank %i\n", mbc1.rombank);
+                    mbc1.rombank = 1;
+                }
                 mbc.rombank = card.rombanks[mbc1.rombank];
             }
             else { // Cartridge RAM bits

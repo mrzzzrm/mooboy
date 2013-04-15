@@ -1,9 +1,15 @@
 #ifndef IO_LCD_OBJ_H
 #define IO_LCD_OBJ_H
 
-    void lcd_render_obj_line();
+    #include "util/defines.h"
 
-    void lcd_obp0map_dirty();
-    void lcd_obp1map_dirty();
+    typedef struct {
+        u8 data;
+        u8 priority;
+        u8 palette;
+    } dmg_obj_scan_t;
+
+    void lcd_render_obj_line();
+    void lcd_dmg_scan_obj(dmg_obj_scan_t *scan);
 
 #endif

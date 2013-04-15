@@ -3,6 +3,15 @@
 
 #include "util/defines.h"
 
+#define DMG_HW 0
+#define CGB_HW 1
+
+typedef struct {
+    int type;
+} hw_t;
+
+extern hw_t hw;
+
 void emu_init();
 void emu_reset();
 void emu_close();

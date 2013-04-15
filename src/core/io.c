@@ -4,6 +4,7 @@
 #include "lcd/maps.h"
 #include "lcd/obj.h"
 #include "cpu.h"
+#include "mem.h"
 #include "timers.h"
 #include "sound.h"
 #include "defines.h"
@@ -50,8 +51,8 @@ u8 io_read(u16 adr) {
         case 0x45: return lcd.lyc; break;
         case 0x46: return 0x00; break;
         case 0x47: return lcd.bgp; break;
-        case 0x48: return lcd.obp0; break;
-        case 0x49: return lcd.obp1; break;
+        case 0x48: return lcd.obp[0]; break;
+        case 0x49: return lcd.obp[1]; break;
         case 0x4A: return lcd.wy; break;
         case 0x4B: return lcd.wx; break;
 
@@ -69,7 +70,7 @@ u8 io_read(u16 adr) {
         case 0x6B: break;
 
         default:;
-            printf("Unknown IO read: %.2X\n", r);
+            //printf("Unknown IO read: %.2X\n", r);
     }
 
     return 0xFF; // Avoids nasty warnings, precious
@@ -114,20 +115,21 @@ void io_write(u16 adr, u8 val) {
         case 0x46: lcd_dma(val); break;
         case 0x47:
             lcd.bgp = val;
-            lcd_bgpmap_dirty();
+            lcd_bgp_dirty();
         break;
         case 0x48:
-            lcd.obp0 = val;
-            lcd_obp0map_dirty();
+            lcd.obp[0] = val;
+            lcd_obp0_dirty();
         break;
         case 0x49:
-            lcd.obp1 = val;
-            lcd_obp1map_dirty();
+            lcd.obp[1] = val;
+            lcd_obp1_dirty();
         break;
         case 0x4A: lcd.wy = val; break;
         case 0x4B: lcd.wx = val; break;
 
         /* TODO: CGB Mode */
+        case 0x4F: ram.vrambank = ram.vrambanks[val & 0x01]; break;
         case 0x51: break;
         case 0x52: break;
         case 0x53: break;
@@ -135,12 +137,14 @@ void io_write(u16 adr, u8 val) {
         case 0x54: break;
 
         /* TODO: CGB Mode */
-        case 0x68: break;
-        case 0x69: break;
-        case 0x6A: break;
-        case 0x6B: break;
+        case 0x68: lcd.bgps = val & 0x1F; lcd.bgpi = val & 0x80; break;
+        case 0x69: lcd.bgpd[lcd.bgps] = val; break;
+        case 0x6A: lcd.obps = val & 0x1F; lcd.obpi = val & 0x80; break;
+        case 0x6B: lcd.obpd[lcd.obps] = val; break;
+
+        case 0x70: ram.wrambank = ram.wrambanks[val != 0 ? val & 0x07 : 0x01]; break;
 
         default:;
-            printf("Unknown IO write: %.2X=%.2X\n", r, val);
+            //printf("Unknown IO write: %.2X=%.2X\n", r, val);
     }
 }

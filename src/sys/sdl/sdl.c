@@ -4,6 +4,7 @@
 #include "util/cmd.h"
 #include "core/cpu.h"
 #include "core/lcd.h"
+#include "core/emu.h"
 #include "core/joy.h"
 #include "util/err.h"
 #include "core/sound.h"
@@ -195,11 +196,21 @@ void sys_fb_ready() {
     unsigned int x, y;
     SDL_Surface *s = SDL_GetVideoSurface();
 
+
     for(y = 0; y < FB_HEIGHT; y++) {
-        for(x = 0; x < FB_WIDTH; x++) {//            if(gbc == 0)
-//                boxColor(s, x*5, y*5, x*5+4, y*5+4, ((x/8)%2==0 && (y/8)%2==0) || ((x/8)%2==1 && (y/8)%2==1) ? 0x220000ff : 0x000000ff);
-//            else
+        for(x = 0; x < FB_WIDTH; x++) {
+            if(hw.type == DMG_HW) {
                 boxColor(s, x*3, y*3, x*3+2, y*3+2, palette[lcd.clean_fb[y*FB_WIDTH + x] % 4]);
+            }
+            else {
+                u16 col = lcd.clean_fb[y*FB_WIDTH + x];
+                u32 r = ((col >> 0) & 0x001F)  << 3 << 24;
+                u32 g = ((col >> 5) & 0x001F)  << 3 << 16;
+                u32 b = ((col >> 10) & 0x001F) << 3 << 8;
+
+
+                boxColor(s, x*3, y*3, x*3+2, y*3+2, r | g | b | 0xFF);
+            }
         }
     }
 
