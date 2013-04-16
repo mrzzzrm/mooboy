@@ -1,4 +1,5 @@
 #include "obj.h"
+#include "emu.h"
 #include "mem.h"
 #include "lcd.h"
 
@@ -7,64 +8,58 @@
 #define OAM_SIZE 0xA0
 #define OAM_OBJ_COUNT 40
 
-#define OBJ_POSY_OFFSET 0
-#define OBJ_POSX_OFFSET 1
-#define OBJ_INDEX_OFFSET 2
-#define OBJ_FLAGS_OFFSET 3
+#define POSY_OFFSET 0
+#define POSX_OFFSET 1
+#define INDEX_OFFSET 2
+#define FLAGS_OFFSET 3
 
-#define OBJ_BG_PRIORITY_BIT 0x80
-#define OBJ_YFLIP_BIT 0x40
-#define OBJ_XFLIP_BIT 0x20
-#define OBJ_PALETTE_BIT 0x10
+#define PRIORITY_SHIFT 7
+#define YFLIP_BIT 0x40
+#define XFLIP_BIT 0x20
+#define DMG_PALETTE_BIT 0x10
+#define DMG_PALETTE_SHIFT 4
+#define CGB_PALETTE_MASK 0x07
+#define BANK_MASK 0x08
+#define BANK_SHIFT 3
 
-#define POSX(obj) (obj[OBJ_POSX_OFFSET])
-#define POSY(obj) (obj[OBJ_POSY_OFFSET])
-#define TILE(obj) (obj[OBJ_INDEX_OFFSET])
-
-#define XFLIP(obj)  ((obj)[OBJ_FLAGS_OFFSET] & OBJ_XFLIP_BIT)
-#define YFLIP(obj)  ((obj)[OBJ_FLAGS_OFFSET] & OBJ_YFLIP_BIT)
-#define BGPRIORITY(obj)  ((obj)[OBJ_FLAGS_OFFSET] & OBJ_BG_PRIORITY_BIT)
-#define PALETTEMAP(obj)  (((obj)[OBJ_FLAGS_OFFSET] & OBJ_PALETTE_BIT) ? lcd.obp_map[1] : lcd.obp_map[0])
+#define POSX(obj) (obj[POSX_OFFSET])
+#define POSY(obj) (obj[POSY_OFFSET])
+#define TILE(obj) (obj[INDEX_OFFSET])
+#define XFLIP(obj)  ((obj)[FLAGS_OFFSET] & XFLIP_BIT)
+#define YFLIP(obj)  ((obj)[FLAGS_OFFSET] & YFLIP_BIT)
+#define PRIORITY(obj) ((obj)[FLAGS_OFFSET] >> PRIORITY_SHIFT)
+#define DMG_PALETTE(obj) ((((obj)[FLAGS_OFFSET] & DMG_PALETTE_BIT) >> DMG_PALETTE_SHIFT) << OBJ_PALETTE_SHIFT)
+#define CGB_PALETTE(obj) (((obj)[FLAGS_OFFSET] & CGB_PALETTE_MASK) << OBJ_PALETTE_SHIFT)
+#define BANK(obj) (((obj)[FLAGS_OFFSET] & BANK_MASK) >> BANK_SHIFT)
 
 #define OBJPTR(index) (&ram.oam[(index)*OBJ_SIZE])
 
 static u8 obj_height;
 static u8 obj_size_mode;
+static u8 priority;
+static u8 palette;
 
-static void render_obj_line(u8 *line, u8 tx, u8 fbx, dmg_obj_scan_t *scan, u8 priority, u8 palette) {
-    u16 scan_cursor = fbx;
-    u8 rshift = 7 - tx;
+static inline u8 render_pixel(u8 *line, u8 rshift, u8 pixel) {
+    u8 lsb = (line[0] >> rshift) & 0x01;
+    u8 msb = (line[1] >> rshift) & 0x01;
+    u8 render = lsb + (msb << 1);
 
-    for(; tx < TILE_WIDTH && scan_cursor < LCD_WIDTH; tx++, scan_cursor++) {
-        u8 lsb = (line[0] >> rshift) & 0x01;
-        u8 msb = (line[1] >> rshift) & 0x01;
-        u8 pixel =  lsb + (msb << 1);
-        if(pixel != 0) {
-            scan[scan_cursor].data = lsb + (msb << 1);
-            scan[scan_cursor].priority = priority;
-            scan[scan_cursor].palette = palette;
-        }
-        rshift--;
+    return render != 0 ? (render | priority | palette) : pixel;
+}
+
+static inline void render_obj_line(u8 *line, u8 tx, u8 sx, u8 *scan) {
+    s8 rshift;
+    for(rshift = 7 - tx; rshift >= 0 && sx < LCD_WIDTH; rshift--, sx++) {
+        scan[sx] = render_pixel(line, rshift, scan[sx]);
     }
 }
 
-static void render_obj_line_flipped(u8 *line, u8 tx, u8 fbx, dmg_obj_scan_t *scan, u8 priority, u8 palette) {
-    u16 scan_cursor =  fbx;
-    u8 rshift = tx;
-
-    for(; tx < TILE_WIDTH && scan_cursor < LCD_WIDTH; tx++, scan_cursor++) {
-        u8 lsb = (line[0] >> rshift) & 0x01;
-        u8 msb = (line[1] >> rshift) & 0x01;
-        u8 pixel =  lsb + (msb << 1);
-        if(pixel != 0) {
-            scan[scan_cursor].data = lsb + (msb << 1);
-            scan[scan_cursor].priority = priority;
-            scan[scan_cursor].palette = palette;
-        }
-        rshift++;
+static inline void render_obj_line_flipped(u8 *line, u8 tx, u8 sx, u8 *scan) {
+    u8 rshift;
+    for(rshift = tx; rshift < 8 && sx < LCD_WIDTH; rshift++, sx++) {
+        scan[sx] = render_pixel(line, rshift, scan[sx]);
     }
 }
-
 
 static unsigned int select_obj_indexes(u8 **buf) {
     u8 buf_index;
@@ -104,10 +99,10 @@ static unsigned int establish_render_priority(u8 **objs, unsigned int count) {
 }
 
 
-static void render_obj(u8 *obj, dmg_obj_scan_t *scan) {
+static inline void render_obj(u8 *obj, u8 *scan) {
     u8 *line_data;
     u8 obj_line, tile_index;
-    s16 fbx;
+    s16 sx;
     u8 tx;
 
     obj_line = lcd.ly - (POSY(obj) - 16);
@@ -120,42 +115,30 @@ static void render_obj(u8 *obj, dmg_obj_scan_t *scan) {
         tile_index &= 0xFE;
     }
 
-    line_data = &ram.vrambanks[0][tile_index*0x10 + obj_line*0x02];
-    fbx = POSX(obj) - 8;
+    line_data = &ram.vrambanks[hw.type == CGB_HW ? BANK(obj) : 0][tile_index*0x10 + obj_line*0x02];
+    sx = POSX(obj) - 8;
 
-    if(fbx < 0) {
-        tx = -fbx;
-        fbx = 0;
+    if(sx < 0) {
+        tx = -sx;
+        sx = 0;
     }
     else {
         tx = 0;
     }
 
+    priority = PRIORITY(obj) ? OBJ_PRIORITY_BIT : 0x00;
+    palette = hw.type == CGB_HW ? CGB_PALETTE(obj) : DMG_PALETTE(obj);
+
     if(XFLIP(obj)) {
-        render_obj_line_flipped(line_data, tx, fbx, scan, BGPRIORITY(obj), (obj)[OBJ_FLAGS_OFFSET] & OBJ_PALETTE_BIT ? 1 : 0);
+        render_obj_line_flipped(line_data, tx, sx, scan);
     }
     else {
-        render_obj_line(line_data, tx, fbx, scan, BGPRIORITY(obj), (obj)[OBJ_FLAGS_OFFSET] & OBJ_PALETTE_BIT ? 1 : 0);
+        render_obj_line(line_data, tx, sx, scan);
     }
 }
 
-void lcd_render_obj_line() {
-//    unsigned int o;
-//    unsigned int obj_count;
-//    u8 *obj_indexes[OAM_OBJ_COUNT];
-//
-//    obj_size_mode = lcd.c & LCDC_OBJ_SIZE_BIT;
-//    obj_height = (obj_size_mode ? 15 : 7);
-//
-//    obj_count = select_obj_indexes(obj_indexes);
-//    obj_count = establish_render_priority(obj_indexes, obj_count);
-//
-//    for(o = 0; o < obj_count; o++) {
-//        render_obj(obj_indexes[o]);
-//    }
-}
 
-void lcd_dmg_scan_obj(dmg_obj_scan_t *scan) {
+void lcd_scan_obj(u8 *scan) {
     unsigned int o;
     unsigned int obj_count;
     u8 *obj_indexes[OAM_OBJ_COUNT];

@@ -1,15 +1,17 @@
 #ifndef IO_LCD_OBJ_H
 #define IO_LCD_OBJ_H
 
-    #include "util/defines.h"
+#include "util/defines.h"
 
-    typedef struct {
-        u8 data;
-        u8 priority;
-        u8 palette;
-    } dmg_obj_scan_t;
+#define OBJ_PALETTE_MASK 0x07
+#define OBJ_PALETTE_SHIFT 2
+#define OBJ_DATA_MASK 0x03
+#define OBJ_PRIORITY_BIT 0x08
 
-    void lcd_render_obj_line();
-    void lcd_dmg_scan_obj(dmg_obj_scan_t *scan);
+#define OBJ_DATA(o) ((o) & OBJ_DATA_MASK)
+#define OBJ_PALETTE(o) (((o) >> OBJ_PALETTE_SHIFT) & OBJ_PALETTE_MASK)
+#define OBJ_PRIORITY(o) ((o) & OBJ_PRIORITY_BIT)
+
+void lcd_scan_obj(u8 *scan);
 
 #endif

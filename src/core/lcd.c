@@ -51,23 +51,24 @@ static void swap_fb() {
 static void draw_line() {
     u8 x;
     u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
-    u8 bg_scan[LCD_WIDTH];
+    u8 maps_scan[LCD_WIDTH];
     u8 obj_scan[LCD_WIDTH];
 
-    memset(bg_scan, 0x00, sizeof(bg_scan));
+    memset(maps_scan, 0x00, sizeof(maps_scan));
     memset(obj_scan, 0x00, sizeof(obj_scan));
 
-    lcd_scan_bg(bg_scan);
+
+    lcd_scan_maps(maps_scan);
     lcd_scan_obj(obj_scan);
 
     if(hw.type == DMG_HW) {
         for(x = 0; x < LCD_WIDTH; x++, pixel++) {
             if(OBJ_PRIORITY(obj_scan[x])) {
-                if(bg_scan[x] != 0) {
-                    *pixel = lcd.bgp_map[bg_scan[x]];
+                if(maps_scan[x] != 0) {
+                    *pixel = lcd.bgp_map[maps_scan[x]];
                 }
                 else {
-                    *pixel = lcd.obp_map[obj_scan[x].palette][OBJ_DATA(obj_scan[x])];
+                    *pixel = lcd.obp_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
                 }
             }
             else {
@@ -75,28 +76,13 @@ static void draw_line() {
                     *pixel = lcd.obp_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
                 }
                 else {
-                    *pixel = lcd.bgp_map[bg_scan[x]];
+                    *pixel = lcd.bgp_map[maps_scan[x]];
                 }
             }
         }
     }
     else {
-        for(x = 0; x < LCD_WIDTH; x++, pixel++) {
-            if(lcd.c & LCDC_BG_ENABLE_BIT) {
-                if(BG_PRIORITY(bg_scan[x])) {
-                    if(BG_DATA(bg_scan[x]) != 0)
-                        *pixel = lcd.bgpd_map[BG_PALETTE(bg_scan[x])][BG_DATA(bg_scan[x])];
-                    else
-                        *pixel = lcd.obpd_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
-                }
-                else {
-                    *pixel = lcd.obpd_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
-                }
-            }
-            else {
 
-            }
-        }
     }
 }
 

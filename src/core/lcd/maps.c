@@ -15,7 +15,7 @@
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
 static u8 tx, ty, tc, tr;
-static u8 *dmg_scan;
+static u8 *scan;
 
 
 static inline void set_map_cursor(u8 mx, u8 my) {
@@ -42,12 +42,12 @@ static void scan_tile_line(u8 *line, u8 tx, u8 ty, u8 sx) {
         u8 lsb = (line[0] >> rshift) & 0x01;
         u8 msb = (line[1] >> rshift) & 0x01;
 
-        dmg_scan[scan_cursor] = lsb + (msb << 1);
+        scan[scan_cursor] = lsb + (msb << 1);
         rshift--;
     }
 }
 
-static void dmg_scan_signed_tdt(u8 *map, u8 mx, u8 my, u8 sx) {
+static void scan_signed_tdt(u8 *map, u8 mx, u8 my, u8 sx) {
     u8 *tdt = &ram.vrambank[0x1000];
     u8 *tdp = &map[tr * MAP_COLUMNS + tc];
 
@@ -62,7 +62,7 @@ static void dmg_scan_signed_tdt(u8 *map, u8 mx, u8 my, u8 sx) {
     }
 }
 
-static void dmg_scan_unsigned_tdt(u8 *map, u8 mx, u8 my, u8 sx) {
+static void scan_unsigned_tdt(u8 *map, u8 mx, u8 my, u8 sx) {
     u8 *tdt = &ram.vrambank[0x0000];
     u8 *tdp = &map[tr * MAP_COLUMNS + tc];
 
@@ -77,18 +77,18 @@ static void dmg_scan_unsigned_tdt(u8 *map, u8 mx, u8 my, u8 sx) {
     }
 }
 
-void dmg_scan_bg() {
+void scan_bg() {
     u8 mx = lcd.scx;
     u8 my = lcd.scy + lcd.ly;
     set_map_cursor(mx, my);
 
     if(lcd.c & LCDC_TILE_DATA_BIT)
-        dmg_scan_unsigned_tdt(lcd.bg_map, mx, my, 0);
+        scan_unsigned_tdt(lcd.bg_map, mx, my, 0);
     else
-        dmg_scan_signed_tdt(lcd.bg_map, mx, my, 0);
+        scan_signed_tdt(lcd.bg_map, mx, my, 0);
 }
 
-void dmg_scan_wnd() {
+void scan_wnd() {
     u8 sx, mx, my;
 
     if(lcd.wy > lcd.ly) {
@@ -107,20 +107,24 @@ void dmg_scan_wnd() {
     set_map_cursor(mx, my);
 
     if(lcd.c & LCDC_TILE_DATA_BIT)
-        dmg_scan_unsigned_tdt(lcd.wnd_map, mx, my, sx);
+        scan_unsigned_tdt(lcd.wnd_map, mx, my, sx);
     else
-        dmg_scan_signed_tdt(lcd.wnd_map, mx, my, sx);
+        scan_signed_tdt(lcd.wnd_map, mx, my, sx);
 }
 
-void lcd_dmg_scan_bg(u8 *scan) {
-    dmg_scan = scan;
+void lcd_scan_maps(u8 *_scan) {
+    scan = _scan;
 
     if(lcd.c & LCDC_BG_ENABLE_BIT) {
-        dmg_scan_bg();
+        scan_bg(scan);
     }
     if(lcd.c & LCDC_WND_ENABLE_BIT) {
-        dmg_scan_wnd();
+        scan_wnd(scan);
     }
+}
+
+void lcd_cgb_scan_maps(u8 *scan) {
+
 }
 
 

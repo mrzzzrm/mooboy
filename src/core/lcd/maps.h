@@ -3,8 +3,7 @@
 
     #include "util/defines.h"
 
-    void lcd_render_bg_line();
-    void lcd_render_wnd_line();
-    void lcd_dmg_scan_bg(u8 *scan);
+    void lcd_dmg_scan_maps(u8 *scan);
+    void lcd_cgb_scan_maps(u8 *scan);
 
 #endif
