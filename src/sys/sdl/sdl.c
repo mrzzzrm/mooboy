@@ -127,11 +127,12 @@ void sys_init(int argc, const char** argv) {
     last_sec_cc = 0;
     last_delay_cc = 0;
     delay_start = 0;
-    last_sec = SDL_GetTicks();
     cmd_init(argc, argv);
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     SDL_Surface *screen = SDL_SetVideoMode(160*3, 144*3, 24, SDL_DOUBLEBUF);
+
+    last_sec = SDL_GetTicks();
 
     /* Format: 16 Bit, stereo, 22 KHz */
     SDL_AudioSpec format;

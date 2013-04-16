@@ -29,7 +29,6 @@ typedef struct {
     u8 bgpd[0x40], obpd[0x40];
     u8 bgps, bgpi;
     u8 obps, obpi;
-    /* TODO: CGB registers */
 
     u16 fb[2][144*160];
     u16 *clean_fb;
@@ -40,6 +39,9 @@ typedef struct {
 
     u8 bgp_map[4];
     u8 obp_map[2][4];
+
+    u16 bgpd_map[8][4];
+    u16 obpd_map[8][4];
 } lcd_t;
 
 extern lcd_t lcd;

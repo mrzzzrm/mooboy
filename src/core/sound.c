@@ -267,7 +267,7 @@ void sound_mix() {
             samples[1] = sqw_mix(&ch2);
             samples[2] = wave_mix();
             samples[3] = noise_mix();
-            if(0) {
+            if(1) {
                 buf[sound.buf_end*2 + 0] = (samples[0].l + samples[1].l + samples[2].l + samples[3].l)*sound.so1_volume*0x40;
                 buf[sound.buf_end*2 + 1] = (samples[0].r + samples[1].r + samples[2].r + samples[3].r)*sound.so2_volume*0x40;
             }

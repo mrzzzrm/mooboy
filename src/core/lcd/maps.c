@@ -1,5 +1,6 @@
 #include "maps.h"
 #include <assert.h>
+#include <stdio.h>
 #include "mem.h"
 #include "lcd.h"
 
@@ -37,7 +38,7 @@ static void scan_tile_line(u8 *line, u8 tx, u8 ty, u8 sx) {
     u16 line_end = (lcd.ly + 1) * LCD_WIDTH;
     u8 rshift = 7 - tx;
 
-    for(; tx < TILE_WIDTH && scan_cursor < line_end; tx++, scan_cursor++) {
+    for(; tx < TILE_WIDTH && scan_cursor < LCD_WIDTH; tx++, scan_cursor++) {
         u8 lsb = (line[0] >> rshift) & 0x01;
         u8 msb = (line[1] >> rshift) & 0x01;
 
@@ -111,8 +112,8 @@ void dmg_scan_wnd() {
         dmg_scan_signed_tdt(lcd.wnd_map, mx, my, sx);
 }
 
-void lcd_dmg_scan_bg(u8 *_scan) {
-    dmg_scan = _scan;
+void lcd_dmg_scan_bg(u8 *scan) {
+    dmg_scan = scan;
 
     if(lcd.c & LCDC_BG_ENABLE_BIT) {
         dmg_scan_bg();

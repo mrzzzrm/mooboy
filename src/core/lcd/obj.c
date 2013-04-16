@@ -31,39 +31,35 @@
 static u8 obj_height;
 static u8 obj_size_mode;
 
-static void render_obj_line(u8 *line, u8 tx, u8 fbx, u8 *palette, u8 bgpriority) {
-    u16 fb_cursor = (lcd.ly * LCD_WIDTH) + fbx;
-    u16 line_end = (lcd.ly + 1) * LCD_WIDTH;
+static void render_obj_line(u8 *line, u8 tx, u8 fbx, dmg_obj_scan_t *scan, u8 priority, u8 palette) {
+    u16 scan_cursor = fbx;
     u8 rshift = 7 - tx;
-    bgpriority = bgpriority ? 0 : 1;
 
-    for(; tx < TILE_WIDTH && fb_cursor < line_end; tx++, fb_cursor++) {
+    for(; tx < TILE_WIDTH && scan_cursor < LCD_WIDTH; tx++, scan_cursor++) {
         u8 lsb = (line[0] >> rshift) & 0x01;
         u8 msb = (line[1] >> rshift) & 0x01;
-
-        if(lsb || msb) {
-            if(bgpriority || lcd.working_fb[fb_cursor] == 0) {
-                lcd.working_fb[fb_cursor] = palette[lsb + (msb << 1)];
-            }
+        u8 pixel =  lsb + (msb << 1);
+        if(pixel != 0) {
+            scan[scan_cursor].data = lsb + (msb << 1);
+            scan[scan_cursor].priority = priority;
+            scan[scan_cursor].palette = palette;
         }
         rshift--;
     }
 }
 
-static void render_obj_line_flipped(u8 *line, u8 tx, u8 fbx, u8 *palette, u8 bgpriority) {
-    u16 fb_cursor = (lcd.ly * LCD_WIDTH) + fbx;
-    u16 line_end = (lcd.ly + 1) * LCD_WIDTH;
+static void render_obj_line_flipped(u8 *line, u8 tx, u8 fbx, dmg_obj_scan_t *scan, u8 priority, u8 palette) {
+    u16 scan_cursor =  fbx;
     u8 rshift = tx;
-    bgpriority = bgpriority ? 0 : 1;
 
-    for(; tx < TILE_WIDTH && fb_cursor < line_end; tx++, fb_cursor++) {
+    for(; tx < TILE_WIDTH && scan_cursor < LCD_WIDTH; tx++, scan_cursor++) {
         u8 lsb = (line[0] >> rshift) & 0x01;
         u8 msb = (line[1] >> rshift) & 0x01;
-
-        if(lsb || msb) {
-            if(bgpriority || lcd.working_fb[fb_cursor] == 0) {
-                lcd.working_fb[fb_cursor] = palette[lsb + (msb << 1)];
-            }
+        u8 pixel =  lsb + (msb << 1);
+        if(pixel != 0) {
+            scan[scan_cursor].data = lsb + (msb << 1);
+            scan[scan_cursor].priority = priority;
+            scan[scan_cursor].palette = palette;
         }
         rshift++;
     }
@@ -108,7 +104,7 @@ static unsigned int establish_render_priority(u8 **objs, unsigned int count) {
 }
 
 
-static void render_obj(u8 *obj) {
+static void render_obj(u8 *obj, dmg_obj_scan_t *scan) {
     u8 *line_data;
     u8 obj_line, tile_index;
     s16 fbx;
@@ -136,14 +132,30 @@ static void render_obj(u8 *obj) {
     }
 
     if(XFLIP(obj)) {
-        render_obj_line_flipped(line_data, tx, fbx, PALETTEMAP(obj), BGPRIORITY(obj));
+        render_obj_line_flipped(line_data, tx, fbx, scan, BGPRIORITY(obj), (obj)[OBJ_FLAGS_OFFSET] & OBJ_PALETTE_BIT ? 1 : 0);
     }
     else {
-        render_obj_line(line_data, tx, fbx, PALETTEMAP(obj), BGPRIORITY(obj));
+        render_obj_line(line_data, tx, fbx, scan, BGPRIORITY(obj), (obj)[OBJ_FLAGS_OFFSET] & OBJ_PALETTE_BIT ? 1 : 0);
     }
 }
 
 void lcd_render_obj_line() {
+//    unsigned int o;
+//    unsigned int obj_count;
+//    u8 *obj_indexes[OAM_OBJ_COUNT];
+//
+//    obj_size_mode = lcd.c & LCDC_OBJ_SIZE_BIT;
+//    obj_height = (obj_size_mode ? 15 : 7);
+//
+//    obj_count = select_obj_indexes(obj_indexes);
+//    obj_count = establish_render_priority(obj_indexes, obj_count);
+//
+//    for(o = 0; o < obj_count; o++) {
+//        render_obj(obj_indexes[o]);
+//    }
+}
+
+void lcd_dmg_scan_obj(dmg_obj_scan_t *scan) {
     unsigned int o;
     unsigned int obj_count;
     u8 *obj_indexes[OAM_OBJ_COUNT];
@@ -155,12 +167,8 @@ void lcd_render_obj_line() {
     obj_count = establish_render_priority(obj_indexes, obj_count);
 
     for(o = 0; o < obj_count; o++) {
-        render_obj(obj_indexes[o]);
+        render_obj(obj_indexes[o], scan);
     }
-}
-
-void lcd_dmg_scan_obj(dmg_obj_scan_t *scan) {
-
 }
 
 
