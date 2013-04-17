@@ -43,7 +43,7 @@ int main(int argc, const char **argv) {
     char rom[256];
 
     init(argc, argv);
-    sprintf(rom, "zelda.gb");
+    sprintf(rom, "mario.gb");
     load_romfile(rom);
     emu_run();
     close();

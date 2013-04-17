@@ -30,7 +30,7 @@ void emu_close() {
 }
 
 void emu_reset() {
-    hw.type = DMG_HW;
+    hw.type = CGB_HW;
 
     mem_reset();
     cpu_reset();

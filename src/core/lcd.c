@@ -57,11 +57,10 @@ static void draw_line() {
     memset(maps_scan, 0x00, sizeof(maps_scan));
     memset(obj_scan, 0x00, sizeof(obj_scan));
 
-
-    lcd_scan_maps(maps_scan);
     lcd_scan_obj(obj_scan);
 
     if(hw.type == DMG_HW) {
+        lcd_dmg_scan_maps(maps_scan);
         for(x = 0; x < LCD_WIDTH; x++, pixel++) {
             if(OBJ_PRIORITY(obj_scan[x])) {
                 if(maps_scan[x] != 0) {
@@ -82,14 +81,55 @@ static void draw_line() {
         }
     }
     else {
+        lcd_cgb_scan_maps(maps_scan);
 
+        for(x = 0; x < LCD_WIDTH; x++, pixel++) {
+            u8 bg_priority;
+
+            if(lcd.c & LCDC_BG_ENABLE_BIT) {
+                bg_priority = 0;
+            }
+            else {
+                if(maps_scan[x] & MAPS_PRIORITY_BIT) {
+                    bg_priority = 1;
+                }
+                else {
+                    if(obj_scan[x] & OBJ_PRIORITY_BIT) {
+                        bg_priority = 1;
+                    }
+                    else {
+                        bg_priority = 0;
+                    }
+
+                }
+            }
+
+            if(bg_priority) {
+                if(MAPS_DATA(maps_scan[x]) != 0) {
+                    *pixel = lcd.bgpd_map[MAPS_PALETTE(maps_scan[x])][MAPS_DATA(maps_scan[x])];
+                }
+                else {
+                    *pixel = lcd.obpd_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
+                }
+            }
+            else {
+                if(OBJ_DATA(obj_scan[x]) != 0) {
+                    *pixel = lcd.obpd_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
+                }
+                else {
+                    *pixel = lcd.bgpd_map[MAPS_PALETTE(maps_scan[x])][MAPS_DATA(maps_scan[x])];
+                }
+            }
+
+
+
+        }
     }
 }
 
 static inline void stat_irq(u8 flag) {
     if((lcd.c & LCDC_DISPLAY_ENABLE_BIT) && (lcd.stat & flag)) {
         cpu.irq |= IF_LCDSTAT;
-        //printf("%.4X: LCDSTAT-INT %.2X %i %.2X %.2X\n", PC-1, flag, lcd.ly, cpu.ie, cpu.ime == IME_ON);
     }
 }
 
@@ -214,4 +254,26 @@ void lcd_obp1_dirty() {
     obp_dirty(lcd.obp[1], lcd.obp_map[1]);
 }
 
+void lcd_bgpd_dirty(u8 bgps) {
+    if(bgps % 2 == 0) {
+        lcd.bgpd_map[bgps/8][(bgps/2)%4] &= 0xFF00;
+        lcd.bgpd_map[bgps/8][(bgps/2)%4] = lcd.bgpd[bgps];
+    }
+    else {
+        lcd.bgpd_map[bgps/8][(bgps/2)%4] &= 0x00FF;
+        lcd.bgpd_map[bgps/8][(bgps/2)%4] = lcd.bgpd[bgps] << 8;
+    }
+}
+
+void lcd_obpd_dirty(u8 obps) {
+    if(obps % 2 == 0) {
+        lcd.obpd_map[obps/8][(obps/2)%4] &= 0xFF00;
+        lcd.obpd_map[obps/8][(obps/2)%4] = lcd.bgpd[obps];
+    }
+    else {
+        lcd.obpd_map[obps/8][(obps/2)%4] &= 0x00FF;
+        lcd.obpd_map[obps/8][(obps/2)%4] = lcd.bgpd[obps] << 8;
+    }
+
+}
 

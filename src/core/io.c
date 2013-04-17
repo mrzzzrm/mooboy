@@ -70,7 +70,7 @@ u8 io_read(u16 adr) {
         case 0x6B: break;
 
         default:;
-            //printf("Unknown IO read: %.2X\n", r);
+            printf("Unknown IO read: %.2X\n", r);
     }
 
     return 0xFF; // Avoids nasty warnings, precious
@@ -138,13 +138,13 @@ void io_write(u16 adr, u8 val) {
 
         /* TODO: CGB Mode */
         case 0x68: lcd.bgps = val & 0x1F; lcd.bgpi = val & 0x80; break;
-        case 0x69: lcd.bgpd[lcd.bgps] = val; break;
+        case 0x69: lcd.bgpd[lcd.bgps] = val; lcd_bgpd_dirty(lcd.bgps); if(lcd.bgpi) lcd.bgps++; lcd.bgps &= 0x3F; break;
         case 0x6A: lcd.obps = val & 0x1F; lcd.obpi = val & 0x80; break;
-        case 0x6B: lcd.obpd[lcd.obps] = val; break;
+        case 0x6B: lcd.obpd[lcd.obps] = val; lcd_obpd_dirty(lcd.obps); if(lcd.obpi) lcd.obps++; lcd.obps &= 0x3F; break;
 
         case 0x70: ram.wrambank = ram.wrambanks[val != 0 ? val & 0x07 : 0x01]; break;
 
         default:;
-            //printf("Unknown IO write: %.2X=%.2X\n", r, val);
+            printf("Unknown IO write: %.2X=%.2X\n", r, val);
     }
 }

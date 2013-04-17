@@ -55,5 +55,7 @@ void lcd_c_dirty();
 void lcd_obp0_dirty();
 void lcd_obp1_dirty();
 void lcd_bgp_dirty();
+void lcd_bgpd_dirty(u8 bgps);
+void lcd_obpd_dirty(u8 obps);
 
 #endif

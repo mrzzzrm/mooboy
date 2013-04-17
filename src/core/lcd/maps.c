@@ -77,18 +77,20 @@ static void scan_unsigned_tdt(u8 *map, u8 mx, u8 my, u8 sx) {
     }
 }
 
-void scan_bg() {
+static inline void dmg_scan_bg(u8 *scan) {
     u8 mx = lcd.scx;
     u8 my = lcd.scy + lcd.ly;
     set_map_cursor(mx, my);
 
-    if(lcd.c & LCDC_TILE_DATA_BIT)
+    if(lcd.c & LCDC_TILE_DATA_BIT) {
         scan_unsigned_tdt(lcd.bg_map, mx, my, 0);
-    else
+    }
+    else {
         scan_signed_tdt(lcd.bg_map, mx, my, 0);
+    }
 }
 
-void scan_wnd() {
+static inline void dmg_scan_wnd(u8 *scan) {
     u8 sx, mx, my;
 
     if(lcd.wy > lcd.ly) {
@@ -106,20 +108,22 @@ void scan_wnd() {
     my = lcd.ly - lcd.wy;
     set_map_cursor(mx, my);
 
-    if(lcd.c & LCDC_TILE_DATA_BIT)
+    if(lcd.c & LCDC_TILE_DATA_BIT) {
         scan_unsigned_tdt(lcd.wnd_map, mx, my, sx);
-    else
+    }
+    else {
         scan_signed_tdt(lcd.wnd_map, mx, my, sx);
+    }
 }
 
-void lcd_scan_maps(u8 *_scan) {
+void lcd_dmg_scan_maps(u8 *_scan) {
     scan = _scan;
 
     if(lcd.c & LCDC_BG_ENABLE_BIT) {
-        scan_bg(scan);
+        dmg_scan_bg(scan);
     }
     if(lcd.c & LCDC_WND_ENABLE_BIT) {
-        scan_wnd(scan);
+        dmg_scan_wnd(scan);
     }
 }
 
