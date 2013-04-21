@@ -263,6 +263,8 @@ void lcd_bgpd_dirty(u8 bgps) {
         lcd.bgpd_map[bgps/8][(bgps/2)%4] &= 0x00FF;
         lcd.bgpd_map[bgps/8][(bgps/2)%4] = lcd.bgpd[bgps] << 8;
     }
+
+    printf("BGPD\n");
 }
 
 void lcd_obpd_dirty(u8 obps) {
@@ -275,5 +277,6 @@ void lcd_obpd_dirty(u8 obps) {
         lcd.obpd_map[obps/8][(obps/2)%4] = lcd.bgpd[obps] << 8;
     }
 
+    printf("OBPD\n");
 }
 

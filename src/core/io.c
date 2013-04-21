@@ -20,8 +20,8 @@ u8 io_read(u16 adr) {
         case 0x00: return joy_read(); break;
 
         /* TODO: Serial */
-        case 0x01: break;
-        case 0x02: break;
+//        case 0x01: break;
+//        case 0x02: break;
 
         case 0x04: return timers.div; break;
         case 0x05: return timers.tima; break;
@@ -57,17 +57,17 @@ u8 io_read(u16 adr) {
         case 0x4B: return lcd.wx; break;
 
         /* TODO: CGB Mode */
-        case 0x51: break;
-        case 0x52: break;
-        case 0x53: break;
-        case 0x55: break;
-        case 0x54: break;
+//        case 0x51: break;
+//        case 0x52: break;
+//        case 0x53: break;
+//        case 0x55: break;
+//        case 0x54: break;
 
         /* TODO: CGB Mode */
-        case 0x68: break;
-        case 0x69: break;
-        case 0x6A: break;
-        case 0x6B: break;
+//        case 0x68: break;
+//        case 0x69: break;
+//        case 0x6A: break;
+//        case 0x6B: break;
 
         default:;
             printf("Unknown IO read: %.2X\n", r);
@@ -81,8 +81,8 @@ void io_write(u16 adr, u8 val) {
     switch(r) {
         /* Joypad */
         case 0x00: joy_select_col(val); break;
-        case 0x01: break;
-        case 0x02: break;
+//        case 0x01: break;
+//        case 0x02: break;
 
         case 0x04: timers.div = 0x00; break;
         case 0x05: timers.tima = 0x00; break;
@@ -107,8 +107,8 @@ void io_write(u16 adr, u8 val) {
             lcd.c = val;
             lcd_c_dirty();
         break;
-        case 0x41: lcd.stat = (lcd.stat & 0x03) | (val & 0x78); /*printf("%.4X: LCDSTAT-INTs enabled: %.2X\n", PC-1, val & 0x78);*/ break;
-        case 0x42: lcd.scy = val; /*printf("%.4X: SCY=%.2X\n", PC-1, val);*/ break;
+        case 0x41: lcd.stat = (lcd.stat & 0x03) | (val & 0x78); break;
+        case 0x42: lcd.scy = val; break;
         case 0x43: lcd.scx = val; break;
         case 0x44: lcd.ly = 0x00; break;
         case 0x45: lcd.lyc = val; break;
@@ -130,11 +130,11 @@ void io_write(u16 adr, u8 val) {
 
         /* TODO: CGB Mode */
         case 0x4F: ram.vrambank = ram.vrambanks[val & 0x01]; break;
-        case 0x51: break;
-        case 0x52: break;
-        case 0x53: break;
-        case 0x55: break;
-        case 0x54: break;
+//        case 0x51: break;
+//        case 0x52: break;
+//        case 0x53: break;
+//        case 0x55: break;
+//        case 0x54: break;
 
         /* TODO: CGB Mode */
         case 0x68: lcd.bgps = val & 0x1F; lcd.bgpi = val & 0x80; break;

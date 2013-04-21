@@ -1,6 +1,7 @@
 #include "cpu.h"
 #include <stdio.h>
 #include "lcd.h"
+#include "emu.h"
 #include "rtc.h"
 #include "mbc.h"
 #include "cpu/ops.h"
@@ -15,7 +16,7 @@ void cpu_init() {
 }
 
 void cpu_reset() {
-    AF = 0x01B0;
+    AF = hw.type == CGB_HW ? 0x11B0 : 0x01B0;
     BC = 0x0013;
     DE = 0x00D8;
     HL = 0x014D;
