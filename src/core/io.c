@@ -70,7 +70,7 @@ u8 io_read(u16 adr) {
 //        case 0x6B: break;
 
         default:;
-            printf("Unknown IO read: %.2X\n", r);
+            //printf("Unknown IO read: %.2X\n", r);
     }
 
     return 0xFF; // Avoids nasty warnings, precious
@@ -145,6 +145,6 @@ void io_write(u16 adr, u8 val) {
         case 0x70: ram.wrambank = ram.wrambanks[val != 0 ? val & 0x07 : 0x01]; break;
 
         default:;
-            printf("Unknown IO write: %.2X=%.2X\n", r, val);
+            //printf("Unknown IO write: %.2X=%.2X\n", r, val);
     }
 }

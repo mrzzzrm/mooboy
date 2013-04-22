@@ -208,8 +208,9 @@ void sys_fb_ready() {
                 u32 r = ((col >> 0) & 0x001F)  << 3 << 24;
                 u32 g = ((col >> 5) & 0x001F)  << 3 << 16;
                 u32 b = ((col >> 10) & 0x001F) << 3 << 8;
-
-
+//
+//                if((r | g | b) != 0)
+//                printf("%.8X ", r | g | b | 0xFF);
                 boxColor(s, x*3, y*3, x*3+2, y*3+2, r | g | b | 0xFF);
             }
         }

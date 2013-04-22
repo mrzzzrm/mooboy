@@ -13,6 +13,6 @@
     #define MAPS_PRIORITY(p) ((p) & MAPS_PRIORITY_BIT)
 
     void lcd_dmg_scan_maps(u8 *scan);
-    void lcd_cgb_scan_maps(u8 *scan);
+    void lcd_scan_maps(u8 *scan);
 
 #endif

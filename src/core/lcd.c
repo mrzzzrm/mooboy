@@ -57,7 +57,9 @@ static void draw_line() {
     memset(maps_scan, 0x00, sizeof(maps_scan));
     memset(obj_scan, 0x00, sizeof(obj_scan));
 
-    lcd_scan_obj(obj_scan);
+    if(lcd.c & LCDC_OBJ_ENABLE_BIT) {
+        lcd_scan_obj(obj_scan);
+    }
 
     if(hw.type == DMG_HW) {
         lcd_dmg_scan_maps(maps_scan);
@@ -81,15 +83,11 @@ static void draw_line() {
         }
     }
     else {
-        lcd_cgb_scan_maps(maps_scan);
-
+        lcd_scan_maps(maps_scan);
         for(x = 0; x < LCD_WIDTH; x++, pixel++) {
             u8 bg_priority;
 
             if(lcd.c & LCDC_BG_ENABLE_BIT) {
-                bg_priority = 0;
-            }
-            else {
                 if(maps_scan[x] & MAPS_PRIORITY_BIT) {
                     bg_priority = 1;
                 }
@@ -102,6 +100,9 @@ static void draw_line() {
                     }
 
                 }
+            }
+            else {
+                bg_priority = 0;
             }
 
             if(bg_priority) {
@@ -120,9 +121,6 @@ static void draw_line() {
                     *pixel = lcd.bgpd_map[MAPS_PALETTE(maps_scan[x])][MAPS_DATA(maps_scan[x])];
                 }
             }
-
-
-
         }
     }
 }
@@ -139,7 +137,6 @@ static u8 step_mode(u8 m1) {
     u16 fc = cpu.cc % DUR_FULL_REFRESH;
     lcd.ly = fc / DUR_SCANLINE;
     STAT_SET_CFLAG(lcd.ly == lcd.lyc ? 1 : 0);
-
 
     if(lcd.ly < 144) {
         u16 lc = fc % DUR_SCANLINE;
@@ -226,10 +223,11 @@ void lcd_dma(u8 v) {
 }
 
 void lcd_c_dirty() {
-    lcd.bg_map = &ram.vrambank[lcd.c & LCDC_BG_MAP_BIT ? 0x1C00 : 0x1800];
-    lcd.wnd_map = &ram.vrambank[lcd.c & LCDC_WND_MAP_BIT ? 0x1C00 : 0x1800];
+    lcd.bg_map = &ram.vrambanks[0][lcd.c & LCDC_BG_MAP_BIT ? 0x1C00 : 0x1800];
+    lcd.wnd_map = &ram.vrambanks[0][lcd.c & LCDC_WND_MAP_BIT ? 0x1C00 : 0x1800];
+    lcd.bg_attr_map = &ram.vrambanks[1][lcd.c & LCDC_BG_MAP_BIT ? 0x1C00 : 0x1800];
+    lcd.wnd_attr_map = &ram.vrambanks[1][lcd.c & LCDC_WND_MAP_BIT ? 0x1C00 : 0x1800];
 }
-
 
 void lcd_bgp_dirty() {
     u8 rc;
@@ -255,28 +253,40 @@ void lcd_obp1_dirty() {
 }
 
 void lcd_bgpd_dirty(u8 bgps) {
+    u16 palette, color, i;
+
+    i = lcd.bgpd[bgps];
+    palette = bgps/8;
+    color = (bgps/2)%4;
+
     if(bgps % 2 == 0) {
-        lcd.bgpd_map[bgps/8][(bgps/2)%4] &= 0xFF00;
-        lcd.bgpd_map[bgps/8][(bgps/2)%4] = lcd.bgpd[bgps];
+        lcd.bgpd_map[palette][color] &= 0xFF00;
+        lcd.bgpd_map[palette][color] |= i;
     }
     else {
-        lcd.bgpd_map[bgps/8][(bgps/2)%4] &= 0x00FF;
-        lcd.bgpd_map[bgps/8][(bgps/2)%4] = lcd.bgpd[bgps] << 8;
+        lcd.bgpd_map[palette][color] &= 0x00FF;
+        lcd.bgpd_map[palette][color] |= i << 8;
     }
-
-    printf("BGPD\n");
+    u16 val = lcd.bgpd_map[palette][color];
 }
 
 void lcd_obpd_dirty(u8 obps) {
+    u16 palette, color, i;
+
+    i = lcd.obpd[obps];
+    palette = obps/8;
+    color = (obps/2)%4;
+
     if(obps % 2 == 0) {
-        lcd.obpd_map[obps/8][(obps/2)%4] &= 0xFF00;
-        lcd.obpd_map[obps/8][(obps/2)%4] = lcd.bgpd[obps];
+        lcd.obpd_map[palette][color] &= 0xFF00;
+        lcd.obpd_map[palette][color] |= i;
     }
     else {
-        lcd.obpd_map[obps/8][(obps/2)%4] &= 0x00FF;
-        lcd.obpd_map[obps/8][(obps/2)%4] = lcd.bgpd[obps] << 8;
+        lcd.obpd_map[palette][color] &= 0x00FF;
+        lcd.obpd_map[palette][color] |= i << 8;
     }
+    u16 val = lcd.obpd_map[palette][color];
 
-    printf("OBPD\n");
+    //printf("OBPD Palette %i color %i set to R%i G%i B%i by %.2X\n", (int)palette, (int)color, (val>>0)&0x1F, (val>>5)&0x1F, (val>>10)&0x1F, i);
 }
 

@@ -34,8 +34,8 @@ typedef struct {
     u16 *clean_fb;
     u16 *working_fb;
 
-    u8 *bg_map;
-    u8 *wnd_map;
+    u8 *bg_map, *bg_attr_map;
+    u8 *wnd_map, *wnd_attr_map;
 
     u8 bgp_map[4];
     u8 obp_map[2][4];
