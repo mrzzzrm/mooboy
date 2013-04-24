@@ -252,41 +252,26 @@ void lcd_obp1_dirty() {
     obp_dirty(lcd.obp[1], lcd.obp_map[1]);
 }
 
-void lcd_bgpd_dirty(u8 bgps) {
-    u16 palette, color, i;
+static void pd_dirty(u16 map[8][4], u8 d, u8 s) {
+    u16 palette, color;
 
-    i = lcd.bgpd[bgps];
-    palette = bgps/8;
-    color = (bgps/2)%4;
+    palette = s/8;
+    color = (s/2)%4;
 
-    if(bgps % 2 == 0) {
-        lcd.bgpd_map[palette][color] &= 0xFF00;
-        lcd.bgpd_map[palette][color] |= i;
+    if(s % 2 == 0) {
+        map[palette][color] = map[palette][color] & 0xFF00 | d;
     }
     else {
-        lcd.bgpd_map[palette][color] &= 0x00FF;
-        lcd.bgpd_map[palette][color] |= i << 8;
+        map[palette][color] = map[palette][color] & 0x00FF | (d << 8);
     }
-    u16 val = lcd.bgpd_map[palette][color];
+    u16 val = map[palette][color];
+}
+
+void lcd_bgpd_dirty(u8 bgps) {
+    pd_dirty(lcd.bgpd_map, lcd.bgpd[bgps], bgps);
 }
 
 void lcd_obpd_dirty(u8 obps) {
-    u16 palette, color, i;
-
-    i = lcd.obpd[obps];
-    palette = obps/8;
-    color = (obps/2)%4;
-
-    if(obps % 2 == 0) {
-        lcd.obpd_map[palette][color] &= 0xFF00;
-        lcd.obpd_map[palette][color] |= i;
-    }
-    else {
-        lcd.obpd_map[palette][color] &= 0x00FF;
-        lcd.obpd_map[palette][color] |= i << 8;
-    }
-    u16 val = lcd.obpd_map[palette][color];
-
-    //printf("OBPD Palette %i color %i set to R%i G%i B%i by %.2X\n", (int)palette, (int)color, (val>>0)&0x1F, (val>>5)&0x1F, (val>>10)&0x1F, i);
+    pd_dirty(lcd.obpd_map, lcd.obpd[obps], obps);
 }
 
