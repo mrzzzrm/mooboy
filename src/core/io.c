@@ -56,21 +56,22 @@ u8 io_read(u16 adr) {
         case 0x4A: return lcd.wy; break;
         case 0x4B: return lcd.wx; break;
 
-        /* TODO: CGB Mode */
-//        case 0x51: break;
-//        case 0x52: break;
-//        case 0x53: break;
-//        case 0x55: break;
-//        case 0x54: break;
+        case 0x4F: return ram.vrambank == &ram.vrambanks[0] ? 0 : 1; break;
+
+        case 0x51: return lcd.dma_source >> 8; break;
+        case 0x52: return lcd.dma_source & 0xFF; break;
+        case 0x53: return lcd.dma_dest >> 8; break;
+        case 0x54: return lcd.dma_dest & 0xFF; break;
+        case 0x55: return lcd.dma_length | lcd.dma_hblank_inactive; break;
 
         /* TODO: CGB Mode */
-//        case 0x68: break;
-//        case 0x69: break;
-//        case 0x6A: break;
-//        case 0x6B: break;
+        case 0x68: return lcd.bgps | lcd.bgpi; break;
+        case 0x69: return lcd.bgpd[lcd.bgps]; break;
+        case 0x6A: return lcd.obps | lcd.obpi; break;
+        case 0x6B: return lcd.obpd[lcd.obps]; break;
 
         default:;
-            //printf("Unknown IO read: %.2X\n", r);
+            printf("Unknown IO read: %.2X\n", r);
     }
 
     return 0xFF; // Avoids nasty warnings, precious
@@ -128,15 +129,23 @@ void io_write(u16 adr, u8 val) {
         case 0x4A: lcd.wy = val; break;
         case 0x4B: lcd.wx = val; break;
 
-        /* TODO: CGB Mode */
         case 0x4F: ram.vrambank = ram.vrambanks[val & 0x01]; break;
-//        case 0x51: break;
-//        case 0x52: break;
-//        case 0x53: break;
-//        case 0x55: break;
-//        case 0x54: break;
 
         /* TODO: CGB Mode */
+        case 0x51: lcd.dma_source = (lcd.dma_source & 0x00FF) | (val << 8); break;
+        case 0x52: lcd.dma_source = (lcd.dma_source & 0xFF00) | (val & 0xF0); break;
+        case 0x53: lcd.dma_dest = (lcd.dma_dest & 0x00FF) | ((val & 0x3F) << 8); break;
+        case 0x54: lcd.dma_dest = (lcd.dma_dest & 0xFF00) | (val & 0xF0);break;
+        case 0x55:
+            lcd.dma_length = val & 0x7F;
+            if(val & 0x80) {
+                lcd.dma_hblank_inactive = 0x00;
+            }
+            else {
+                lcd_cgb_dma();
+            }
+        break;
+
         case 0x68: lcd.bgps = val & 0x1F; lcd.bgpi = val & 0x80; break;
         case 0x69: lcd.bgpd[lcd.bgps] = val; lcd_bgpd_dirty(lcd.bgps); if(lcd.bgpi) lcd.bgps++; lcd.bgps &= 0x3F; break;
         case 0x6A: lcd.obps = val & 0x1F; lcd.obpi = val & 0x80; break;
@@ -145,6 +154,6 @@ void io_write(u16 adr, u8 val) {
         case 0x70: ram.wrambank = ram.wrambanks[val != 0 ? val & 0x07 : 0x01]; break;
 
         default:;
-            //printf("Unknown IO write: %.2X=%.2X\n", r, val);
+            printf("Unknown IO write: %.2X=%.2X\n", r, val);
     }
 }

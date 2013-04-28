@@ -131,6 +131,22 @@ static inline void stat_irq(u8 flag) {
     }
 }
 
+static inline void hblank_dma() {
+    u16 end;
+
+    end = lcd.dma_source + 0x10;
+
+    for(; lcd.dma_source < end; lcd.dma_source++, lcd.dma_dest++) {
+        mem_write_byte(lcd.dma_dest, mem_read_byte(lcd.dma_source));
+    }
+
+    lcd.dma_length--;
+    if(lcd.dma_length == 0x00) {
+        lcd.dma_length = 0x7F;
+        lcd.dma_hblank_inactive = 0x80;
+    }
+}
+
 static u8 step_mode(u8 m1) {
     u8 old = lcd.ly;
 
@@ -165,6 +181,11 @@ void lcd_reset() {
     lcd.obp[0] = 0xFF;
     lcd.obp[1] = 0xFF;
 
+    lcd.dma_source = 0x0000;
+    lcd.dma_dest = 0x0000;
+    lcd.dma_length = 0x00;
+    lcd.dma_hblank_inactive = 0x80;
+
     memset(lcd.fb, 0x00, sizeof(lcd.fb));
     lcd.clean_fb = lcd.fb[0];
     lcd.working_fb = lcd.fb[1];
@@ -194,6 +215,9 @@ void lcd_step() {
                 if(lcd.c & LCDC_DISPLAY_ENABLE_BIT) {
                     draw_line();
                 }
+                if(!lcd.dma_hblank_inactive) {
+                    hblank_dma();
+                }
             break;
             case 0x01:
                 cpu.irq |= IF_VBLANK;
@@ -220,6 +244,22 @@ void lcd_dma(u8 v) {
     for(src = ((u16)v)<<8, b = 0; b < 0xA0; b++, src++) {
         ram.oam[b] = mem_read_byte(src);
     }
+}
+
+void lcd_cgb_dma() {
+    u16 length, source, dest, end;
+
+    length = (lcd.dma_length + 1) * 0x10;
+    source = lcd.dma_source;
+    dest = lcd.dma_dest;
+    end = source + length;
+
+    for(; source < end; source++, dest++) {
+        mem_write_byte(dest, mem_read_byte(source));
+    }
+
+    lcd.dma_length = 0x7F;
+    lcd.dma_hblank_inactive = 0x80;
 }
 
 void lcd_c_dirty() {
