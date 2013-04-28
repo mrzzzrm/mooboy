@@ -31,7 +31,6 @@ void ints_handle() {
     u8 i;
     for(i = 0; i < 5; i++) {
         if(cpu.irq & cpu.ie & (1 << i)) {
-          //  printf("%.4X: INT %i\n", PC-1, i);
             exec_int(i);
             return;
         }
@@ -42,7 +41,6 @@ int ints_handle_standby() {
     u8 i;
     for(i = 0; i < 5; i++) {
         if(cpu.irq & cpu.ie & (1 << i)) {
-           // printf("%.4X: Halted INT %i\n", PC-1, i);
             if(cpu.ime == IME_ON) {
                 exec_int(i);
             }

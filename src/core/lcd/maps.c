@@ -19,7 +19,7 @@
 #define HFLIP_BIT 0x20
 #define VFLIP_BIT 0x40
 
-static u8 sx, tx, ty, tc, tr, plus;
+static u8 sx, tx, ty, tc, tr, index_offset;
 static u8 *tdt;
 static u8 priority, palette, bank;
 
@@ -28,20 +28,21 @@ static inline void init_scan(u8 mx, u8 my) {
     ty = my % TILE_HEIGHT;
     tc = mx / TILE_WIDTH;
     tr = my / TILE_HEIGHT;
-    plus = lcd.c & LCDC_TILE_DATA_BIT ? 0x00 : 0x80;
-    tdt = lcd.c & LCDC_TILE_DATA_BIT ? &ram.vrambank[0x0000] : &ram.vrambank[0x0800];
+    index_offset = lcd.c & LCDC_TILE_DATA_BIT ? 0x00 : 0x80;
+    tdt = lcd.c & LCDC_TILE_DATA_BIT ? &ram.vrambanks[bank][0x0000] : &ram.vrambanks[bank][0x0800];
+}
+
+static inline u8 render(u8 *line, u8 rshift) {
+    u8 lsb = (line[0] >> rshift) & 0x01;
+    u8 msb = (line[1] >> rshift) & 0x01;
+    return (lsb + (msb << 1)) | palette | priority;
 }
 
 static inline void scan_tile_line(u8 *scan, u8 *line) {
     u8 rshift = 7 - tx;
 
-    for(; tx < TILE_WIDTH && sx < LCD_WIDTH; tx++, sx++) {
-        u8 lsb = (line[0] >> rshift) & 0x01;
-        u8 msb = (line[1] >> rshift) & 0x01;
-        u8 render = lsb + (msb << 1);
-
-        scan[sx] = render | palette | priority;
-        rshift--;
+    for(; tx < TILE_WIDTH && sx < LCD_WIDTH; tx++, sx++, rshift--) {
+        scan[sx] = render(line, rshift);
     }
     tx = 0;
 }
@@ -49,22 +50,17 @@ static inline void scan_tile_line(u8 *scan, u8 *line) {
 static void inline scan_tile_line_flipped(u8 *scan, u8 *line) {
     u8 rshift = tx;
 
-    for(; tx < TILE_WIDTH && sx < LCD_WIDTH; tx++, sx++) {
-        u8 lsb = (line[0] >> rshift) & 0x01;
-        u8 msb = (line[1] >> rshift) & 0x01;
-        u8 render = lsb + (msb << 1);
-
-        scan[sx] = render | palette | priority;
-        rshift++;
+    for(; tx < TILE_WIDTH && sx < LCD_WIDTH; tx++, sx++, rshift++) {
+        scan[sx] = render(line, rshift);
     }
     tx = 0;
 }
 
-static inline scan_line(u8 *map, u8 *scan) {
+static inline dmg_scan_line(u8 *map, u8 *scan) {
     u8 *tile_index;
     do {
         tile_index = &map[tr * MAP_COLUMNS + tc];
-        scan_tile_line(scan, &tdt[((*tile_index + plus)%256)*0x10 + ty*2]);
+        scan_tile_line(scan, &tdt[((*tile_index + index_offset)%256)*0x10 + ty*2]);
         tc = (tc+1)%32;
     } while (sx < LCD_WIDTH);
 }
@@ -82,27 +78,27 @@ static inline cgb_scan_line(u8 *map, u8 *attr_map, u8 *scan) {
         line = attributes & VFLIP_BIT ? 7-ty : ty;
 
         if(attributes & HFLIP_BIT) {
-            scan_tile_line_flipped(scan, &tdt[((tile_index + plus)%256)*0x10 + line*2]);
+            scan_tile_line_flipped(scan, &tdt[((tile_index + index_offset)%256)*0x10 + line*2]);
         }
         else {
-            scan_tile_line(scan, &tdt[((tile_index + plus)%256)*0x10 + line*2]);
+            scan_tile_line(scan, &tdt[((tile_index + index_offset)%256)*0x10 + line*2]);
         }
         tc = (tc+1)%32;
     } while (sx < LCD_WIDTH);
 }
 
-static inline void dmg_scan_bg(u8 *scan) {
+static inline void scan_bg(u8 *scan) {
     sx = 0;
     init_scan(lcd.scx, lcd.scy + lcd.ly);
-    if(hw.type == CGB_HW) {
+    if(emu.hw == CGB_HW) {
         cgb_scan_line(lcd.bg_map, lcd.bg_attr_map, scan);
     }
     else {
-        scan_line(lcd.bg_map, scan);
+        dmg_scan_line(lcd.bg_map, scan);
     }
 }
 
-static inline void dmg_scan_wnd(u8 *scan) {
+static inline void scan_wnd(u8 *scan) {
     u8 mx;
 
     if(lcd.wy > lcd.ly) {
@@ -118,27 +114,26 @@ static inline void dmg_scan_wnd(u8 *scan) {
     }
 
     init_scan(mx, lcd.ly - lcd.wy);
-    if(hw.type == CGB_HW) {
+    if(emu.hw == CGB_HW) {
         cgb_scan_line(lcd.wnd_map, lcd.wnd_attr_map, scan);
     }
     else {
-        scan_line(lcd.wnd_map, scan);
-    }
-}
-
-void lcd_dmg_scan_maps(u8 *scan) {
-    if(lcd.c & LCDC_BG_ENABLE_BIT) {
-        dmg_scan_bg(scan);
-    }
-    if(lcd.c & LCDC_WND_ENABLE_BIT) {
-        dmg_scan_wnd(scan);
+        dmg_scan_line(lcd.wnd_map, scan);
     }
 }
 
 void lcd_scan_maps(u8 *scan) {
-    dmg_scan_bg(scan);
+    if(emu.hw == CGB_HW) {
+        bank = 0;
+        priority = 0;
+        palette = 0;
+    }
+
+    if((lcd.c & LCDC_BG_ENABLE_BIT) || emu.hw == CGB_HW) {
+        scan_bg(scan);
+    }
     if(lcd.c & LCDC_WND_ENABLE_BIT) {
-        dmg_scan_wnd(scan);
+        scan_wnd(scan);
     }
 }
 

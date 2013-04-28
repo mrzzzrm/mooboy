@@ -8,16 +8,18 @@ typedef struct {
     u8 vrambanks[2][0x2000]; // 2nd bank for GBC
     u8 hram[0x80];
     u8 oam[0xA0];
-    
+
     u8 *wrambank;
     u8 *vrambank;
+
+    u8 wrambank_index;
 } ram_t;
 
 typedef struct {
-    u8 (*srambanks)[0x2000]; 
-    u8 (*rombanks)[0x4000];   
+    u8 (*srambanks)[0x2000];
+    u8 (*rombanks)[0x4000];
     u16 romsize;
-    u16 sramsize;    
+    u16 sramsize;
 } card_t;
 
 

@@ -16,10 +16,8 @@ u8 io_read(u16 adr) {
     u8 r = adr &  0x00FF;
 
     switch(r) {
-        /* TODO: Joypad */
         case 0x00: return joy_read(); break;
 
-        /* TODO: Serial */
 //        case 0x01: break;
 //        case 0x02: break;
 
@@ -29,7 +27,6 @@ u8 io_read(u16 adr) {
         case 0x07: return timers.tac; break;
         case 0x0F: return cpu.irq; break;
 
-        /* Sound */
         case 0x10: case 0x11: case 0x12: case 0x13:
         case 0x14: case 0x16: case 0x17: case 0x18:
         case 0x19: case 0x1A: case 0x1B: case 0x1C:
@@ -42,6 +39,8 @@ u8 io_read(u16 adr) {
         case 0x3F:
             return sound_read(r);
         break;
+
+        case 0x15: case 0x1F: return 0x00; break;
 
         case 0x40: return lcd.c; break;
         case 0x41: return lcd.stat; break;
@@ -56,6 +55,8 @@ u8 io_read(u16 adr) {
         case 0x4A: return lcd.wy; break;
         case 0x4B: return lcd.wx; break;
 
+        case 0x4D: return cpu.freq_switch | (cpu.freq == DOUBLE_CPU_FREQ ? 0x80 : 0x00); break;
+
         case 0x4F: return ram.vrambank == &ram.vrambanks[0] ? 0 : 1; break;
 
         case 0x51: return lcd.dma_source >> 8; break;
@@ -64,11 +65,15 @@ u8 io_read(u16 adr) {
         case 0x54: return lcd.dma_dest & 0xFF; break;
         case 0x55: return lcd.dma_length | lcd.dma_hblank_inactive; break;
 
+        case 0x56: return 0x40; break;
+
         /* TODO: CGB Mode */
         case 0x68: return lcd.bgps | lcd.bgpi; break;
         case 0x69: return lcd.bgpd[lcd.bgps]; break;
         case 0x6A: return lcd.obps | lcd.obpi; break;
         case 0x6B: return lcd.obpd[lcd.obps]; break;
+
+        case 0x70: return ram.wrambank_index; break;
 
         default:;
             printf("Unknown IO read: %.2X\n", r);
@@ -80,8 +85,8 @@ u8 io_read(u16 adr) {
 void io_write(u16 adr, u8 val) {
     u8 r = adr & 0x00FF;
     switch(r) {
-        /* Joypad */
         case 0x00: joy_select_col(val); break;
+
 //        case 0x01: break;
 //        case 0x02: break;
 
@@ -103,6 +108,8 @@ void io_write(u16 adr, u8 val) {
         case 0x3F:
             sound_write(r, val);
         break;
+
+        case 0x15: case 0x1F: break;
 
         case 0x40:
             lcd.c = val;
@@ -129,9 +136,10 @@ void io_write(u16 adr, u8 val) {
         case 0x4A: lcd.wy = val; break;
         case 0x4B: lcd.wx = val; break;
 
+        case 0x4D: cpu.freq_switch = val & 0x01;  break;
+
         case 0x4F: ram.vrambank = ram.vrambanks[val & 0x01]; break;
 
-        /* TODO: CGB Mode */
         case 0x51: lcd.dma_source = (lcd.dma_source & 0x00FF) | (val << 8); break;
         case 0x52: lcd.dma_source = (lcd.dma_source & 0xFF00) | (val & 0xF0); break;
         case 0x53: lcd.dma_dest = (lcd.dma_dest & 0x00FF) | ((val & 0x3F) << 8); break;
@@ -146,12 +154,37 @@ void io_write(u16 adr, u8 val) {
             }
         break;
 
-        case 0x68: lcd.bgps = val & 0x1F; lcd.bgpi = val & 0x80; break;
-        case 0x69: lcd.bgpd[lcd.bgps] = val; lcd_bgpd_dirty(lcd.bgps); if(lcd.bgpi) lcd.bgps++; lcd.bgps &= 0x3F; break;
-        case 0x6A: lcd.obps = val & 0x1F; lcd.obpi = val & 0x80; break;
-        case 0x6B: lcd.obpd[lcd.obps] = val; lcd_obpd_dirty(lcd.obps); if(lcd.obpi) lcd.obps++; lcd.obps &= 0x3F; break;
+        case 0x56: break;
 
-        case 0x70: ram.wrambank = ram.wrambanks[val != 0 ? val & 0x07 : 0x01]; break;
+        case 0x68:
+            lcd.bgps = val & 0x1F;
+            lcd.bgpi = val & 0x80;
+        break;
+        case 0x69:
+            lcd.bgpd[lcd.bgps] = val;
+            lcd_bgpd_dirty(lcd.bgps);
+            if(lcd.bgpi) {
+                lcd.bgps++;
+            }
+            lcd.bgps &= 0x3F;
+        break;
+        case 0x6A:
+            lcd.obps = val & 0x1F;
+            lcd.obpi = val & 0x80;
+        break;
+        case 0x6B:
+            lcd.obpd[lcd.obps] = val;
+            lcd_obpd_dirty(lcd.obps);
+            if(lcd.obpi) {
+                lcd.obps++;
+            }
+            lcd.obps &= 0x3F;
+        break;
+
+        case 0x70:
+            ram.wrambank_index = val != 0 ? val & 0x07 : 0x01;
+            ram.wrambank = ram.wrambanks[ram.wrambank_index];
+        break;
 
         default:;
             printf("Unknown IO write: %.2X=%.2X\n", r, val);

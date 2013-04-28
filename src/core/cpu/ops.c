@@ -471,6 +471,17 @@ void op_halt(op_chunk_t *c) {
 void op_stop(op_chunk_t *c) {
     debug_trace_op("STOP");
     printf("ALERT ALERT ALERT ---- STOP CALLED ---- ALERT ALERT ALERT\n");
+
+    if(cpu.freq_switch) {
+        if(cpu.freq == NORMAL_CPU_FREQ) {
+            cpu.freq = DOUBLE_CPU_FREQ;
+        }
+        else {
+            cpu.freq = NORMAL_CPU_FREQ;
+        }
+
+        cpu.freq_switch = 0x00;
+    }
     //emu_run_standby();
 }
 

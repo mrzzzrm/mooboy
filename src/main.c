@@ -43,7 +43,8 @@ int main(int argc, const char **argv) {
     char rom[256];
 
     init(argc, argv);
-    sprintf(rom, "crystal.gbc");
+    emu_set_hw(CGB_HW);
+    sprintf(rom, "mrdriller.gbc");
     load_romfile(rom);
     emu_run();
     close();

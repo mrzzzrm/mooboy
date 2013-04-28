@@ -27,6 +27,8 @@ void mem_reset() {
 
     ram.wrambank = ram.wrambanks[1];
     ram.vrambank = ram.vrambanks[0];
+
+    ram.wrambank_index = 1;
 }
 
 u8 mem_read_byte(u16 adr) {

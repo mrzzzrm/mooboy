@@ -13,11 +13,14 @@
 
 #define QUANTUM 1000
 
-hw_t hw;
+emu_t emu;
 
 static unsigned int t;
 
 void emu_init() {
+    emu.hw = CGB_HW;
+    emu.mode = CGB_MODE;
+
     mem_init();
     cpu_init();
     joy_init();
@@ -30,8 +33,6 @@ void emu_close() {
 }
 
 void emu_reset() {
-    hw.type = CGB_HW;
-
     mem_reset();
     cpu_reset();
     lcd_reset();
@@ -43,6 +44,10 @@ void emu_reset() {
 void emu_load_rom(u8 *data, size_t size) {
     emu_reset();
     load_rom(data, size);
+}
+
+void emu_set_hw(int hw) {
+    emu.hw = hw;
 }
 
 void emu_run_standby() {

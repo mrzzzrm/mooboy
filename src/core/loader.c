@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "mem.h"
+#include "emu.h"
 #include "mbc.h"
 
 static u8 rom_bankcount(u8 ref) {
@@ -16,6 +17,15 @@ static u8 rom_bankcount(u8 ref) {
     else {
         fprintf(stderr, "ROM-bankcount ref unknown: %.2X\n", ref);
         return 0;
+    }
+}
+
+static void init_mode(u8 ref) {
+    if(ref & 0x80) {
+        emu.mode = CGB_MODE;
+    }
+    else {
+        emu.mode = NON_CGB_MODE;
     }
 }
 
@@ -112,6 +122,7 @@ static void init_xrambanks(u8 ref) {
 void load_rom(u8 *data, uint datasize) {
     assert(datasize > 0x014F);
 
+    init_mode(data[0x0143]);
     init_mbc(data[0x0147]);
     init_rombanks(data[0x0148], data, datasize);
     init_xrambanks(data[0x0149]);

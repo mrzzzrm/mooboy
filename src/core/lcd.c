@@ -61,8 +61,8 @@ static void draw_line() {
         lcd_scan_obj(obj_scan);
     }
 
-    if(hw.type == DMG_HW) {
-        lcd_dmg_scan_maps(maps_scan);
+    if(emu.hw == DMG_HW) {
+        lcd_scan_maps(maps_scan);
         for(x = 0; x < LCD_WIDTH; x++, pixel++) {
             if(OBJ_PRIORITY(obj_scan[x])) {
                 if(maps_scan[x] != 0) {
@@ -92,13 +92,7 @@ static void draw_line() {
                     bg_priority = 1;
                 }
                 else {
-                    if(obj_scan[x] & OBJ_PRIORITY_BIT) {
-                        bg_priority = 1;
-                    }
-                    else {
-                        bg_priority = 0;
-                    }
-
+                    bg_priority = obj_scan[x] & OBJ_PRIORITY_BIT ? 1 : 0;
                 }
             }
             else {
@@ -134,9 +128,7 @@ static inline void stat_irq(u8 flag) {
 static inline void hblank_dma() {
     u16 end;
 
-    end = lcd.dma_source + 0x10;
-
-    for(; lcd.dma_source < end; lcd.dma_source++, lcd.dma_dest++) {
+    for(end = lcd.dma_source + 0x10; lcd.dma_source < end; lcd.dma_source++, lcd.dma_dest++) {
         mem_write_byte(lcd.dma_dest, mem_read_byte(lcd.dma_source));
     }
 

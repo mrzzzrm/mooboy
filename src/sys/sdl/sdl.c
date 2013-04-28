@@ -180,6 +180,8 @@ void sys_error() {
 }
 
 void sys_invoke() {
+    //printf("%i\n", cpu.freq);
+
     invoke_count++;
     time_t dur = SDL_GetTicks() - last_sec;
     if(dur > 1000) {
@@ -200,7 +202,7 @@ void sys_fb_ready() {
 
     for(y = 0; y < FB_HEIGHT; y++) {
         for(x = 0; x < FB_WIDTH; x++) {
-            if(hw.type == DMG_HW) {
+            if(emu.hw == DMG_HW) {
                 boxColor(s, x*3, y*3, x*3+2, y*3+2, palette[lcd.clean_fb[y*FB_WIDTH + x] % 4]);
             }
             else {

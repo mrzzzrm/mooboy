@@ -4,6 +4,9 @@
 #include "mem.h"
 #include "util/defines.h"
 
+#define NORMAL_CPU_FREQ 1048576
+#define DOUBLE_CPU_FREQ 2097152
+
 typedef union reg_s {
     u8 b[2];
     u16 w;
@@ -17,6 +20,8 @@ typedef struct cpu_s {
 
     u32 cc;
     u32 freq;
+
+    u8 freq_switch;
 } cpu_t;
 
 extern cpu_t cpu;

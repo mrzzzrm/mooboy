@@ -16,7 +16,7 @@ void cpu_init() {
 }
 
 void cpu_reset() {
-    AF = hw.type == CGB_HW ? 0x11B0 : 0x01B0;
+    AF = emu.hw == CGB_HW ? 0x11B0 : 0x01B0;
     BC = 0x0013;
     DE = 0x00D8;
     HL = 0x014D;
@@ -28,7 +28,9 @@ void cpu_reset() {
     cpu.ie = 0x00;
 
     cpu.cc = 0;
-    cpu.freq = 1048576;
+    cpu.freq = NORMAL_CPU_FREQ;
+
+    cpu.freq_switch = 0x00;
 }
 
 inline u8 cpu_exec(u8 op) {

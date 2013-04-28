@@ -6,11 +6,15 @@
 #define DMG_HW 0
 #define CGB_HW 1
 
-typedef struct {
-    int type;
-} hw_t;
+#define CGB_MODE 0
+#define NON_CGB_MODE 1
 
-extern hw_t hw;
+typedef struct {
+    int hw;
+    int mode;
+} emu_t;
+
+extern emu_t emu;
 
 void emu_init();
 void emu_reset();
@@ -20,6 +24,7 @@ void emu_load_rom(u8 *data, size_t size);
 void emu_run();
 void emu_run_standby();
 void emu_set_joy_button(u8 button, u8 state);
+void emu_set_hw(int hw);
 
 u8 *emu_get_savestate(size_t *size);
 void emu_load_savestate(u8 *data, size_t size);
