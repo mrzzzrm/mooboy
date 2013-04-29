@@ -18,7 +18,7 @@ typedef struct cpu_s {
 
     u8 ime, irq, ie;
 
-    u32 cc;
+    u32 cc, dfcc, nfcc;
     u32 freq;
 
     u8 freq_switch;
@@ -30,5 +30,6 @@ void cpu_init();
 void cpu_reset();
 u8 cpu_exec(u8 op);
 u8 cpu_step(); // Ḿachine cycles
+void cpu_idle_cycle();
 
 #endif // CPU_H

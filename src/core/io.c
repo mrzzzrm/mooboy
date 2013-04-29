@@ -142,9 +142,10 @@ void io_write(u16 adr, u8 val) {
 
         case 0x51: lcd.dma_source = (lcd.dma_source & 0x00FF) | (val << 8); break;
         case 0x52: lcd.dma_source = (lcd.dma_source & 0xFF00) | (val & 0xF0); break;
-        case 0x53: lcd.dma_dest = (lcd.dma_dest & 0x00FF) | ((val & 0x3F) << 8); break;
+        case 0x53: lcd.dma_dest = (lcd.dma_dest & 0x80FF) | ((val & 0x1F) << 8); break;
         case 0x54: lcd.dma_dest = (lcd.dma_dest & 0xFF00) | (val & 0xF0);break;
         case 0x55:
+            printf("HDMA %.4X => %.4X (%.2X)!\n", lcd.dma_source, lcd.dma_dest, val);
             lcd.dma_length = val & 0x7F;
             if(val & 0x80) {
                 lcd.dma_hblank_inactive = 0x00;

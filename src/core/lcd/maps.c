@@ -74,6 +74,7 @@ static inline cgb_scan_line(u8 *map, u8 *attr_map, u8 *scan) {
         priority = attributes >> PRIORITY_SHIFT ? MAPS_PRIORITY_BIT : 0;
         palette = (attributes & PALETTE_MASK) << MAPS_PALETTE_SHIFT;
         bank = (attributes >> BANK_SHIFT) & 0x01;
+        tdt = lcd.c & LCDC_TILE_DATA_BIT ? &ram.vrambanks[bank][0x0000] : &ram.vrambanks[bank][0x0800];
 
         line = attributes & VFLIP_BIT ? 7-ty : ty;
 

@@ -232,7 +232,7 @@ void sound_reset() {
 
 void sound_step() {
     timer_step();
-    if(cpu.cc >= sound.next_sample_cc) {
+    if(cpu.nfcc >= sound.next_sample_cc) {
         sound_mix();
         sound.next_sample++;
         sound.next_sample_cc = ((uint64_t)cpu.freq*(uint64_t)sound.next_sample)/(uint64_t)sound.freq;

@@ -1,0 +1,8 @@
+[Emulator]
+    - Manage double-freq-mode correctly for everything continueing to operate in normal speed
+    - Insert delay after every hblank-dma
+    - Implement and handle (non-)cgb mode correctly
+
+[Game Bugs]
+    - Pokemon Gold: GameFreak-Intro running to slow
+    - Pokemon Gold: Clouds in intro messed up on DMG-HW

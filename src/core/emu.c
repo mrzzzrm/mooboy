@@ -63,7 +63,7 @@ void emu_run_standby() {
                 return;
             }
 
-            cpu.cc++;
+            cpu_idle_cycle();
             lcd_step();
             rtc_step(1);
             timers_step(1);

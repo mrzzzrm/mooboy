@@ -28,23 +28,37 @@ void cpu_reset() {
     cpu.ie = 0x00;
 
     cpu.cc = 0;
+    cpu.dfcc = 0;
+    cpu.nfcc = 0;
     cpu.freq = NORMAL_CPU_FREQ;
 
     cpu.freq_switch = 0x00;
 }
 
 inline u8 cpu_exec(u8 op) {
-    u32 old_mcs = cpu.cc;
+    u32 old_cc = cpu.cc, cc_delta;
 	op_chunk_t *c = op_chunk_map[op];
 	c->sp = 0;
 	c->funcs[c->sp++](c);
 	cpu.cc += c->mcs;
 
-	return cpu.cc - old_mcs;
+	cc_delta = cpu.cc - old_cc;
+
+	if(cpu.freq == DOUBLE_CPU_FREQ) {
+        cpu.dfcc += cc_delta;
+	}
+	cpu.nfcc = cpu.cc - (cpu.dfcc >> 1);
+
+	return cc_delta;
 }
 
 u8 cpu_step() {
     u8 op = FETCH_BYTE;
     return cpu_exec(op);
+}
+
+void cpu_idle_cycle() {
+    cpu.cc++;
+	cpu.nfcc = cpu.cc - (cpu.dfcc >> 1);
 }
 

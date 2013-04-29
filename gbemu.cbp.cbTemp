@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="GB Emu" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="cli_release">
+				<Option output="build/bin/cli_release/gbemu" prefix_auto="1" extension_auto="1" />
+				<Option object_output="build/bin/cli_release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="--rom ./rom/gelb.gbc" />
+				<Compiler>
+					<Add option="-g" />
+					<Add directory="src/core" />
+					<Add directory="debug" />
+				</Compiler>
+			</Target>
+			<Target title="cli_debug">
+				<Option output="build/bin/cli_debug/gbemu" prefix_auto="1" extension_auto="1" />
+				<Option object_output="build/bin/cli_debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="--rom ./rom/gelb.gbc" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-DDEBUG" />
+					<Add directory="src/core" />
+					<Add directory="debug" />
+				</Compiler>
+			</Target>
+			<Target title="sdl_release">
+				<Option output="build/bin/sdl_release/gbemu" prefix_auto="1" extension_auto="1" />
+				<Option object_output="build/bin/sdl_release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="--rom ./rom/gelb.gbc" />
+				<Compiler>
+					<Add option="-g" />
+					<Add directory="src/core" />
+					<Add directory="debug" />
+				</Compiler>
+				<Linker>
+					<Add option="-lSDL" />
+					<Add option="-lSDL_gfx" />
+				</Linker>
+			</Target>
+			<Target title="sdl_debug">
+				<Option output="build/bin/sdl_debug/gbemu" prefix_auto="1" extension_auto="1" />
+				<Option object_output="build/bin/sdl_debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="--rom ./rom/gelb.gbc" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-DDEBUG" />
+					<Add directory="src/core" />
+					<Add directory="debug" />
+				</Compiler>
+				<Linker>
+					<Add option="-lSDL" />
+					<Add option="-lSDL_gfx" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add directory="src" />
+		</Compiler>
+		<Unit filename="src/core/cpu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/cpu.h" />
+		<Unit filename="src/core/cpu/chunks.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/cpu/chunks.h" />
+		<Unit filename="src/core/cpu/ops.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/cpu/ops.h" />
+		<Unit filename="src/core/defines.h" />
+		<Unit filename="src/core/emu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/emu.h" />
+		<Unit filename="src/core/ints.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/ints.h" />
+		<Unit filename="src/core/io.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/io.h" />
+		<Unit filename="src/core/joy.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/joy.h" />
+		<Unit filename="src/core/lcd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/lcd.h" />
+		<Unit filename="src/core/lcd/maps.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/lcd/maps.h" />
+		<Unit filename="src/core/lcd/obj.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/lcd/obj.h" />
+		<Unit filename="src/core/loader.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/loader.h" />
+		<Unit filename="src/core/mbc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/mbc.h" />
+		<Unit filename="src/core/mem.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/mem.h" />
+		<Unit filename="src/core/rtc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/rtc.h" />
+		<Unit filename="src/core/sound.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/sound.h" />
+		<Unit filename="src/core/timers.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/timers.h" />
+		<Unit filename="src/debug/break.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/debug/break.h" />
+		<Unit filename="src/debug/debug.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/debug/debug.h" />
+		<Unit filename="src/debug/disasm.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/debug/disasm.h" />
+		<Unit filename="src/debug/dump.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/debug/dump.h" />
+		<Unit filename="src/debug/int.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/debug/int.h" />
+		<Unit filename="src/debug/mon.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/debug/mon.h" />
+		<Unit filename="src/debug/monitor.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/debug/monitor.h" />
+		<Unit filename="src/debug/run.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/debug/run.h" />
+		<Unit filename="src/debug/sym.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/debug/sym.h" />
+		<Unit filename="src/debug/utils.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/debug/utils.h" />
+		<Unit filename="src/main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/sys/cli/cli.c">
+			<Option compilerVar="CC" />
+			<Option target="cli_release" />
+			<Option target="cli_debug" />
+		</Unit>
+		<Unit filename="src/sys/sdl/sdl.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/sys/sdl/sdl.h" />
+		<Unit filename="src/sys/sdl/vid/vid.h" />
+		<Unit filename="src/sys/sys.h" />
+		<Unit filename="src/util/cmd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/util/cmd.h" />
+		<Unit filename="src/util/defines.h" />
+		<Unit filename="src/util/err.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/util/err.h" />
+		<Unit filename="src/util/io.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/util/io.h" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
