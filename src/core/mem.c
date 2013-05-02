@@ -63,6 +63,7 @@ u8 mem_read_byte(u16 adr) {
                 return ram.oam[adr - 0xFE00];
             }
             else if(adr >= 0xFEA0 && adr < 0xFF00) { // Locked
+                printf("Read from locked memory [%.4X]\n", adr);
             }
             else if(adr >= 0xFF00 && adr < 0xFF80) { // IO Registers
                 return io_read(adr);
@@ -79,7 +80,7 @@ u8 mem_read_byte(u16 adr) {
             assert(0);
     }
 
-    return 0; // ...and avoid warnings
+    return 0xFF; // ...and avoid warnings
 }
 
 u16 mem_read_word(u16 adr) {
@@ -116,7 +117,7 @@ void mem_write_byte(u16 adr, u8 val) {
                 ram.oam[adr - 0xFE00] = val;
             }
             else if(adr >= 0xFEA0 && adr < 0xFF00) { // Locked
-
+                printf("Write to locked memory [%.4X] = %.2X\n", adr, val);
             }
             else if(adr >= 0xFF00 && adr < 0xFF80) { // IO Registers
                 return io_write(adr, val);

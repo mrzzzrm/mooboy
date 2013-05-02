@@ -117,7 +117,7 @@ static void handle_delay() {
     long ms_ahead = (is_cc - should_cc) / ((long)cpu.freq/1000);
 
     if(ms_ahead >= DELAY_THRESHOLD) {
-        SDL_Delay(DELAY_THRESHOLD);
+        //SDL_Delay(DELAY_THRESHOLD);
     }
 
 }
@@ -130,7 +130,7 @@ void sys_init(int argc, const char** argv) {
     cmd_init(argc, argv);
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    SDL_Surface *screen = SDL_SetVideoMode(160*3, 144*3, 24, SDL_DOUBLEBUF);
+    SDL_Surface *screen = SDL_SetVideoMode(160*1, 144*1, 24, SDL_DOUBLEBUF);
 
     last_sec = SDL_GetTicks();
 
@@ -203,7 +203,7 @@ void sys_fb_ready() {
     for(y = 0; y < FB_HEIGHT; y++) {
         for(x = 0; x < FB_WIDTH; x++) {
             if(emu.hw == DMG_HW) {
-                boxColor(s, x*3, y*3, x*3+2, y*3+2, palette[lcd.clean_fb[y*FB_WIDTH + x] % 4]);
+                boxColor(s, x*1, y*1, x*1, y*1, palette[lcd.clean_fb[y*FB_WIDTH + x] % 4]);
             }
             else {
                 u16 col = lcd.clean_fb[y*FB_WIDTH + x];
@@ -213,7 +213,7 @@ void sys_fb_ready() {
 //
 //                if((r | g | b) != 0)
 //                printf("%.8X ", r | g | b | 0xFF);
-                boxColor(s, x*3, y*3, x*3+2, y*3+2, r | g | b | 0xFF);
+                boxColor(s, x*1, y*1, x*1, y*1, r | g | b | 0xFF);
             }
         }
     }

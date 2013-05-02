@@ -18,8 +18,8 @@ u8 io_read(u16 adr) {
     switch(r) {
         case 0x00: return joy_read(); break;
 
-//        case 0x01: break;
-//        case 0x02: break;
+        case 0x01: break;
+        case 0x02: break;
 
         case 0x04: return timers.div; break;
         case 0x05: return timers.tima; break;
@@ -87,8 +87,8 @@ void io_write(u16 adr, u8 val) {
     switch(r) {
         case 0x00: joy_select_col(val); break;
 
-//        case 0x01: break;
-//        case 0x02: break;
+        case 0x01: break;
+        case 0x02: break;
 
         case 0x04: timers.div = 0x00; break;
         case 0x05: timers.tima = 0x00; break;
@@ -140,10 +140,10 @@ void io_write(u16 adr, u8 val) {
 
         case 0x4F: ram.vrambank = ram.vrambanks[val & 0x01]; break;
 
-        case 0x51: lcd.dma_source = (lcd.dma_source & 0x00FF) | (val << 8); break;
-        case 0x52: lcd.dma_source = (lcd.dma_source & 0xFF00) | (val & 0xF0); break;
-        case 0x53: lcd.dma_dest = (lcd.dma_dest & 0x80FF) | ((val & 0x1F) << 8); break;
-        case 0x54: lcd.dma_dest = (lcd.dma_dest & 0xFF00) | (val & 0xF0);break;
+        case 0x51: lcd.dma_source = (lcd.dma_source & 0x00FF) | (val << 8); printf("HDMA1 activity!\n"); break;
+        case 0x52: lcd.dma_source = (lcd.dma_source & 0xFF00) | (val & 0xF0); printf("HDMA2 activity!\n"); break;
+        case 0x53: lcd.dma_dest = (lcd.dma_dest & 0x80FF) | ((val & 0x1F) << 8); printf("HDMA3 activity!\n"); break;
+        case 0x54: lcd.dma_dest = (lcd.dma_dest & 0xFF00) | (val & 0xF0); printf("HDMA4 activity!\n"); break;
         case 0x55:
             printf("HDMA %.4X => %.4X (%.2X)!\n", lcd.dma_source, lcd.dma_dest, val);
             lcd.dma_length = val & 0x7F;
@@ -151,7 +151,11 @@ void io_write(u16 adr, u8 val) {
                 lcd.dma_hblank_inactive = 0x00;
             }
             else {
-                lcd_cgb_dma();
+                if(lcd.dma_hblank_inactive) {
+                    lcd_cgb_dma();
+                    lcd.dma_length = 0x7F;
+                }
+                lcd.dma_hblank_inactive = 0x80;
             }
         break;
 
