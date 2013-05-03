@@ -161,7 +161,7 @@ void io_write(u16 adr, u8 val) {
         case 0x56: break;
 
         case 0x68:
-            lcd.bgps = val & 0x1F;
+            lcd.bgps = val & 0x3F;
             lcd.bgpi = val & 0x80;
         break;
         case 0x69:
@@ -173,7 +173,7 @@ void io_write(u16 adr, u8 val) {
             lcd.bgps &= 0x3F;
         break;
         case 0x6A:
-            lcd.obps = val & 0x1F;
+            lcd.obps = val & 0x3F;
             lcd.obpi = val & 0x80;
         break;
         case 0x6B:

@@ -83,6 +83,7 @@ static void draw_line() {
     }
     else {
         lcd_scan_maps(maps_scan);
+        //printf("%.3i: ", lcd.ly);
         for(x = 0; x < LCD_WIDTH; x++, pixel++) {
             u8 bg_priority;
 
@@ -98,6 +99,7 @@ static void draw_line() {
                 bg_priority = 0;
             }
 
+            //printf("%i", MAPS_PALETTE(maps_scan[x]));
             if(bg_priority) {
                 if(MAPS_DATA(maps_scan[x]) != 0) {
                     *pixel = lcd.bgpd_map[MAPS_PALETTE(maps_scan[x])][MAPS_DATA(maps_scan[x])];
@@ -115,6 +117,7 @@ static void draw_line() {
                 }
             }
         }
+        //printf("\n");
     }
 }
 
