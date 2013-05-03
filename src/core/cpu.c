@@ -45,23 +45,20 @@ void cpu_reset() {
 }
 
 u8 cpu_step() {
+    u8 mcs;
+
     if(cpu.halted) {
-        cpu.cc++;
-        if(cpu.freq == DOUBLE_CPU_FREQ) {
-            cpu.dfcc++;
-        }
-        cpu.nfcc = cpu.cc - (cpu.dfcc >> 1);
         if(ints_handle_standby()) {
             cpu.halted = 0;
         }
 
-        return 1;
+        mcs = 1;
+        cpu.cc += mcs;
     }
     else {
         u8 op;
-        u32 old_cc, cc_delta;
+        u32 old_cc;
         op_chunk_t *chunk;
-
 
         ints_handle();
 
@@ -75,15 +72,15 @@ u8 cpu_step() {
         chunk->funcs[chunk->sp++](chunk);
         cpu.cc += chunk->mcs;
 
-        cc_delta = cpu.cc - old_cc;
-
-        if(cpu.freq == DOUBLE_CPU_FREQ) {
-            cpu.dfcc += cc_delta;
-        }
-        cpu.nfcc = cpu.cc - (cpu.dfcc >> 1);
-
-        return cc_delta;
+        mcs = cpu.cc - old_cc;
 	}
+
+    if(cpu.freq == DOUBLE_CPU_FREQ) {
+        cpu.dfcc += mcs;
+    }
+    cpu.nfcc = cpu.cc - (cpu.dfcc >> 1);
+
+	return mcs;
 }
 
 

@@ -62,7 +62,7 @@ u8 io_read(u16 adr) {
         case 0x52: return lcd.dma_source & 0xFF; break;
         case 0x53: return lcd.dma_dest >> 8; break;
         case 0x54: return lcd.dma_dest & 0xFF; break;
-        case 0x55: return lcd.dma_length | lcd.dma_hblank_inactive; break;
+        case 0x55: printf("Read DMA state %.2X\n", lcd.dma_length | lcd.dma_hblank_inactive); return lcd.dma_length | lcd.dma_hblank_inactive; break;
 
         case 0x56: return 0x40; break;
 
@@ -151,6 +151,7 @@ void io_write(u16 adr, u8 val) {
             else {
                 if(lcd.dma_hblank_inactive) {
                     lcd_cgb_dma();
+                    printf(" ==> Performed!\n");
                     lcd.dma_length = 0x7F;
                 }
                 lcd.dma_hblank_inactive = 0x80;
