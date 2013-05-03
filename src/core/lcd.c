@@ -57,7 +57,7 @@ static void draw_line() {
     memset(obj_scan, 0x00, sizeof(obj_scan));
 
     if(lcd.c & LCDC_OBJ_ENABLE_BIT) {
-        //lcd_scan_obj(obj_scan);
+        lcd_scan_obj(obj_scan);
     }
 
     if(emu.hw == DMG_HW) {

@@ -22,7 +22,6 @@ void emu_close();
 
 void emu_load_rom(u8 *data, size_t size);
 void emu_run();
-void emu_run_standby();
 void emu_set_joy_button(u8 button, u8 state);
 void emu_set_hw(int hw);
 

@@ -3,6 +3,7 @@
 #include <assert.h>
 #include "lcd.h"
 #include "emu.h"
+#include "ints.h"
 #include "rtc.h"
 #include "mbc.h"
 #include "cpu/ops.h"
@@ -43,19 +44,36 @@ void cpu_reset() {
     cpu.freq_switch = 0x00;
 }
 
-inline u8 cpu_exec(u8 op) {
+u8 cpu_step() {
     if(cpu.halted) {
-        return cpu_idle_cycle();
+        cpu.cc++;
+        if(cpu.freq == DOUBLE_CPU_FREQ) {
+            cpu.dfcc++;
+        }
+        cpu.nfcc = cpu.cc - (cpu.dfcc >> 1);
+        if(ints_handle_standby()) {
+            cpu.halted = 0;
+        }
+
+        return 1;
     }
     else {
-        u32 old_cc = cpu.cc, cc_delta;
-        op_chunk_t *c = op_chunk_map[op];
+        u8 op;
+        u32 old_cc, cc_delta;
+        op_chunk_t *chunk;
 
-        assert(c->funcs[0] != NULL);
 
-        c->sp = 0;
-        c->funcs[c->sp++](c);
-        cpu.cc += c->mcs;
+        ints_handle();
+
+        op = FETCH_BYTE;
+        old_cc = cpu.cc;
+        chunk = op_chunk_map[op];
+
+        assert(chunk->funcs[0] != NULL);
+
+        chunk->sp = 0;
+        chunk->funcs[chunk->sp++](chunk);
+        cpu.cc += chunk->mcs;
 
         cc_delta = cpu.cc - old_cc;
 
@@ -68,18 +86,4 @@ inline u8 cpu_exec(u8 op) {
 	}
 }
 
-u8 cpu_step() {
-    u8 op = FETCH_BYTE;
-    return cpu_exec(op);
-}
-
-u8 cpu_idle_cycle() {
-    cpu.cc++;
-	if(cpu.freq == DOUBLE_CPU_FREQ) {
-        cpu.dfcc++;
-	}
-	cpu.nfcc = cpu.cc - (cpu.dfcc >> 1);
-
-    return 1;
-}
 

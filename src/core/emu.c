@@ -51,38 +51,10 @@ void emu_set_hw(int hw) {
     emu.hw = hw;
 }
 
-void emu_run_standby() {
-    int c = 0;
-    for(;;) {
-        for(; t < QUANTUM; t++) {
-            if(ints_handle_standby()) {
-                return;
-            }
-
-            cpu_idle_cycle();
-            lcd_step();
-            rtc_step(1);
-            timers_step(1);
-            sound_step();
-            c++;
-        }
-        t = 0;
-        sys_invoke();
-    }
-}
-
 void emu_run() {
     t = 0;
     for(;;) {
         for(; t < QUANTUM; t++) {
-            if(cpu.halted) {
-                if(ints_handle_standby()) {
-                    cpu.halted = 0;
-                }
-            }
-            else {
-                ints_handle();
-            }
             u8 mcs = cpu_step();
             lcd_step();
             rtc_step(mcs);

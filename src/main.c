@@ -43,8 +43,8 @@ int main(int argc, const char **argv) {
     char rom[256];
 
     init(argc, argv);
-    emu_set_hw(DMG_HW);
-    sprintf(rom, "pokeblue.gb");
+    emu_set_hw(CGB_HW);
+    sprintf(rom, "crystal.gbc");
     load_romfile(rom);
     emu_run();
     close();

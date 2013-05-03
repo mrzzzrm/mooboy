@@ -134,7 +134,7 @@ void lcd_scan_maps(u8 *scan) {
         scan_bg(scan);
     }
     if(lcd.c & LCDC_WND_ENABLE_BIT) {
-        //scan_wnd(scan);
+        scan_wnd(scan);
     }
 }
 

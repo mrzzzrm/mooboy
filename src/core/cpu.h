@@ -32,7 +32,6 @@ extern cpu_t cpu;
 void cpu_init();
 void cpu_reset();
 u8 cpu_exec(u8 op);
-u8 cpu_step(); // Ḿachine cycles
-u8 cpu_idle_cycle();
+u8 cpu_step();
 
 #endif // CPU_H
