@@ -3,10 +3,11 @@
 #include "defines.h"
 #include "lcd.h"
 #include "rtc.h"
+#include "cpu.h"
+#include "mem.h"
 #include "timers.h"
 #include "joy.h"
 #include "ints.h"
-#include "debug/debug.h"
 #include "loader.h"
 #include "sys/sys.h"
 #include "sound.h"
@@ -54,12 +55,7 @@ void emu_run_standby() {
     int c = 0;
     for(;;) {
         for(; t < QUANTUM; t++) {
-            debug_update();
-            debug_before();
-
             if(ints_handle_standby()) {
-                //printf("  > Been halted for %i\n", c);
-                debug_after();
                 return;
             }
 
@@ -69,8 +65,6 @@ void emu_run_standby() {
             timers_step(1);
             sound_step();
             c++;
-
-            debug_after();
         }
         t = 0;
         sys_invoke();
@@ -78,21 +72,22 @@ void emu_run_standby() {
 }
 
 void emu_run() {
-    debug_init();
     t = 0;
     for(;;) {
         for(; t < QUANTUM; t++) {
-            debug_update();
-            debug_before();
-
-            ints_handle();
+            if(cpu.halted) {
+                if(ints_handle_standby()) {
+                    cpu.halted = 0;
+                }
+            }
+            else {
+                ints_handle();
+            }
             u8 mcs = cpu_step();
             lcd_step();
             rtc_step(mcs);
             timers_step(mcs);
             sound_step();
-
-            debug_after();
         }
         t = 0;
         sys_invoke();

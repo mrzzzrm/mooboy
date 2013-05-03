@@ -22,14 +22,17 @@ typedef struct cpu_s {
     u32 freq;
 
     u8 freq_switch;
+
+    u8 halted;
 } cpu_t;
 
 extern cpu_t cpu;
+
 
 void cpu_init();
 void cpu_reset();
 u8 cpu_exec(u8 op);
 u8 cpu_step(); // Ḿachine cycles
-void cpu_idle_cycle();
+u8 cpu_idle_cycle();
 
 #endif // CPU_H

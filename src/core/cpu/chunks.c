@@ -56,9 +56,15 @@ static op_chunk_t *op_create_chunk(u8 op) {
 	memset(c, 0x00, sizeof(*c));
 	c->op = op;
 	c->sp = 0;
+	c->funcs[0] = NULL;
 	MCS(1); // Default
 
     switch(op) {
+        case 0xD3: case 0xE3: case 0xE4: case 0xF4:
+        case 0xDB: case 0xDD: case 0xEB: case 0xEC:
+        case 0xED: case 0xFC: case 0xFD:
+        return c;
+
         case 0x00: PUSH_FUNC(op_nop); break;
         case 0x08: PUSH_FUNC(op_ld_imsp); MCS(5); break;
         case 0x10: PUSH_FUNC(op_stop); break;

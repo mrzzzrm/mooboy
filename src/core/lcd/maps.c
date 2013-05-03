@@ -56,7 +56,7 @@ static void inline scan_tile_line_flipped(u8 *scan, u8 *line) {
     tx = 0;
 }
 
-static inline dmg_scan_line(u8 *map, u8 *scan) {
+static inline void dmg_scan_line(u8 *map, u8 *scan) {
     u8 *tile_index;
     do {
         tile_index = &map[tr * MAP_COLUMNS + tc];
@@ -65,7 +65,7 @@ static inline dmg_scan_line(u8 *map, u8 *scan) {
     } while (sx < LCD_WIDTH);
 }
 
-static inline cgb_scan_line(u8 *map, u8 *attr_map, u8 *scan) {
+static inline void cgb_scan_line(u8 *map, u8 *attr_map, u8 *scan) {
     u8 tile_index, attributes, line;
     do {
         tile_index = map[tr * MAP_COLUMNS + tc];
@@ -134,7 +134,7 @@ void lcd_scan_maps(u8 *scan) {
         scan_bg(scan);
     }
     if(lcd.c & LCDC_WND_ENABLE_BIT) {
-        scan_wnd(scan);
+        //scan_wnd(scan);
     }
 }
 

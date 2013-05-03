@@ -107,11 +107,11 @@ static void mbc5_lower_write(u16 adr, u8 val) {
         break;
         case 3: // Select upper 1 bit of ROM bank
             mbc5.rombank &= 0xFEFF;
-            mbc5.rombank |= ((u16)val)<<8;
+            mbc5.rombank |= ((u16)val&0x01)<<8;
             mbc.rombank = card.rombanks[mbc5.rombank];
         break;
         case 4: case 5:
-            assert(val < 0x04);
+            assert(val < card.sramsize);
             mbc.srambank = card.srambanks[val & 0x0F];
         break;
         default:

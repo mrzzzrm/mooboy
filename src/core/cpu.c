@@ -1,5 +1,6 @@
 #include "cpu.h"
 #include <stdio.h>
+#include <assert.h>
 #include "lcd.h"
 #include "emu.h"
 #include "rtc.h"
@@ -7,7 +8,6 @@
 #include "cpu/ops.h"
 #include "defines.h"
 #include "timers.h"
-#include "debug/debug.h"
 
 cpu_t cpu;
 
@@ -16,7 +16,13 @@ void cpu_init() {
 }
 
 void cpu_reset() {
-    AF = emu.hw == CGB_HW ? 0x11B0 : 0x01B0;
+    if(emu.hw == CGB_HW) {
+        AF = 0x11B0;
+    }
+    else {
+        AF = 0x01B0;
+    }
+
     BC = 0x0013;
     DE = 0x00D8;
     HL = 0x014D;
@@ -32,24 +38,34 @@ void cpu_reset() {
     cpu.nfcc = 0;
     cpu.freq = NORMAL_CPU_FREQ;
 
+    cpu.halted = 0;
+
     cpu.freq_switch = 0x00;
 }
 
 inline u8 cpu_exec(u8 op) {
-    u32 old_cc = cpu.cc, cc_delta;
-	op_chunk_t *c = op_chunk_map[op];
-	c->sp = 0;
-	c->funcs[c->sp++](c);
-	cpu.cc += c->mcs;
+    if(cpu.halted) {
+        return cpu_idle_cycle();
+    }
+    else {
+        u32 old_cc = cpu.cc, cc_delta;
+        op_chunk_t *c = op_chunk_map[op];
 
-	cc_delta = cpu.cc - old_cc;
+        assert(c->funcs[0] != NULL);
 
-	if(cpu.freq == DOUBLE_CPU_FREQ) {
-        cpu.dfcc += cc_delta;
+        c->sp = 0;
+        c->funcs[c->sp++](c);
+        cpu.cc += c->mcs;
+
+        cc_delta = cpu.cc - old_cc;
+
+        if(cpu.freq == DOUBLE_CPU_FREQ) {
+            cpu.dfcc += cc_delta;
+        }
+        cpu.nfcc = cpu.cc - (cpu.dfcc >> 1);
+
+        return cc_delta;
 	}
-	cpu.nfcc = cpu.cc - (cpu.dfcc >> 1);
-
-	return cc_delta;
 }
 
 u8 cpu_step() {
@@ -57,8 +73,13 @@ u8 cpu_step() {
     return cpu_exec(op);
 }
 
-void cpu_idle_cycle() {
+u8 cpu_idle_cycle() {
     cpu.cc++;
+	if(cpu.freq == DOUBLE_CPU_FREQ) {
+        cpu.dfcc++;
+	}
 	cpu.nfcc = cpu.cc - (cpu.dfcc >> 1);
+
+    return 1;
 }
 

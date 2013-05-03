@@ -9,7 +9,6 @@
 #include "sound.h"
 #include "defines.h"
 #include "util/defines.h"
-#include "debug/debug.h"
 #include "joy.h"
 
 u8 io_read(u16 adr) {
@@ -57,7 +56,7 @@ u8 io_read(u16 adr) {
 
         case 0x4D: return cpu.freq_switch | (cpu.freq == DOUBLE_CPU_FREQ ? 0x80 : 0x00); break;
 
-        case 0x4F: return ram.vrambank == &ram.vrambanks[0] ? 0 : 1; break;
+        case 0x4F: return ram.vrambank == ram.vrambanks[0] ? 0 : 1; break;
 
         case 0x51: return lcd.dma_source >> 8; break;
         case 0x52: return lcd.dma_source & 0xFF; break;
@@ -67,7 +66,6 @@ u8 io_read(u16 adr) {
 
         case 0x56: return 0x40; break;
 
-        /* TODO: CGB Mode */
         case 0x68: return lcd.bgps | lcd.bgpi; break;
         case 0x69: return lcd.bgpd[lcd.bgps]; break;
         case 0x6A: return lcd.obps | lcd.obpi; break;

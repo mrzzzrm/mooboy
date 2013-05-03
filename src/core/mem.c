@@ -6,7 +6,6 @@
 #include "io.h"
 #include "cpu.h"
 #include "mbc.h"
-#include "debug/debug.h"
 
 ram_t ram;
 card_t card;
@@ -37,7 +36,6 @@ u8 mem_read_byte(u16 adr) {
             return card.rombanks[0][adr];
         break;
         case 0x4: case 0x5: case 0x6: case 0x7:
-        //printf("Accessing bank %i\n", mbc1.rombank);
             return mbc.rombank[adr - 0x4000];
         break;
         case 0x8: case 0x9:
@@ -126,7 +124,6 @@ void mem_write_byte(u16 adr, u8 val) {
                 ram.hram[adr - 0xFF80] = val;
             }
             else {
-                //debug_int_ie(val & 0x1F);
                 cpu.ie = val & 0x1F;
                 //printf("%.4X: INTs enabled: %.2X\n", PC-1, cpu.ie);
             }

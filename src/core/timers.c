@@ -7,7 +7,7 @@
 
 timers_t timers;
 
-static const u16 MCS_PER_TIMA[] = {0x100, 0x04, 0x10, 0x40};
+static const u16 MCS_PER_TIMA[2][4] = {{0x100, 0x04, 0x10, 0x40},{0x200, 0x08, 0x20, 0x80}};
 
 void timers_reset() {
     timers.div = 0x00;
@@ -21,7 +21,7 @@ void timers_reset() {
 void timers_step(u8 mcs) {
     if(timers.tac & 0x04) {
         timers.tima_cc += mcs;
-        u16 per_tick = MCS_PER_TIMA[timers.tac & 0x03];
+        u16 per_tick = MCS_PER_TIMA[cpu.freq == DOUBLE_CPU_FREQ ? 1 : 0][timers.tac & 0x03];
         if(timers.tima_cc >= per_tick) { // Runs faster or slower depending on gameboy cpu speed
             timers.tima++;
             timers.tima_cc -= per_tick;

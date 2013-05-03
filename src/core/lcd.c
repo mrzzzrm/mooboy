@@ -9,7 +9,6 @@
 #include "util/defines.h"
 #include "lcd/obj.h"
 #include "lcd/maps.h"
-#include "debug/debug.h"
 
 #define DUR_FULL_REFRESH 17556
 #define DUR_MODE_0 51
@@ -42,7 +41,7 @@
 lcd_t lcd;
 
 static void swap_fb() {
-    u8 *tmp = lcd.clean_fb;
+    u16 *tmp = lcd.clean_fb;
     lcd.clean_fb = lcd.working_fb;
     lcd.working_fb = tmp;
     memset(lcd.working_fb, 0x00, sizeof(lcd.fb)/2);
@@ -58,7 +57,7 @@ static void draw_line() {
     memset(obj_scan, 0x00, sizeof(obj_scan));
 
     if(lcd.c & LCDC_OBJ_ENABLE_BIT) {
-        lcd_scan_obj(obj_scan);
+        //lcd_scan_obj(obj_scan);
     }
 
     if(emu.hw == DMG_HW) {
@@ -142,13 +141,20 @@ static inline void hblank_dma() {
 }
 
 static u8 step_mode(u8 m1) {
-    u8 old = lcd.ly;
+//    static int old_fc = 0;
+//    static u32 old_cc = 0;
 
-    u16 fc = cpu.cc % DUR_FULL_REFRESH;
+    u16 fc = cpu.nfcc % DUR_FULL_REFRESH;
     lcd.ly = fc / DUR_SCANLINE;
     STAT_SET_CFLAG(lcd.ly == lcd.lyc ? 1 : 0);
 
-    if(lcd.ly < 144) {
+//    if(old_fc > fc) {
+//        printf("%.8i %i %.5i %.10i\n", fc, cpu.nfcc, old_fc, old_cc);
+//    }
+//    old_fc = fc;
+//    old_cc = cpu.nfcc;
+
+    if(lcd.ly <  144) {
         u16 lc = fc % DUR_SCANLINE;
         if(lc < DUR_MODE_2)
             return 0x02;
@@ -201,7 +207,6 @@ void lcd_step() {
     STAT_SET_MODE(m2);
 
     if(m1 != m2) {
-        //debug_sym_lcd_mode_change(m1, m2);
         switch(m2) {
             case 0x00:
                 stat_irq(SIF_HBLANK);
@@ -292,12 +297,11 @@ static void pd_dirty(u16 map[8][4], u8 d, u8 s) {
     color = (s/2)%4;
 
     if(s % 2 == 0) {
-        map[palette][color] = map[palette][color] & 0xFF00 | d;
+        map[palette][color] = (map[palette][color] & 0xFF00) | d;
     }
     else {
-        map[palette][color] = map[palette][color] & 0x00FF | (d << 8);
+        map[palette][color] = (map[palette][color] & 0x00FF) | (d << 8);
     }
-    u16 val = map[palette][color];
 }
 
 void lcd_bgpd_dirty(u8 bgps) {

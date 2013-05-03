@@ -136,46 +136,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/timers.h" />
-		<Unit filename="src/debug/break.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/debug/break.h" />
-		<Unit filename="src/debug/debug.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/debug/debug.h" />
-		<Unit filename="src/debug/disasm.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/debug/disasm.h" />
-		<Unit filename="src/debug/dump.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/debug/dump.h" />
-		<Unit filename="src/debug/int.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/debug/int.h" />
-		<Unit filename="src/debug/mon.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/debug/mon.h" />
-		<Unit filename="src/debug/monitor.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/debug/monitor.h" />
-		<Unit filename="src/debug/run.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/debug/run.h" />
-		<Unit filename="src/debug/sym.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/debug/sym.h" />
-		<Unit filename="src/debug/utils.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src/debug/utils.h" />
 		<Unit filename="src/main.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -188,6 +148,13 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/sys/sdl/sdl.h" />
+		<Unit filename="src/sys/sdl/state.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/sys/sdl/state.h">
+			<Option target="sdl_release" />
+			<Option target="sdl_debug" />
+		</Unit>
 		<Unit filename="src/sys/sdl/vid/vid.h" />
 		<Unit filename="src/sys/sys.h" />
 		<Unit filename="src/util/cmd.c">

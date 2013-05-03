@@ -76,7 +76,7 @@ static void tick_envelopes() {
  }
 
 static void timer_step() {
-    u8 step = (cpu.cc >> 11) & 0x07;
+    u8 step = (cpu.nfcc >> 11) & 0x07;
     if(step != sound.last_timer_step) {
         switch(step) {
             case 0: tick_length_counters();               break;
@@ -258,7 +258,7 @@ void sound_mix() {
         }
         else {
             if((sound.buf_end + 1) % sound.buf_size == sound.buf_start) {
-                printf("WARNING: Sound-Buffer overrun!\n");
+                //printf("WARNING: Sound-Buffer overrun!\n");
                 sound.buf_start = 0;
                 sound.buf_end = 0;
             }
@@ -477,6 +477,8 @@ u8 sound_read(u8 sadr) {
         default:
             printf("%.4X: Unhandled sound read @ %.2X\n", PC-1, sadr);
     }
+
+    return 0;
 }
 
 

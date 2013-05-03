@@ -8,6 +8,7 @@
 #include "core/joy.h"
 #include "util/err.h"
 #include "core/sound.h"
+#include "state.h"
 
 #define FB_WIDTH 160
 #define FB_HEIGHT 144
@@ -50,6 +51,8 @@ static void update_joypad() {
                 case SDLK_s:    joy_set_button(JOY_BUTTON_B, state); break;
                 case SDLK_w:    joy_set_button(JOY_BUTTON_START, state); break;
                 case SDLK_d:    joy_set_button(JOY_BUTTON_SELECT, state); break;
+                case SDLK_m:    load_state(); break;
+                case SDLK_n:    save_state(); break;
                 default: break;
             }
         }
@@ -114,7 +117,7 @@ static void handle_delay() {
     long should_cc = ((long)SDL_GetTicks() - (long)delay_start)*(long)(cpu.freq/1000);
     long is_cc = cpu.cc;
     long cc_ahead = is_cc - should_cc;
-    long ms_ahead = (is_cc - should_cc) / ((long)cpu.freq/1000);
+    long ms_ahead = cc_ahead / ((long)cpu.freq/1000);
 
     if(ms_ahead >= DELAY_THRESHOLD) {
         //SDL_Delay(DELAY_THRESHOLD);
@@ -197,13 +200,25 @@ void sys_invoke() {
 
 void sys_fb_ready() {
     unsigned int x, y;
+    static time_t last = 0;
     SDL_Surface *s = SDL_GetVideoSurface();
 
+    if(last == 0) {
+        last = SDL_GetTicks();
+    }
+
+    if(SDL_GetTicks() - last < 16) {
+        return;
+    }
+    else {
+        last += 16;
+    }
 
     for(y = 0; y < FB_HEIGHT; y++) {
         for(x = 0; x < FB_WIDTH; x++) {
             if(emu.hw == DMG_HW) {
-                boxColor(s, x*1, y*1, x*1, y*1, palette[lcd.clean_fb[y*FB_WIDTH + x] % 4]);
+                pixelColor(s, x, y, palette[lcd.clean_fb[y*FB_WIDTH + x] % 4]);
+//                boxColor(s, x*1, y*1, x*1, y*1, palette[lcd.clean_fb[y*FB_WIDTH + x] % 4]);
             }
             else {
                 u16 col = lcd.clean_fb[y*FB_WIDTH + x];

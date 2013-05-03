@@ -2,13 +2,10 @@
 #include <assert.h>
 #include <stdio.h>
 #include "cpu.h"
-#include "debug/debug.h"
 #include "defines.h"
 #include "util/defines.h"
 
 static inline void exec_int(u8 i) {
-    debug_int_exec(1 << i);
-
     cpu.irq &= ~(1 << i);
     cpu.ime = IME_OFF;
 
