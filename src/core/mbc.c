@@ -111,8 +111,11 @@ static void mbc5_lower_write(u16 adr, u8 val) {
             mbc.rombank = card.rombanks[mbc5.rombank];
         break;
         case 4: case 5:
-            assert(val < card.sramsize);
-            mbc.srambank = card.srambanks[val & 0x0F];
+            if((val&0x0F) >= card.sramsize) {
+                printf("Selected invalid rambank %.2X\n", val&0x0F);
+                assert(0);
+            }
+            mbc.srambank = card.srambanks[val & 0x01];
         break;
         default:
             printf("Suspecious write %.2X to %.4X\n", val, adr);
