@@ -235,7 +235,7 @@ void sound_step() {
     if(cpu.nfcc >= sound.next_sample_cc) {
         sound_mix();
         sound.next_sample++;
-        sound.next_sample_cc = ((uint64_t)cpu.freq*(uint64_t)sound.next_sample)/(uint64_t)sound.freq;
+        sound.next_sample_cc = (NORMAL_CPU_FREQ*(uint64_t)sound.next_sample)/(uint64_t)sound.freq;
     }
 }
 

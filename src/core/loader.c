@@ -36,6 +36,8 @@ static void init_mbc(u8 ref) {
     mbc.has_battery = 0;
     mbc.has_rtc = 0;
 
+    printf("Full cardridge type: %.2X\n", ref);
+
     if(hn == 0x00) {
         switch(ln) {
             case 0x0:
@@ -116,7 +118,7 @@ static void init_xrambanks(u8 ref) {
             assert(0);
     }
 
-    fprintf(stderr, "Cardridge-RAM set to %d banks\n", card.sramsize);
+    fprintf(stderr, "Cardridge-RAM set to %d banks by ref %i \n", card.sramsize, ref);
 }
 
 void load_rom(u8 *data, uint datasize) {

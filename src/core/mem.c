@@ -78,7 +78,7 @@ u8 mem_read_byte(u16 adr) {
             assert(0);
     }
 
-    return 0xFF; // ...and avoid warnings
+    return 0x00; // ...and avoid warnings
 }
 
 u16 mem_read_word(u16 adr) {

@@ -52,14 +52,20 @@ void emu_set_hw(int hw) {
 }
 
 void emu_run() {
+    debug_init();
+
     t = 0;
     for(;;) {
         for(; t < QUANTUM; t++) {
+            debug_update();
+            debug_before();
             u8 mcs = cpu_step();
             lcd_step();
             rtc_step(mcs);
             timers_step(mcs);
             sound_step();
+
+            debug_after();
         }
         t = 0;
         sys_invoke();

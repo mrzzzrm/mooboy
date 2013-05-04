@@ -9,6 +9,8 @@ static inline void exec_int(u8 i) {
     cpu.irq &= ~(1 << i);
     cpu.ime = IME_OFF;
 
+    printf("INT %i\n", i);
+
     SP -= 2;
     mem_write_word(SP, PC);
 
@@ -38,9 +40,9 @@ int ints_handle_standby() {
     u8 i;
     for(i = 0; i < 5; i++) {
         if(cpu.irq & cpu.ie & (1 << i)) {
-            if(cpu.ime == IME_ON) {
+           // if(cpu.ime == IME_ON) {
                 exec_int(i);
-            }
+           // }
             return 1;
         }
     }
