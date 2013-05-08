@@ -9,7 +9,7 @@ static inline void exec_int(u8 i) {
     cpu.irq &= ~(1 << i);
     cpu.ime = IME_OFF;
 
-    printf("INT %i\n", i);
+//    printf("INT %i\n", i);
 
     SP -= 2;
     mem_write_word(SP, PC);
