@@ -3,6 +3,10 @@
 #include <assert.h>
 #include "core/cpu.h"
 #include "core/joy.h"
+#include "core/rtc.h"
+#include "core/mbc.h"
+#include "core/mem.h"
+#include "core/timers.h"
 #include "core/lcd.h"
 #include "core/defines.h"
 #include "util/defines.h"
@@ -10,15 +14,45 @@
 #define S(val) save((val), sizeof((val)))
 #define SV(a) {int i; for(i = 0; i < sizeof((a))/sizeof(*(a)); i++) {S((a)[i]);} }
 
-FILE *f;
+#define R(val) val = load(sizeof(val))
+#define RV(a) {int i; for(i = 0; i < sizeof((a))/sizeof(*(a)); i++) {R((a)[i]);} }
 
-void save(u32 val, u8 size) {
+#define BYTE(val) ((u8)(val))
+
+#define CHECKPOINTS 32
+
+
+
+FILE *f;
+static u8 byte;
+
+static void save(u32 val, u8 size) {
     int b;
     for(b = 0; b < size; b++) {
         u8 byte = val & 0xFF;
         fwrite(&byte, 1, 1, f);
         val >> 8;
     }
+}
+
+static u32 load(u8 size) {
+    u32 re = 0;
+    int b;
+    for(b = 0; b < size; b++) {
+        fread(&byte, 1, 1, f);
+        re |= byte << (8*b);
+    }
+
+    return re;
+}
+
+static void set_check_byte(u8 b) {
+    S(b);
+}
+
+static void assert_check_byte(u8 b) {
+    L(byte);
+    assert(byte == b);
 }
 
 void save_cpu() {
@@ -31,36 +65,64 @@ void save_cpu() {
     S(cpu.halted);
 }
 
-void save_joy() {
+static void load_cpu() {
+    R(A); R(F); R(B); R(C); R(D); R(E);
+    R(SP); R(PC);
+    R(cpu.ime); R(cpu.irq); R(cpu.ie);
+    R(cpu.cc); R(cpu.dfcc); R(cpu.nfcc);
+    R(cpu.freq);
+    R(cpu.freq_switch);
+    R(cpu.halted);
+}
+
+static void save_joy() {
     S(joy.state); S(joy.col);
 }
 
-void save_fb() {
+static void load_joy() {
+    R(joy.state); R(joy.col);
+}
+
+static void save_fb() {
     int f, p;
     for(f = 0; f < 2; f++) {
-        for(p = 0; p < 144*166; p++) {
-            S(lcd.fb[f][p]);
-        }
+        SV(lcd.fb[f]);
     }
 
-    S(lcd.clean_fb == lcd.fb[0] ? 0x00 : 0x01);
-    S(lcd.working_fb == lcd.fb[0] ? 0x00 : 0x01);
+    S(lcd.clean_fb == lcd.fb[0] ? BYTE(0) : BYTE(1));
+    S(lcd.working_fb == lcd.fb[0] ? BYTE(0) : BYTE(1));
 }
 
-void save_lcd_maps() {
-    int i;
+static void load_fb() {
 
-    S(lcd.bg_map == &ram.vrambanks[0][0x1C00] ? 0x00 : 0x01);
-    S(lcd.wnd_map == &ram.vrambanks[0][0x1C00] ? 0x00 : 0x01);
-    S(lcd.bg_attr_map == &ram.vrambanks[1][0x1C00] ? 0x00 : 0x01);
-    S(lcd.wnd_attr_map == &ram.vrambanks[1][0x1C00] ? 0x00 : 0x01);
-    SV(lcd.bgp_map);
-    SV(lcd.obp_map[0] : )
-    i = 0;
-    for(i = 0; i < 2)
+    int f, p;
+    for(f = 0; f < 2; f++) {
+        RV(lcd.fb[f]);
+    }
+
+    R(byte); lcd.clean_fb == lcd.fb[byte];
+    R(byte); lcd.working_fb == lcd.fb[byte];
 }
 
-void save_lcd() {
+static void save_lcd_maps() {
+
+}
+
+static void load_lcd_maps() {
+    int p;
+
+    lcd_c_dirty();
+    lcd_obp0_dirty();
+    lcd_obp1_dirty();
+    lcd_bgp_dirty();
+
+    for(p = 0; p <= 0x3F; p++) {
+        lcd_bgpd_dirty(p);
+        lcd_obpd_dirty(p);
+    }
+}
+
+static void save_lcd() {
     S(lcd.c);
     S(lcd.stat);
     S(lcd.scx); S(lcd.scy);
@@ -76,28 +138,146 @@ void save_lcd() {
     save_lcd_maps();
 }
 
-void save_mbc() {
+static void load_lcd() {
+    R(lcd.c);
+    R(lcd.stat);
+    R(lcd.scx); R(lcd.scy);
+    R(lcd.ly); R(lcd.lyc);
+    R(lcd.wx); R(lcd.wy);
+    R(lcd.bgp); RV(lcd.obp);
+    RV(lcd.bgpd); RV(lcd.obpd);
+    R(lcd.bgps); R(lcd.bgpi);
+    R(lcd.obps); R(lcd.obpi);
+    load_fb();
+    R(lcd.dma_source); R(lcd.dma_dest);
+    R(lcd.dma_length); R(lcd.dma_hblank_inactive);
+    load_lcd_maps();
+}
+
+static void save_mbc() {
+    S(mbc.type);
+    // lower_write_func is set on rom-load
+    S(BYTE(((u8**)mbc.rombank - (u8**)card.rombanks) / sizeof(*card.rombanks)));
+    S(BYTE(((u8**)mbc.srambank - (u8**)card.srambanks) / sizeof(*card.srambanks)));
+    S(mbc.has_rtc);
+    S(mbc.has_battery);
+
+    S(mbc1.mode);
+    S(mbc1.rombank);
+
+    S(mbc3.mode);
+
+    S(mbc5.rombank);
+}
+
+static void load_mbc() {
+
+
+    R(mbc.type);
+    // lower_write_func is set on rom-load
+    R(byte); mbc.rombank = card.rombanks[byte];
+    R(byte); mbc.srambank = card.srambanks[byte];
+    R(mbc.has_rtc);
+    R(mbc.has_battery);
+
+    R(mbc1.mode);
+    R(mbc1.rombank);
+
+    R(mbc3.mode);
+
+    R(mbc5.rombank);
+}
+
+static void save_mem() {
+    int b;
+
+    S(card.romsize);
+    S(card.sramsize);
+    for(b = 0; b < card.sramsize; b++) {
+        SV(card.srambanks[b]);
+    }
+    for(b = 0; b < card.romsize; b++) {
+        SV(card.rombanks[b]);
+    }
+
+    for(b = 0; b < 8; b++) {
+        SV(ram.wrambanks[b]);
+    }
+    for(b = 0; b < 2; b++) {
+        SV(ram.vrambanks[b]);
+    }
+
+    SV(ram.hram);
+    SV(ram.oam);
+    S(BYTE(((u8**)ram.wrambank - (u8**)ram.wrambanks)/sizeof(*ram.wrambanks)));
+    S(BYTE(((u8**)ram.vrambank - (u8**)ram.vrambanks)/sizeof(*ram.vrambanks)));
+    S(ram.wrambank_index);
+}
+
+static void load_mem() {
+
+    int b;
+
+    R(card.romsize);
+    R(card.sramsize);
+    for(b = 0; b < card.sramsize; b++) {
+        RV(card.srambanks[b]);
+    }
+    for(b = 0; b < card.romsize; b++) {
+        RV(card.rombanks[b]);
+    }
+
+
+    for(b = 0; b < 8; b++) {
+        RV(ram.wrambanks[b]);
+    }
+    for(b = 0; b < 2; b++) {
+        RV(ram.vrambanks[b]);
+    }
+
+    RV(ram.hram);
+    RV(ram.oam);
+    R(byte); ram.wrambank = ram.wrambanks[byte];
+    R(byte); ram.vrambank = ram.vrambanks[byte];
+    R(ram.wrambank_index);
+}
+
+static void save_rtc() {
+    SV(rtc.latched);
+    SV(rtc.ticking);
+    S(rtc.mapped);
+    S(rtc.prelatched);
+    S(rtc.cc);
+}
+
+static void load_rtc() {
+    RV(rtc.latched);
+    RV(rtc.ticking);
+    R(rtc.mapped);
+    R(rtc.prelatched);
+    R(rtc.cc);
+}
+
+static void save_sound() {
 
 }
 
-void save_mem() {
+static void load_sound() {
 
 }
 
-void save_rtc() {
-
+static void save_timers() {
+    S(timers.div); S(timers.tima); S(timers.tma); S(timers.tac);
+    S(timers.div_cc); S(timers.tima_cc);
 }
 
-void save_sound() {
-
-}
-
-void save_timers() {
-
+static void load_timers() {
+    R(timers.div); R(timers.tima); R(timers.tma); R(timers.tac);
+    R(timers.div_cc); R(timers.tima_cc);
 }
 
 
-void flush() {
+static void flush() {
 
 }
 
@@ -119,6 +299,19 @@ void save_state() {
 }
 
 void load_state() {
+    f = fopen("state.sav", "r");
+    assert(f);
 
+    load_cpu();
+    load_joy();
+    load_lcd();
+    load_mbc();
+    load_mem();
+    load_rtc();
+    load_sound();
+    load_timers();
+
+    flush();
+    fclose(f);
 }
 

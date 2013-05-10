@@ -11,8 +11,7 @@
     typedef uint32_t u32;
     typedef uint64_t u64;
 
-    typedef u8 byte;
-    typedef u16 word;
+
     typedef unsigned int uint;
 
     typedef int bool;

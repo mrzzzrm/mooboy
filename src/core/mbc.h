@@ -1,5 +1,5 @@
-#ifndef MBC_H
-#define MBC_H
+#ifndef CORE_MBC_H
+#define CORE_MBC_H
 
 #include "util/defines.h"
 
