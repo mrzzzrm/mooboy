@@ -1,5 +1,5 @@
-#ifndef EMU_H
-#define EMU_H
+#ifndef CORE_EMU_H
+#define CORE_EMU_H
 
 #include "util/defines.h"
 

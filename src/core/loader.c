@@ -97,7 +97,7 @@ static void init_rombanks(u8 ref, u8 *data, u32 datasize) {
     card.rombanks = realloc(card.rombanks, card.romsize * sizeof(*card.rombanks));
     memcpy(card.rombanks, data, datasize);
 
-    fprintf(stderr, "ROM-size set to %d banks\n", card.romsize);
+    fprintf(stderr, "ROM-size set to %d banks, ref = %.2X\n", card.romsize, ref);
 }
 
 static void init_xrambanks(u8 ref) {

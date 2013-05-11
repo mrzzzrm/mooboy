@@ -39,6 +39,13 @@ static void update_joypad() {
    SDL_Event event;
 
    while(SDL_PollEvent(&event)) {
+        if(event.type == SDL_KEYDOWN) {
+            switch(event.key.keysym.sym) {
+                case SDLK_m:    load_state(); break;
+                case SDLK_n:    save_state(); break;
+                default: break;
+            }
+        }
         if(event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
             u8 state = event.key.state == SDL_RELEASED ? JOY_STATE_RELEASED : JOY_STATE_PRESSED;
 
@@ -51,8 +58,6 @@ static void update_joypad() {
                 case SDLK_s:    joy_set_button(JOY_BUTTON_B, state); break;
                 case SDLK_w:    joy_set_button(JOY_BUTTON_START, state); break;
                 case SDLK_d:    joy_set_button(JOY_BUTTON_SELECT, state); break;
-                case SDLK_m:    load_state(); break;
-                case SDLK_n:    save_state(); break;
                 default: break;
             }
         }

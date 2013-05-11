@@ -120,7 +120,6 @@ static void mbc5_lower_write(u16 adr, u8 val) {
         default:
             printf("Suspecious write %.2X to %.4X\n", val, adr);
     }
-
     assert(mbc5.rombank < 0x1E0);
 }
 

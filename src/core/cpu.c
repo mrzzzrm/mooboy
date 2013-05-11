@@ -60,6 +60,7 @@ u8 cpu_step() {
         u32 old_cc;
         op_chunk_t *chunk;
 
+        //printf("%.4X\n", PC);
         ints_handle();
         op = FETCH_BYTE;
         old_cc = cpu.cc;

@@ -114,8 +114,8 @@ void io_write(u16 adr, u8 val) {
             lcd_c_dirty();
         break;
         case 0x41: lcd.stat = (lcd.stat & 0x03) | (val & 0x78); break;
-        case 0x42: lcd.scy = val; break;
-        case 0x43: lcd.scx = val; break;
+        case 0x42: lcd.scy = val; printf("SCX:=%i\n", val); break;
+        case 0x43: lcd.scx = val; printf("SCY:=%i\n", val);break;
         case 0x44: lcd.ly = 0x00; break;
         case 0x45: lcd.lyc = val; break;
         case 0x46: lcd_dma(val); break;
