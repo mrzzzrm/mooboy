@@ -1,8 +1,8 @@
 #include "io.h"
 #include <stdio.h>
 #include "lcd.h"
-#include "lcd/maps.h"
-#include "lcd/obj.h"
+#include "maps.h"
+#include "obj.h"
 #include "cpu.h"
 #include "mem.h"
 #include "timers.h"

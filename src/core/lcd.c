@@ -7,8 +7,8 @@
 #include "mem.h"
 #include "defines.h"
 #include "util/defines.h"
-#include "lcd/obj.h"
-#include "lcd/maps.h"
+#include "obj.h"
+#include "maps.h"
 
 #define DUR_FULL_REFRESH 17556
 #define DUR_MODE_0 51
@@ -205,10 +205,10 @@ void lcd_reset() {
     lcd_obp1_dirty();
 }
 
-void lcd_step(u8 mcs) {
+void lcd_step() {
     u16 m1, m2;
 
-    lcd.cc += mcs;
+    lcd.cc += cpu.step_nf_cycles;
 
     m1 = lcd.stat & 0x03;
     m2 = step_mode(m1);

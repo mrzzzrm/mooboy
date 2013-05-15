@@ -71,17 +71,15 @@
 			<Add option="-Wall" />
 			<Add directory="src" />
 		</Compiler>
+		<Unit filename="src/core/chunks.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/chunks.h" />
 		<Unit filename="src/core/cpu.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/cpu.h" />
-		<Unit filename="src/core/cpu/chunks.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="src/core/cpu/chunks.h" />
-		<Unit filename="src/core/cpu/ops.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="src/core/cpu/ops.h" />
 		<Unit filename="src/core/defines.h" />
 		<Unit filename="src/core/emu.c">
@@ -104,18 +102,16 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/lcd.h" />
-		<Unit filename="src/core/lcd/maps.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="src/core/lcd/maps.h" />
-		<Unit filename="src/core/lcd/obj.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="src/core/lcd/obj.h" />
 		<Unit filename="src/core/loader.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/loader.h" />
+		<Unit filename="src/core/maps.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/maps.h" />
 		<Unit filename="src/core/mbc.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -124,6 +120,14 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/core/mem.h" />
+		<Unit filename="src/core/obj.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/obj.h" />
+		<Unit filename="src/core/ops.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/core/ops.h" />
 		<Unit filename="src/core/rtc.c">
 			<Option compilerVar="CC" />
 		</Unit>

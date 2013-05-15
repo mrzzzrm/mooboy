@@ -38,9 +38,9 @@ void rtc_reset() {
     memset(&rtc, 0x00, sizeof(rtc));
 }
 
-void rtc_step(u8 mcs) {
+void rtc_step() {
     if(mbc.type == 3) {
-        rtc.cc += mcs;
+        rtc.cc += cpu.step_nf_cycles;
         if(rtc.ticking[DH] & 0x40 || rtc.cc < cpu.freq) { // Halt bit set or next tick not yet reached
             return;
         }

@@ -23,14 +23,14 @@ typedef struct cpu_s {
 
     u8 freq_switch;
 
-    u8 step_cycles;
+    u8 step_sf_cycles;
     u8 step_nf_cycles;
 
     u8 halted;
 } cpu_t;
 
 extern cpu_t cpu;
-extern indents;
+extern int indents;
 
 void cpu_init();
 void cpu_reset();

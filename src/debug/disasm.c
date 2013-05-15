@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "mem.h"
-#include "cpu/ops.h"
-#include "cpu/chunks.h"
+#include "ops.h"
+#include "chunks.h"
 #include "defines.h"
 
 static char out[256];

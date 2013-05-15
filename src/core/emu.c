@@ -16,7 +16,6 @@
 
 emu_t emu;
 
-static unsigned int t;
 
 void emu_init() {
     emu.hw = CGB_HW;
@@ -54,21 +53,20 @@ void emu_set_hw(int hw) {
 void emu_run() {
     debug_init();
 
-    t = 0;
     for(;;) {
-        for(; t < QUANTUM; t++) {
+        unsigned int t;
+        for(t = 0; t < QUANTUM; t++) {
 //            debug_update();
 //            debug_before();
 
-            u8 mcs = cpu_step();
-            lcd_step(cpu.step_nf_cycles);
-            rtc_step(mcs);
-            timers_step(mcs);
+            cpu_step();
+            lcd_step();
+            rtc_step();
+            timers_step();
             sound_step();
-
+//
 //            debug_after();
         }
-        t = 0;
         sys_invoke();
     }
 }

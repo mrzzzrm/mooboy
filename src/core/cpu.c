@@ -6,7 +6,7 @@
 #include "ints.h"
 #include "rtc.h"
 #include "mbc.h"
-#include "cpu/ops.h"
+#include "ops.h"
 #include "defines.h"
 #include "timers.h"
 
@@ -52,8 +52,8 @@ u8 cpu_step() {
             cpu.halted = 0;
         }
 
-        cpu.step_cycles = 1;
-        cpu.cc += cpu.step_cycles;
+        cpu.step_sf_cycles = 1;
+        cpu.cc += cpu.step_sf_cycles;
     }
     else {
         u8 op;
@@ -71,16 +71,16 @@ u8 cpu_step() {
         chunk->funcs[chunk->sp++](chunk);
         cpu.cc += chunk->mcs;
 
-        cpu.step_cycles = cpu.cc - old_cc;
+        cpu.step_sf_cycles = cpu.cc - old_cc;
 	}
 
     if(cpu.freq == DOUBLE_CPU_FREQ) {
-        cpu.dfcc += cpu.step_cycles;
+        cpu.dfcc += cpu.step_sf_cycles;
     }
     cpu.nfcc = cpu.cc - (cpu.dfcc >> 1);
     cpu.step_nf_cycles = cpu.nfcc - nfcc;
 
-	return cpu.step_cycles;
+	return cpu.step_sf_cycles;
 }
 
 

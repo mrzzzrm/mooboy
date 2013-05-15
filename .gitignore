@@ -1,6 +1,7 @@
 build/
 *.depend
 *.layout
+**~
 src/*/*.cbTemp
 sdl_release/*
 rom/*

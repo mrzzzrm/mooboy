@@ -15,7 +15,7 @@ extern rtc_t rtc;
 
 void rtc_reset();
 
-void rtc_step(u8 mcs);
+void rtc_step();
 void rtc_map_register(u8 val);
 void rtc_latch(u8 val);
 void rtc_write(u8 val);

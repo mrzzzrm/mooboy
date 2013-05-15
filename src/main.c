@@ -44,7 +44,7 @@ int main(int argc, const char **argv) {
 
     init(argc, argv);
     emu_set_hw(CGB_HW);
-    sprintf(rom, "airforcedelta.gbc");
+    sprintf(rom, "mem_timing.gb");
     load_romfile(rom);
     emu_run();
     close();

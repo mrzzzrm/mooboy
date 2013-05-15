@@ -57,6 +57,7 @@ static u32 load(u8 size) {
 }
 
 static void _set_checkpoint(int line) {
+
     assert(current_checkpoint < CHECKPOINTS);
     //fprintf(stderr, "SET CHCEKPOINT %i@%i - %i bytes written", current_checkpoint, line, bytes_handled);
     S(checkpoints[current_checkpoint]);
@@ -131,8 +132,8 @@ static void load_fb() {
     }
     assert_checkpoint();
 
-    R(byte); lcd.clean_fb == lcd.fb[byte];
-    R(byte); lcd.working_fb == lcd.fb[byte];
+    R(byte); lcd.clean_fb = lcd.fb[byte];
+    R(byte); lcd.working_fb = lcd.fb[byte];
     assert_checkpoint();
 }
 
