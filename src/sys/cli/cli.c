@@ -38,3 +38,11 @@ void sys_sleep(time_t ticks) {
 void sys_error() {
     exit(EXIT_FAILURE);
 }
+
+void sys_invoke() {
+
+}
+
+void sys_fb_ready() {
+
+}

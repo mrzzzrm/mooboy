@@ -12,6 +12,8 @@
 
 cpu_t cpu;
 
+int mcs[2][256];
+
 void cpu_init() {
     op_create_chunks();
 }
@@ -42,6 +44,12 @@ void cpu_reset() {
     cpu.halted = 0;
 
     cpu.freq_switch = 0x00;
+
+    int x = 0;
+    for(x = 0; x < 256; x++) {
+        mcs[0][x] = -1;
+        mcs[1][x] = -1;
+    }
 }
 
 u8 cpu_step() {
@@ -72,6 +80,17 @@ u8 cpu_step() {
         cpu.cc += chunk->mcs;
 
         cpu.step_sf_cycles = cpu.cc - old_cc;
+
+        if(mcs[0][op] == -1)
+            mcs[0][op] = cpu.step_sf_cycles;
+        else if(mcs[0][op] == cpu.step_sf_cycles)
+            ;
+        else if(mcs[1][op] == -1)
+            mcs[1][op] = cpu.step_sf_cycles;
+        else if(mcs[1][op] == cpu.step_sf_cycles)
+            ;
+        else
+            assert(0);
 	}
 
     if(cpu.freq == DOUBLE_CPU_FREQ) {

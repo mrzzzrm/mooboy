@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <SDL/SDL.h>
+//#include <SDL/SDL.h>
 
 #include "core/emu.h"
 #include "sys/sys.h"
@@ -44,7 +44,7 @@ int main(int argc, const char **argv) {
 
     init(argc, argv);
     emu_set_hw(CGB_HW);
-    sprintf(rom, "mem_timing.gb");
+    sprintf(rom, "gold.gbc");
     load_romfile(rom);
     emu_run();
     close();

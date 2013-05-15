@@ -547,11 +547,11 @@ void op_call(op_chunk_t *c) {
     }
     CPU_MCS(_pc == PC ? 3 : 6);
 //
-    if(_pc != PC) {
-        int i; for(i=0; i<indents;i++) printf(" ");
-        printf("CALL %.4X {\n", PC);
-        indents+=2;
-    }
+//    if(_pc != PC) {
+//        int i; for(i=0; i<indents;i++) printf(" ");
+//        printf("CALL %.4X {\n", PC);
+//        indents+=2;
+//    }
 }
 
 void op_rst(op_chunk_t *c) {
@@ -559,16 +559,16 @@ void op_rst(op_chunk_t *c) {
     push(PC);
     PC = ((c->op >> 3) & 0x07) * 8;
 
-    int i; for(i=0; i<indents;i++) printf(" ");
-    printf("RST %.4X {\n", PC);
-    indents+=2;
+//    int i; for(i=0; i<indents;i++) printf(" ");
+//    printf("RST %.4X {\n", PC);
+//    indents+=2;
 }
 
 void op_ret(op_chunk_t *c) {
     debug_trace_op("RET");
     u16 _pc = PC;
     switch(c->op) {
-        case 0xC9: PC = pop(); CPU_MCS(4); goto ret;
+        case 0xC9: PC = pop(); CPU_MCS(4); return; //goto ret;
         case 0xC0: if(!FZ) PC = pop(); break;
         case 0xC8: if(FZ)  PC = pop(); break;
         case 0xD0: if(!FC) PC = pop(); break;
@@ -576,12 +576,13 @@ void op_ret(op_chunk_t *c) {
     }
     CPU_MCS(_pc == PC ? 2 : 5);
 
-    ret:
-    if(_pc != PC) {
-    indents-=2;if(indents < 0) indents = 0;
-    int i; for(i=0; i<indents;i++) printf(" ");
-    printf("} RET\n");
-    }
+//    ret:
+//    int a = 2;
+//    if(_pc != PC) {
+//    indents-=2;if(indents < 0) indents = 0;
+//    int i; for(i=0; i<indents;i++) printf(" ");
+//    printf("} RET\n");
+//    }
 }
 
 void op_reti(op_chunk_t *c) {
@@ -590,8 +591,8 @@ void op_reti(op_chunk_t *c) {
     cpu.ime = IME_ON;
 
 
-    indents-=2;if(indents < 0) indents = 0;
-    int i; for(i=0; i<indents;i++) printf(" ");
-    printf("} RETI\n");
+//    indents-=2;if(indents < 0) indents = 0;
+//    int i; for(i=0; i<indents;i++) printf(" ");
+//    printf("} RETI\n");
 }
 

@@ -37,6 +37,17 @@ static void set_pixel(SDL_Surface *surface, unsigned int x, unsigned int y, u32 
      pixelColor(surface, x, y, color);
 }
 
+static void timing_check() {
+    FILE *f = fopen("timing.txt", "w");
+    int x = 0;
+    for(x = 0; x < 256; x++) {
+        fprintf(f, "%2.i,", mcs[0][x]);
+        if((x+1) % 16 == 0)
+            fprintf(f, "\n");
+    }
+    fclose(f);
+}
+
 static void update_joypad() {
    SDL_Event event;
 
@@ -45,6 +56,7 @@ static void update_joypad() {
             switch(event.key.keysym.sym) {
                 case SDLK_m:    load_state(); break;
                 case SDLK_n:    save_state(); break;
+                case SDLK_l:    timing_check(); break;
                 default: break;
             }
         }

@@ -25,6 +25,7 @@ void timers_step() {
         if(timers.tima_cc >= per_tick) {
             timers.tima++;
             timers.tima_cc -= per_tick;
+            //printf(">>tick (%.4X)!\n", PC);
 
             if(timers.tima == 0x00) {
                 cpu.irq |= IF_TIMER;

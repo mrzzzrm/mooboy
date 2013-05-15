@@ -37,4 +37,6 @@ void cpu_reset();
 u8 cpu_exec(u8 op);
 u8 cpu_step();
 
+extern int mcs[2][256];
+
 #endif // CPU_H
