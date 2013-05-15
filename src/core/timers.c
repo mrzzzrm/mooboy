@@ -22,7 +22,7 @@ void timers_step(u8 mcs) {
     if(timers.tac & 0x04) {
         timers.tima_cc += mcs;
         u16 per_tick = MCS_PER_TIMA[cpu.freq == DOUBLE_CPU_FREQ ? 0 : 0][timers.tac & 0x03];
-        if(timers.tima_cc >= per_tick) { // Runs faster or slower depending on gameboy cpu speed
+        if(timers.tima_cc >= per_tick) {
             timers.tima++;
             timers.tima_cc -= per_tick;
 

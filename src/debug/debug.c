@@ -323,6 +323,10 @@ void debug_before() {
 
 void debug_after() {
     trace_after();
+    u16 sp = dbg.before.cpu.sp.w;
+    printf("%.4X(%.2X %.4X): %10s ", dbg.before.cpu.pc.w, mem_read_byte(dbg.before.cpu.pc.w), dbg.before.cpu.sp.w, dbg.trace.data[dbg.trace.size-1]);
+    printf("[%.4X %.4X %.4X %.4X %.4X] \n", mem_read_word(sp), mem_read_word(sp + 2), mem_read_word(sp + 4), mem_read_word(sp + 6), mem_read_word(sp + 8));
+
     if(dbg.console) {
         fprintf(stderr, "  %s\n", dbg.trace.data[dbg.trace.size-1]);
     }

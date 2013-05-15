@@ -14,6 +14,8 @@
 #define FB_HEIGHT 144
 #define DELAY_THRESHOLD 10
 
+#define PIXELSIZE 4
+
 static unsigned int invoke_count;
 static unsigned int last_sec_cc;
 static unsigned int last_delay_cc;
@@ -125,7 +127,7 @@ static void handle_delay() {
     long ms_ahead = cc_ahead / ((long)cpu.freq/1000);
 
     if(ms_ahead >= DELAY_THRESHOLD) {
-        SDL_Delay(DELAY_THRESHOLD);
+        //SDL_Delay(DELAY_THRESHOLD);
     }
 
 }
@@ -138,7 +140,7 @@ void sys_init(int argc, const char** argv) {
     cmd_init(argc, argv);
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    SDL_Surface *screen = SDL_SetVideoMode(160*1, 144*1, 24, SDL_DOUBLEBUF);
+    SDL_Surface *screen = SDL_SetVideoMode(160*PIXELSIZE, 144*PIXELSIZE, 24, SDL_DOUBLEBUF);
 
     last_sec = SDL_GetTicks();
 
@@ -233,7 +235,7 @@ void sys_fb_ready() {
 //
 //                if((r | g | b) != 0)
 //                printf("%.8X ", r | g | b | 0xFF);
-                boxColor(s, x*1, y*1, x*1, y*1, r | g | b | 0xFF);
+                boxColor(s, x*PIXELSIZE, y*PIXELSIZE, x*PIXELSIZE+PIXELSIZE-1, y*PIXELSIZE+PIXELSIZE-1, r | g | b | 0xFF);
             }
         }
     }

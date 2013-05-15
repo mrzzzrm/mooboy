@@ -59,8 +59,9 @@ void emu_run() {
         for(; t < QUANTUM; t++) {
 //            debug_update();
 //            debug_before();
+
             u8 mcs = cpu_step();
-            lcd_step();
+            lcd_step(cpu.step_nf_cycles);
             rtc_step(mcs);
             timers_step(mcs);
             sound_step();

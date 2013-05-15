@@ -125,7 +125,8 @@ void mem_write_byte(u16 adr, u8 val) {
             }
             else {
                 cpu.ie = val & 0x1F;
-                //printf("%.4X: INTs enabled: %.2X\n", PC-1, cpu.ie);
+//
+//                printf("%.4X: INTs enabled: %.2X\n", PC-1, cpu.ie);
             }
         break;
     }

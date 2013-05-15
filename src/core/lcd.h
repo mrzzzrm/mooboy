@@ -45,13 +45,15 @@ typedef struct {
 
     u16 bgpd_map[8][4];
     u16 obpd_map[8][4];
+
+    u32 cc;
 } lcd_t;
 
 extern lcd_t lcd;
 
 void lcd_reset();
 
-void lcd_step();
+void lcd_step(u8 mcs);
 void lcd_dma(u8 v);
 void lcd_cgb_dma();
 

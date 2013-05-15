@@ -12,7 +12,6 @@
 
 #define DUR_FULL_REFRESH 17556
 #define DUR_MODE_0 51
-#define DUR_MODE_1 1140
 #define DUR_MODE_2 20
 #define DUR_MODE_3 43
 #define DUR_SCANLINE 114
@@ -101,7 +100,7 @@ static void draw_line() {
 
             //printf("%i", MAPS_PALETTE(maps_scan[x]));
             if(bg_priority) {
-                if(MAPS_DATA(maps_scan[x]) != 0) {
+                if(MAPS_DATA(maps_scan[x]) != 0 || OBJ_DATA(obj_scan[x]) == 0) {
                     *pixel = lcd.bgpd_map[MAPS_PALETTE(maps_scan[x])][MAPS_DATA(maps_scan[x])];
                 }
                 else {
@@ -124,17 +123,20 @@ static void draw_line() {
 static inline void stat_irq(u8 flag) {
     if((lcd.c & LCDC_DISPLAY_ENABLE_BIT) && (lcd.stat & flag)) {
         cpu.irq |= IF_LCDSTAT;
+//        if(flag == SIF_HBLANK) {
+//            printf("HBLANK INT in LY %i\n", lcd.ly);
+//        }
     }
 }
 
 static inline void hblank_dma() {
     u16 end;
 
-    printf("%.4X %.4X => ", lcd.dma_source, lcd.dma_dest);
+  //  printf("%.4X %.4X => ", lcd.dma_source, lcd.dma_dest);
     for(end = lcd.dma_source + 0x10; lcd.dma_source < end; lcd.dma_source++, lcd.dma_dest++) {
         mem_write_byte(lcd.dma_dest, mem_read_byte(lcd.dma_source));
     }
-    printf("%.4X %.4X\n", lcd.dma_source, lcd.dma_dest);
+   // printf("%.4X %.4X\n", lcd.dma_source, lcd.dma_dest);
 
     lcd.dma_length--;
     if(lcd.dma_length == 0x00) {
@@ -147,17 +149,17 @@ static u8 step_mode(u8 m1) {
 //    static int old_fc = 0;
 //    static u32 old_cc = 0;
 
-    u16 fc = cpu.nfcc % DUR_FULL_REFRESH;
+    u16 fc = lcd.cc % DUR_FULL_REFRESH;
     lcd.ly = fc / DUR_SCANLINE;
     STAT_SET_CFLAG(lcd.ly == lcd.lyc ? 1 : 0);
-
+   // printf("%i\n", lcd.ly);
 //    if(old_fc > fc) {
 //        printf("%.8i %i %.5i %.10i\n", fc, cpu.nfcc, old_fc, old_cc);
 //    }
 //    old_fc = fc;
 //    old_cc = cpu.nfcc;
 
-    if(lcd.ly <  144) {
+    if(lcd.ly < 144) {
         u16 lc = fc % DUR_SCANLINE;
         if(lc < DUR_MODE_2)
             return 0x02;
@@ -183,6 +185,7 @@ void lcd_reset() {
     lcd.bgp = 0xFC;
     lcd.obp[0] = 0xFF;
     lcd.obp[1] = 0xFF;
+    lcd.cc = 0;
 
     lcd.dma_source = 0x0000;
     lcd.dma_dest = 0x8000;
@@ -202,8 +205,10 @@ void lcd_reset() {
     lcd_obp1_dirty();
 }
 
-void lcd_step() {
+void lcd_step(u8 mcs) {
     u16 m1, m2;
+
+    lcd.cc += mcs;
 
     m1 = lcd.stat & 0x03;
     m2 = step_mode(m1);
@@ -225,6 +230,7 @@ void lcd_step() {
                 stat_irq(SIF_VBLANK);
                 sys_fb_ready();
                 swap_fb();
+                //SDL_Delay(100);
             break;
             case 0x02:
                 stat_irq(SIF_OAM);

@@ -13,6 +13,8 @@
 static u8 static_byte;
 static u16 static_word;
 
+int indents = 0;
+
 static void push(u16 w) {
     SP -= 2;
     mem_write_word(SP, w);
@@ -113,7 +115,7 @@ void op_opr_addio(op_chunk_t *c) {
 }
 
 void op_null(op_chunk_t *c) {
-
+    debug_trace_op("NOP");
 }
 
 void op_ld_b(op_chunk_t *c) {
@@ -127,7 +129,7 @@ void op_ld_w(op_chunk_t *c) {
 }
 
 void op_ldx(op_chunk_t *c) {
-    debug_trace_op((c->op & 0x10) ? "HL--" : "HL++"); debug_trace_opl(&OPLB, 1, 0); debug_trace_opr(&OPRB, 1, 0);
+    debug_trace_op((c->op & 0x10) ? "HL--" : "HL++");  debug_trace_opr(&OPRB, 1, 0);
     OPLB = OPRB;
     HL = (c->op & 0x10) ? HL - 1 : HL + 1;
 }
@@ -148,6 +150,7 @@ void op_ldhl_spi(op_chunk_t *c) {
 }
 
 void op_ld_imsp(op_chunk_t *c) {
+    debug_trace_op("LD #, SP");
     mem_write_word(mem_read_word(PC), SP);
     PC += 2;
 }
@@ -469,7 +472,7 @@ void op_halt(op_chunk_t *c) {
 
 void op_stop(op_chunk_t *c) {
     debug_trace_op("STOP");
-    printf("ALERT ALERT ALERT ---- STOP CALLED ---- ALERT ALERT ALERT\n");
+    printf("ALERT ALERT ALERT ---- STOP CALLED ---- ALERT ALERT ALERT ---- %s\n", cpu.freq_switch ? "Switching CPU freq" : "");
 
     if(cpu.freq_switch) {
         if(cpu.freq == NORMAL_CPU_FREQ) {
@@ -491,6 +494,7 @@ void op_di(op_chunk_t *c) {
     if(cpu.ime == IME_ON) {
         cpu.ime = IME_DOWN;
     }
+//    printf("DI\n");
 }
 
 void op_ei(op_chunk_t *c) {
@@ -498,6 +502,7 @@ void op_ei(op_chunk_t *c) {
     if(cpu.ime == IME_OFF) {
         cpu.ime = IME_UP;
     }
+//    printf("EI\n");
 }
 
 void op_jp(op_chunk_t *c) {
@@ -509,6 +514,7 @@ void op_jp(op_chunk_t *c) {
         case 0xCA: if(FZ)  PC = OPLW; break;
         case 0xD2: if(!FC) PC = OPLW; break;
         case 0xDA: if(FC)  PC = OPLW; break;
+        default: assert(0);
     }
     CPU_MCS(PC == OPLW ? 4 : 3);
 }
@@ -523,6 +529,7 @@ void op_jr(op_chunk_t *c) {
         case 0x28: if(FZ)  PC += (s8)OPLB; break;
         case 0x30: if(!FC) PC += (s8)OPLB; break;
         case 0x38: if(FC)  PC += (s8)OPLB; break;
+        default: assert(0);
     }
     CPU_MCS(_pc == PC ? 2 : 3);
 }
@@ -536,8 +543,15 @@ void op_call(op_chunk_t *c) {
         case 0xCC: if(FZ)  {push(PC); PC = OPLW;} break;
         case 0xD4: if(!FC) {push(PC); PC = OPLW;} break;
         case 0xDC: if(FC)  {push(PC); PC = OPLW;} break;
+        default: assert(0);
     }
     CPU_MCS(_pc == PC ? 3 : 6);
+//
+//    if(_pc != PC) {
+//        int i; for(i=0; i<indents;i++) printf(" ");
+//        printf("CALL %.4X {\n", PC);
+//        indents+=2;
+//    }
 }
 
 void op_rst(op_chunk_t *c) {
@@ -550,18 +564,30 @@ void op_ret(op_chunk_t *c) {
     debug_trace_op("RET");
     u16 _pc = PC;
     switch(c->op) {
-        case 0xC9: PC = pop(); CPU_MCS(4); return;
+        case 0xC9: PC = pop(); CPU_MCS(4); return; //goto ret;
         case 0xC0: if(!FZ) PC = pop(); break;
         case 0xC8: if(FZ)  PC = pop(); break;
         case 0xD0: if(!FC) PC = pop(); break;
         case 0xD8: if(FC)  PC = pop(); break;
     }
     CPU_MCS(_pc == PC ? 2 : 5);
+
+//    ret:
+//    if(_pc != PC) {
+//    indents-=2;
+//    int i; for(i=0; i<indents;i++) printf(" ");
+//    printf("} RET\n");
+//    }
 }
 
 void op_reti(op_chunk_t *c) {
     debug_trace_op("RETI");
     PC = pop();
     cpu.ime = IME_ON;
+//
+//
+//    indents-=2;
+//    int i; for(i=0; i<indents;i++) printf(" ");
+//    printf("} RETI\n");
 }
 

@@ -9,12 +9,17 @@ static inline void exec_int(u8 i) {
     cpu.irq &= ~(1 << i);
     cpu.ime = IME_OFF;
 
-    //printf("INT %i\n", i);
-
+   // printf("INT %i\n", i);
     SP -= 2;
     mem_write_word(SP, PC);
 
     PC = 0x40 + (i<<3);
+
+//    int x; for(x = 0; x < indents; x++) {
+//        printf(" ");
+//    }
+//    printf("INT { %.4X\n", PC);
+//    indents+=2;
 }
 
 void ints_handle() {

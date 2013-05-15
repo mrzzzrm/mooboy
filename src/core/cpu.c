@@ -45,22 +45,21 @@ void cpu_reset() {
 }
 
 u8 cpu_step() {
-    u8 mcs;
+    u32 nfcc = cpu.nfcc;
 
     if(cpu.halted) {
         if(ints_handle_standby()) {
             cpu.halted = 0;
         }
 
-        mcs = 1;
-        cpu.cc += mcs;
+        cpu.step_cycles = 1;
+        cpu.cc += cpu.step_cycles;
     }
     else {
         u8 op;
         u32 old_cc;
         op_chunk_t *chunk;
 
-        //printf("%.4X\n", PC);
         ints_handle();
         op = FETCH_BYTE;
         old_cc = cpu.cc;
@@ -72,15 +71,16 @@ u8 cpu_step() {
         chunk->funcs[chunk->sp++](chunk);
         cpu.cc += chunk->mcs;
 
-        mcs = cpu.cc - old_cc;
+        cpu.step_cycles = cpu.cc - old_cc;
 	}
 
     if(cpu.freq == DOUBLE_CPU_FREQ) {
-        cpu.dfcc += mcs;
+        cpu.dfcc += cpu.step_cycles;
     }
     cpu.nfcc = cpu.cc - (cpu.dfcc >> 1);
+    cpu.step_nf_cycles = cpu.nfcc - nfcc;
 
-	return mcs;
+	return cpu.step_cycles;
 }
 
 

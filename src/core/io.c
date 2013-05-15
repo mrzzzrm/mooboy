@@ -62,7 +62,7 @@ u8 io_read(u16 adr) {
         case 0x52: return lcd.dma_source & 0xFF; break;
         case 0x53: return lcd.dma_dest >> 8; break;
         case 0x54: return lcd.dma_dest & 0xFF; break;
-        case 0x55: printf("Read DMA state %.2X\n", lcd.dma_length | lcd.dma_hblank_inactive); return lcd.dma_length | lcd.dma_hblank_inactive; break;
+        case 0x55: return lcd.dma_length | lcd.dma_hblank_inactive; break;
 
         case 0x56: return 0x40; break;
 
@@ -71,7 +71,7 @@ u8 io_read(u16 adr) {
         case 0x6A: return lcd.obps | lcd.obpi; break;
         case 0x6B: return lcd.obpd[lcd.obps]; break;
 
-        case 0x70: return ram.wrambank_index; break;
+        case 0x70: return ram.wrambank_index | 0xF8; break;
 
         default:;
             printf("Unknown IO read: %.2X\n", r);
@@ -112,11 +112,17 @@ void io_write(u16 adr, u8 val) {
         case 0x40:
             lcd.c = val;
             lcd_c_dirty();
+            if(!(val & 0x80)) {
+                lcd.ly = 0;
+                lcd.cc = 0;
+                lcd.stat &= 0xF8;
+                printf("LCDC RESET\n");
+            }
         break;
         case 0x41: lcd.stat = (lcd.stat & 0x03) | (val & 0x78); break;
-        case 0x42: lcd.scy = val; printf("SCX:=%i\n", val); break;
-        case 0x43: lcd.scx = val; printf("SCY:=%i\n", val);break;
-        case 0x44: lcd.ly = 0x00; break;
+        case 0x42: lcd.scy = val; break;
+        case 0x43: lcd.scx = val; break;
+        case 0x44: lcd.ly = 0x00; lcd.cc = 0;  break;
         case 0x45: lcd.lyc = val; break;
         case 0x46: lcd_dma(val); break;
         case 0x47:
@@ -138,12 +144,16 @@ void io_write(u16 adr, u8 val) {
 
         case 0x4F: ram.vrambank = ram.vrambanks[val & 0x01]; break;
 
-        case 0x51: lcd.dma_source = (lcd.dma_source & 0x00FF) | (val << 8); printf("HDMA1 activity!\n"); break;
-        case 0x52: lcd.dma_source = (lcd.dma_source & 0xFF00) | (val & 0xF0); printf("HDMA2 activity!\n"); break;
-        case 0x53: lcd.dma_dest = (lcd.dma_dest & 0x80FF) | ((val & 0x1F) << 8); printf("HDMA3 activity!\n"); break;
-        case 0x54: lcd.dma_dest = (lcd.dma_dest & 0xFF00) | (val & 0xF0); printf("HDMA4 activity!\n"); break;
+        case 0x51: lcd.dma_source = (lcd.dma_source & 0x00FF) | (val << 8); //printf("HDMA1 activity!\n");
+        break;
+        case 0x52: lcd.dma_source = (lcd.dma_source & 0xFF00) | (val & 0xF0); //printf("HDMA2 activity!\n");
+        break;
+        case 0x53: lcd.dma_dest = (lcd.dma_dest & 0x80FF) | ((val & 0x1F) << 8); //printf("HDMA3 activity!\n");
+        break;
+        case 0x54: lcd.dma_dest = (lcd.dma_dest & 0xFF00) | (val & 0xF0);// printf("HDMA4 activity!\n");
+        break;
         case 0x55:
-            printf("HDMA %.4X => %.4X (%.2X)!\n", lcd.dma_source, lcd.dma_dest, val);
+            //printf("HDMA %.4X => %.4X (%.2X)!\n", lcd.dma_source, lcd.dma_dest, val);
             lcd.dma_length = val & 0x7F;
             if(val & 0x80) {
                 lcd.dma_hblank_inactive = 0x00;
@@ -151,7 +161,7 @@ void io_write(u16 adr, u8 val) {
             else {
                 if(lcd.dma_hblank_inactive) {
                     lcd_cgb_dma();
-                    printf(" ==> Performed!\n");
+                    //printf(" ==> Performed!\n");
                     lcd.dma_length = 0x7F;
                 }
                 lcd.dma_hblank_inactive = 0x80;
@@ -186,7 +196,7 @@ void io_write(u16 adr, u8 val) {
         break;
 
         case 0x70:
-            ram.wrambank_index = val != 0 ? val & 0x07 : 0x01;
+            ram.wrambank_index = (val & 0x07) != 0 ? val & 0x07 : 0x01;
             ram.wrambank = ram.wrambanks[ram.wrambank_index];
         break;
 
