@@ -51,6 +51,17 @@ static void timing_check() {
         if((x+1) % 16 == 0)
             fprintf(f, "\n");
     }
+    for(x = 0; x < 256; x++) {
+        if(mcs[1][x] == -1)
+            fprintf(f, "X,");
+        else if(mcs[1][x] != -1)
+            fprintf(f, "%i,", mcs[1][x] < mcs[0][x] ? mcs[0][x] :  mcs[1][x]);
+        else
+            fprintf(f, "Y,");
+
+        if((x+1) % 16 == 0)
+            fprintf(f, "\n");
+    }
     fclose(f);
 }
 

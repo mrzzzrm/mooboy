@@ -174,7 +174,8 @@ static op_chunk_t *op_create_chunk(u8 op) {
                             chunk_opl_stdb(c, (op&0x38)>>3);
                             PUSH_FUNC(op_opr_ib);
                             PUSH_FUNC(op_ld_b);
-                            MCS(2);
+
+                            MCS(op == 0x36 ? 3 : 2);
                         break;
                         case 0x07: // 00XX X111
                             c->opl.b = &A;

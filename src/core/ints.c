@@ -14,6 +14,7 @@ static inline void exec_int(u8 i) {
     mem_write_word(SP, PC);
 
     PC = 0x40 + (i<<3);
+    cpu.cc += 4;
 
 //    int x; for(x = 0; x < indents; x++) {
 //        printf(" ");
