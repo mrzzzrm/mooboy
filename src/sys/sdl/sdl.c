@@ -41,7 +41,13 @@ static void timing_check() {
     FILE *f = fopen("timing.txt", "w");
     int x = 0;
     for(x = 0; x < 256; x++) {
-        fprintf(f, "%2.i,", mcs[0][x]);
+        if(mcs[0][x] == -1)
+            fprintf(f, "X,");
+        else if(mcs[1][x] != -1)
+            fprintf(f, "%i,", mcs[1][x] < mcs[0][x] ? mcs[1][x] :  mcs[0][x]);
+        else
+            fprintf(f, "%i,", mcs[0][x]);
+
         if((x+1) % 16 == 0)
             fprintf(f, "\n");
     }
