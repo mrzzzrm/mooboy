@@ -524,7 +524,7 @@ void op_jr(op_chunk_t *c) {
 
     u16 _pc = PC;
     switch(c->op) {
-        case 0x18: cpu.pc.w += (s8)OPLB; CPU_MCS(3); return;
+        case 0x18: cpu.pc.w += (s8)OPLB; break;
         case 0x20: if(!FZ) PC += (s8)OPLB; break;
         case 0x28: if(FZ)  PC += (s8)OPLB; break;
         case 0x30: if(!FC) PC += (s8)OPLB; break;
@@ -568,7 +568,7 @@ void op_ret(op_chunk_t *c) {
     debug_trace_op("RET");
     u16 _pc = PC;
     switch(c->op) {
-        case 0xC9: PC = pop(); CPU_MCS(4); return; //goto ret;
+        case 0xC9: PC = pop(); CPU_MCS(2); return; //goto ret;
         case 0xC0: if(!FZ) PC = pop(); break;
         case 0xC8: if(FZ)  PC = pop(); break;
         case 0xD0: if(!FC) PC = pop(); break;

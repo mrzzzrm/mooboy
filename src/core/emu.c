@@ -60,12 +60,12 @@ void emu_run() {
 //            debug_before();
 
             cpu_step();
+//            debug_after();
+            timers_step();
             lcd_step();
             rtc_step();
-            timers_step();
             sound_step();
-//
-//            debug_after();
+
         }
         sys_invoke();
     }

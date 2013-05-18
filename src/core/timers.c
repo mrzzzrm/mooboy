@@ -27,7 +27,6 @@ void timers_step() {
         while(timers.tima_cc >= per_tick) {
             timers.tima++;
             timers.tima_cc -= per_tick;
-            printf("%i %i %i\n", timers.tima, cpu.nfcc, cpu.nfcc - last);
             last = cpu.nfcc;
             if(timers.tima == 0x00) {
                 cpu.irq |= IF_TIMER;
@@ -35,6 +34,7 @@ void timers_step() {
             }
         }
     }
+    //printf("%i %i %i %i\n", timers.tima, cpu.nfcc, cpu.nfcc - last, timers.tima_cc);
 
     timers.div_cc += cpu.step_sf_cycles;
     while(timers.div_cc >= MCS_PER_DIVT) { // Runs faster or slower depending on gameboy cpu speed

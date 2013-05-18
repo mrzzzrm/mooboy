@@ -89,7 +89,7 @@ void io_write(u16 adr, u8 val) {
         case 0x02: break;
 
         case 0x04: timers.div = 0x00; break;
-        case 0x05: timers.tima = val; printf("SET TIMA => %i\n", val); break;
+        case 0x05: timers.tima = val; break;
         case 0x06: timers.tma = val; break;
         case 0x07: timers.tac = val & 0x07; break;
         case 0x0F: cpu.irq = val & 0x1F; break;
