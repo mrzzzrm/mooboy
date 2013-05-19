@@ -60,8 +60,8 @@ void emu_run() {
 //            debug_before();
 
             cpu_step();
-//            debug_after();
             timers_step();
+//            debug_after();
             lcd_step();
             rtc_step();
             sound_step();

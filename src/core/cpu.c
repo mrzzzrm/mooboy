@@ -81,16 +81,18 @@ u8 cpu_step() {
 
         cpu.step_sf_cycles = cpu.cc - old_cc;
 
-        if(mcs[0][op] == -1)
-            mcs[0][op] = cpu.step_sf_cycles;
-        else if(mcs[0][op] == cpu.step_sf_cycles)
-            ;
-        else if(mcs[1][op] == -1)
-            mcs[1][op] = cpu.step_sf_cycles;
-        else if(mcs[1][op] == cpu.step_sf_cycles)
-            ;
-        else
-            assert(0);
+        assert(op != 0xFA || cpu.step_sf_cycles == 4);
+//
+//        if(mcs[0][op] == -1)
+//            mcs[0][op] = cpu.step_sf_cycles;
+//        else if(mcs[0][op] == cpu.step_sf_cycles)
+//            ;
+//        else if(mcs[1][op] == -1)
+//            mcs[1][op] = cpu.step_sf_cycles;
+//        else if(mcs[1][op] == cpu.step_sf_cycles)
+//            ;
+//        else
+//            assert(0);
 	}
 
     if(cpu.freq == DOUBLE_CPU_FREQ) {

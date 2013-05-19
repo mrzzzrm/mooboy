@@ -110,13 +110,20 @@ void io_write(u16 adr, u8 val) {
         case 0x15: case 0x1F: break;
 
         case 0x40:
-            lcd.c = val;
-            lcd_c_dirty();
-            if(!(val & 0x80)) {
+            if(!(lcd.c & 0x80) && (val & 0x80)) {
                 lcd.ly = 0;
                 lcd.cc = 0;
                 lcd.stat &= 0xF8;
-                printf("LCDC RESET\n");
+                printf("LCDC ON\n");
+            }
+
+            lcd.c = val;
+            lcd_c_dirty();
+            if(!(val & 0x80)) {
+//                lcd.ly = 0;
+//                lcd.cc = 0;
+//                lcd.stat &= 0xF8;
+                printf("LCDC OFF\n");
             }
         break;
         case 0x41: lcd.stat = (lcd.stat & 0x03) | (val & 0x78); break;

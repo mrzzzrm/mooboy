@@ -44,7 +44,7 @@ int main(int argc, const char **argv) {
 
     init(argc, argv);
     emu_set_hw(CGB_HW);
-    sprintf(rom, "instr_timing.gb");
+    sprintf(rom, "lcd/1-lcd_sync.gb");
     load_romfile(rom);
     emu_run();
     close();

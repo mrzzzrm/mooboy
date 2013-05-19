@@ -344,16 +344,14 @@ static op_chunk_t *op_create_cb_chunk(u8 op) {
 
 
     if((op & 0x0F) == 0x06 || (op & 0x0F) == 0x0E) {
-//        if((op & 0xC0) == 0x40)
-//            MCS(3)
-//        else
+        if((op & 0xC0) == 0x40)
+            MCS(3)
+        else
             MCS(4)
     }
     else {
         MCS(2)
     }
-
-    printf("%.2X: %i\n", op, c->mcs);
 
     return c;
 }
