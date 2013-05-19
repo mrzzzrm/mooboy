@@ -419,7 +419,9 @@ void op_cb(op_chunk_t *c) {
 
     cbc->sp = 0;
     cbc->funcs[cbc->sp++](cbc);
+
     cpu.cc += cbc->mcs;
+
 }
 
 void op_swap(op_chunk_t *c) {
@@ -522,16 +524,15 @@ void op_jp(op_chunk_t *c) {
 void op_jr(op_chunk_t *c) {
     debug_trace_op("JR"); debug_trace_opl_data(PC + (s8)OPLB);
 
-    u16 _pc = PC;
+    CPU_MCS(2);
     switch(c->op) {
-        case 0x18: cpu.pc.w += (s8)OPLB; break;
-        case 0x20: if(!FZ) PC += (s8)OPLB; break;
-        case 0x28: if(FZ)  PC += (s8)OPLB; break;
-        case 0x30: if(!FC) PC += (s8)OPLB; break;
-        case 0x38: if(FC)  PC += (s8)OPLB; break;
+        case 0x18: cpu.pc.w += (s8)OPLB; CPU_MCS(1); return;
+        case 0x20: if(!FZ) {PC += (s8)OPLB; CPU_MCS(1); } return;
+        case 0x28: if(FZ)  {PC += (s8)OPLB; CPU_MCS(1); } break;
+        case 0x30: if(!FC) {PC += (s8)OPLB; CPU_MCS(1); } break;
+        case 0x38: if(FC)  {PC += (s8)OPLB; CPU_MCS(1); } break;
         default: assert(0);
     }
-    CPU_MCS(_pc == PC ? 2 : 3);
 }
 
 void op_call(op_chunk_t *c) {
@@ -568,7 +569,7 @@ void op_ret(op_chunk_t *c) {
     debug_trace_op("RET");
     u16 _pc = PC;
     switch(c->op) {
-        case 0xC9: PC = pop(); CPU_MCS(2); return; //goto ret;
+        case 0xC9: PC = pop(); CPU_MCS(4); return; //goto ret;
         case 0xC0: if(!FZ) PC = pop(); break;
         case 0xC8: if(FZ)  PC = pop(); break;
         case 0xD0: if(!FC) PC = pop(); break;

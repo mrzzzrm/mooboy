@@ -80,7 +80,7 @@ static op_chunk_t *op_create_chunk(u8 op) {
             VAR_MCS();
         break;
         case 0xC9: PUSH_FUNC(op_ret); VAR_MCS(); break;
-        case 0xCB: PUSH_FUNC(op_cb); break;
+        case 0xCB: PUSH_FUNC(op_cb);VAR_MCS(); break;
         case 0xCD:
             PUSH_FUNC(op_opl_iw);
             PUSH_FUNC(op_call);
@@ -343,10 +343,17 @@ static op_chunk_t *op_create_cb_chunk(u8 op) {
     }
 
 
-    if((op & 0x0F) == 0x06 || (op & 0x0F) == 0x0E)
-        MCS(4)
-    else
-        MCS(2);
+    if((op & 0x0F) == 0x06 || (op & 0x0F) == 0x0E) {
+//        if((op & 0xC0) == 0x40)
+//            MCS(3)
+//        else
+            MCS(4)
+    }
+    else {
+        MCS(2)
+    }
+
+    printf("%.2X: %i\n", op, c->mcs);
 
     return c;
 }
