@@ -198,7 +198,7 @@ static void load_sym_file(const char *path) {
 static void load_same_sym_file() {
     char *buf = malloc(strlen(sys_get_rompath()) + 3);
     char *dot;
-    strcpy(buf, sys_get_rompath());
+    strcpy(buf, "rom/banks.gb");
     dot = strrchr(buf, '.');
     assert(dot != NULL);
     strcpy(dot+1, "sym\0");

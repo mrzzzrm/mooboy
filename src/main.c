@@ -44,7 +44,8 @@ int main(int argc, const char **argv) {
 
     init(argc, argv);
     emu_set_hw(CGB_HW);
-    sprintf(rom, "lcd/1-lcd_sync.gb");
+    //sprintf(rom, "airforcedelta.gbc");
+    sprintf(rom, "donkeykong.gbc");
     load_romfile(rom);
     emu_run();
     close();

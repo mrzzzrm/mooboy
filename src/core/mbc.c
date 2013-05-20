@@ -29,12 +29,13 @@ static void mbc1_lower_write(u16 adr, u8 val) {
                 printf("Ignored setting of ROM-bank %i\n", mbc1.rombank);
                 mbc1.rombank = 1;
             }
+            printf("SETTING ROMBANK %i\n", mbc1.rombank);
             mbc.rombank = card.rombanks[mbc1.rombank];
         break;
         case 0x4: case 0x5:
             if(mbc1.mode == 0) { // Upper ROM bank bits
-                mbc1.mode &= 0x1F;
-                mbc1.mode |= (val & 0x03) << 5;
+                mbc1.rombank &= 0x1F;
+                mbc1.rombank |= (val & 0x03) << 5;
                 if(mbc1.rombank >= card.romsize) {
                 printf("Ignored setting of ROM-bank %i\n", mbc1.rombank);
                     mbc1.rombank = 1;
@@ -42,6 +43,7 @@ static void mbc1_lower_write(u16 adr, u8 val) {
                 mbc.rombank = card.rombanks[mbc1.rombank];
             }
             else { // Cartridge RAM bits
+                printf("SETTING RAMBANK %i\n", val & 0x03);
                 mbc.srambank = card.srambanks[val & 0x03];
             }
         break;
@@ -73,6 +75,7 @@ static void mbc3_lower_write(u16 adr, u8 val) {
             //exit(3);
         break;
         case 2: case 3: // Select ROM bank
+            printf("SETTING ROMBANK %i\n", (val & 0x7F) == 0 ? 0x01 : (val & 0x7F));
             mbc.rombank = card.rombanks[(val & 0x7F) == 0 ? 0x01 : (val & 0x7F)];
         break;
         case 4: case 5: // Select RAM bank or RTC register
@@ -103,18 +106,29 @@ static void mbc5_lower_write(u16 adr, u8 val) {
         case 2:  // Select lower 8 bit of ROM bank
             mbc5.rombank &= 0xFF00;
             mbc5.rombank |= val;//printf("L Selected ROMbank %i\n", mbc5.rombank);
-            assert(mbc5.rombank < card.romsize);
+            if(mbc5.rombank >= card.romsize) {
+                printf("Crasher: ");
+                debug_after();
+                assert(0);
+            }
+          //  printf("SETTING ROMBANK %i\n", mbc5.rombank);
             mbc.rombank = card.rombanks[mbc5.rombank];
         break;
         case 3: // Select upper 1 bit of ROM bank
+        break;
             mbc5.rombank &= 0xFEFF;
             mbc5.rombank |= ((u16)val&0x01)<<8;
-            assert(mbc5.rombank < card.romsize);
+            if(mbc5.rombank >= card.romsize) {
+                printf("Crasher: ");
+                debug_after();
+                assert(0);
+            }
+         //   printf("SETTING ROMBANK %i\n", mbc5.rombank);
             mbc.rombank = card.rombanks[mbc5.rombank];//printf("H Selected ROMbank %i\n", mbc5.rombank);
         break;
         case 4: case 5:
             if((val&0x0F) >= card.sramsize) {
-                printf("Selected invalid rambank %.2X\n", val&0x0F);
+     //           printf("Selected invalid rambank %.2X\n", val&0x0F);
                 return;
             }
             mbc.srambank = card.srambanks[val & 0x01];

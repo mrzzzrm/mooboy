@@ -542,11 +542,11 @@ void op_call(op_chunk_t *c) {
 
     CPU_MCS(3);
     switch(c->op) {
-        case 0xCD: push(PC); PC = OPLW; CPU_MCS(3); break;
-        case 0xC4: if(!FZ) {push(PC); PC = OPLW; CPU_MCS(3);} break;
-        case 0xCC: if(FZ)  {push(PC); PC = OPLW; CPU_MCS(3);} break;
-        case 0xD4: if(!FC) {push(PC); PC = OPLW; CPU_MCS(3);} break;
-        case 0xDC: if(FC)  {push(PC); PC = OPLW; CPU_MCS(3);} break;
+        case 0xCD: push(PC); PC = OPLW; CPU_MCS(3); debug_call(OPLW); break;
+        case 0xC4: if(!FZ) {push(PC); PC = OPLW; CPU_MCS(3);debug_call(OPLW);} break;
+        case 0xCC: if(FZ)  {push(PC); PC = OPLW; CPU_MCS(3);debug_call(OPLW);} break;
+        case 0xD4: if(!FC) {push(PC); PC = OPLW; CPU_MCS(3);debug_call(OPLW);} break;
+        case 0xDC: if(FC)  {push(PC); PC = OPLW; CPU_MCS(3);debug_call(OPLW);} break;
         default: assert(0);
     }
 //
@@ -573,11 +573,11 @@ void op_ret(op_chunk_t *c) {
 
     CPU_MCS(2);
     switch(c->op) {
-        case 0xC9: PC = pop(); CPU_MCS(2); break;
-        case 0xC0: if(!FZ) {PC = pop(); CPU_MCS(3);} break;
-        case 0xC8: if(FZ)  {PC = pop(); CPU_MCS(3);} break;
-        case 0xD0: if(!FC) {PC = pop(); CPU_MCS(3);} break;
-        case 0xD8: if(FC)  {PC = pop(); CPU_MCS(3);} break;
+        case 0xC9: PC = pop(); CPU_MCS(2); debug_ret(); break;
+        case 0xC0: if(!FZ) {PC = pop(); CPU_MCS(3); debug_ret();} break;
+        case 0xC8: if(FZ)  {PC = pop(); CPU_MCS(3); debug_ret();} break;
+        case 0xD0: if(!FC) {PC = pop(); CPU_MCS(3); debug_ret();} break;
+        case 0xD8: if(FC)  {PC = pop(); CPU_MCS(3); debug_ret();} break;
     }
 
 //    ret:

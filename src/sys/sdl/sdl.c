@@ -202,12 +202,13 @@ bool sys_new_rom()  {
 }
 
 const char *sys_get_rompath() {
-    const char *rom;
-    if((rom = cmd_get("--rom")) == NULL) {
-        err_set(ERR_ROM_NOT_FOUND);
-        return NULL;
-    }
-    return rom;
+//    const char *rom;
+//    if((rom = cmd_get("--rom")) == NULL) {
+//        err_set(ERR_ROM_NOT_FOUND);
+//        return NULL;
+//    }
+//    return rom;
+
 }
 
 void sys_sleep(time_t ticks) {

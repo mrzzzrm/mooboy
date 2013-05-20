@@ -192,7 +192,7 @@ static op_chunk_t *op_create_chunk(u8 op) {
                     chunk_opr_stdb(c, op & 0x07);
                     chunk_opl_stdb(c, (op & 0x38)>>3);
                     PUSH_FUNC(op_ld_b);
-                    if((op & 0x0F) == 0x06 || (op & 0x0F) == 0x0E || (((op & 0x70) == 0x70) && !(op & 0x08)))
+                    if((op & 0x0F) == 0x06 || (op & 0x0F) == 0x0E || ((op & 0x70) && !(op & 0x08)))
                         MCS(2);
                 break;
                 case 0x02: // 10XX XXXX
@@ -304,13 +304,19 @@ static void chunk_cb_opl_stdb(op_chunk_t *c, u8 b) {
     chunk_opl_stdb(c, b);
 }
 
-static void chunk_cb_opr_stdb(op_chunk_t *c, u8 b) {
-    if(b == 0x06) {
-        PUSH_FUNC(op_opr_memcall);
+static void chunk_cb_opr_stdb(op_chunk_t *c, u8 op) {
+    if((op&0x07) == 0x06) {
+        if(op > 0x7F) {
+            PUSH_FUNC(op_opr_memcall);
+        }
+        else {
+            PUSH_FUNC(op_opr_memread);
+        }
+
         c->opr.w = &HL;
     }
     else {
-        c->opr.b = BREG(b);
+        c->opr.b = BREG(op&0x07);
     }
 }
 
@@ -324,7 +330,7 @@ static op_chunk_t *op_create_cb_chunk(u8 op) {
         chunk_cb_opl_stdb(c, op & 0x07);
     }
     else {
-        chunk_cb_opr_stdb(c, op & 0x07);
+        chunk_cb_opr_stdb(c, op);
     }
 
 	switch(HN) {

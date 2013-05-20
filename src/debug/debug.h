@@ -8,6 +8,7 @@
         int verbose;
         int console;
         int log_indent;
+        u8 op;
 
         struct {
             int mode;

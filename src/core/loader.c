@@ -7,7 +7,7 @@
 #include "emu.h"
 #include "mbc.h"
 
-static u8 rom_bankcount(u8 ref) {
+static u16 rom_bankcount(u8 ref) {
     if(ref <= 8) {
         return 2 << ref;
     }
@@ -91,7 +91,7 @@ static void init_mbc(u8 ref) {
 }
 
 static void init_rombanks(u8 ref, u8 *data, u32 datasize) {
-    card.romsize = rom_bankcount(ref);
+    card.romsize = rom_bankcount(ref);printf("%i\n", ref);
         assert(card.romsize != 0);
         assert(card.romsize * 0x4000 == datasize);
     card.rombanks = realloc(card.rombanks, card.romsize * sizeof(*card.rombanks));

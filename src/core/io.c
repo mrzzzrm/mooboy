@@ -45,7 +45,7 @@ u8 io_read(u16 adr) {
         case 0x41: return lcd.stat; break;
         case 0x42: return lcd.scy; break;
         case 0x43: return lcd.scx; break;
-        case 0x44: return lcd.ly; break;
+        case 0x44: return lcd.ly;break;
         case 0x45: return lcd.lyc; break;
         case 0x46: return 0x00; break;
         case 0x47: return lcd.bgp; break;
@@ -112,8 +112,8 @@ void io_write(u16 adr, u8 val) {
         case 0x40:
             if(!(lcd.c & 0x80) && (val & 0x80)) {
                 lcd.ly = 0;
-                lcd.cc = 0;
-                lcd.stat &= 0xF8;
+                lcd.cc = 1;
+                //lcd.stat &= 0xF8;
                 printf("LCDC ON\n");
             }
 
@@ -127,8 +127,8 @@ void io_write(u16 adr, u8 val) {
             }
         break;
         case 0x41: lcd.stat = (lcd.stat & 0x03) | (val & 0x78); break;
-        case 0x42: lcd.scy = val; break;
-        case 0x43: lcd.scx = val; break;
+        case 0x42: lcd.scy = val; /*printf("SCY:=%i\n", val);*/ break;
+        case 0x43: lcd.scx = val; /*printf("SCX:=%i\n", val);*/ break;
         case 0x44: lcd.ly = 0x00; lcd.cc = 0;  break;
         case 0x45: lcd.lyc = val; break;
         case 0x46: lcd_dma(val); break;

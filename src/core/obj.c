@@ -82,18 +82,20 @@ static unsigned int select_obj_indexes(u8 **buf) {
 static unsigned int establish_render_priority(u8 **objs, unsigned int count) {
     u8 switched;
 
-    do {
-        u8 o;
-        switched = 0;
-        for(o = 0; o + 1 < count; o++) {
-            if(POSX(objs[o+1]) < POSX(objs[o])) {
-                u8 *tmp = objs[o];
-                objs[o] = objs[o+1];
-                objs[o+1] = tmp;
-                switched = 1;
+    if(emu.mode == NON_CGB_MODE) {
+      do {
+            u8 o;
+            switched = 0;
+            for(o = 0; o + 1 < count; o++) {
+                if(POSX(objs[o+1]) > POSX(objs[o])) {
+                    u8 *tmp = objs[o];
+                    objs[o] = objs[o+1];
+                    objs[o+1] = tmp;
+                    switched = 1;
+                }
             }
-        }
-    } while(switched);
+        } while(switched);
+    }
 
     return count > MAX_PER_LINE ? MAX_PER_LINE : count;
 }
@@ -139,7 +141,7 @@ static inline void render_obj(u8 *obj, u8 *scan) {
 
 
 void lcd_scan_obj(u8 *scan) {
-    unsigned int o;
+    int o;
     unsigned int obj_count;
     u8 *obj_indexes[OAM_OBJ_COUNT];
 
@@ -149,7 +151,7 @@ void lcd_scan_obj(u8 *scan) {
     obj_count = select_obj_indexes(obj_indexes);
     obj_count = establish_render_priority(obj_indexes, obj_count);
 
-    for(o = 0; o < obj_count; o++) {
+    for(o = obj_count - 1; o >= 0; o--) {
         render_obj(obj_indexes[o], scan);
     }
 }
