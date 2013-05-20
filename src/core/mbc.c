@@ -21,6 +21,7 @@ static void mbc0_lower_write(u16 adr, u8 val) {
 static void mbc1_lower_write(u16 adr, u8 val) {
     switch(adr >> 12) {
         case 0x0: case 0x1: // Enable/Disable external RAM
+            mbc.ram_enabled = (val & 0x0F) == 0x0A;
         break;
         case 0x2: case 0x3: // Select lower ROM bank bits
             mbc1.rombank &= 0xE0;
@@ -58,6 +59,7 @@ static void mbc1_lower_write(u16 adr, u8 val) {
 static void mbc2_lower_write(u16 adr, u8 val) {
     switch(adr >> 12) {
         case 0: case 1: // RAM en/disable
+            mbc.ram_enabled = (adr & 0x0100) == 0x0000;
         break;
         case 2: case 3:
             if(adr & 0x10) { // Least significant bit of upper address byte has to be zero.
@@ -72,16 +74,16 @@ static void mbc2_lower_write(u16 adr, u8 val) {
 static void mbc3_lower_write(u16 adr, u8 val) {
     switch(adr >> 12) {
         case 0: case 1: // RAM and RTC en/disable
-            //exit(3);
+            mbc.ram_enabled = (val & 0x0F) == 0x0A;
         break;
         case 2: case 3: // Select ROM bank
-            printf("SETTING ROMBANK %i\n", (val & 0x7F) == 0 ? 0x01 : (val & 0x7F));
+            //printf("SETTING ROMBANK %i\n", (val & 0x7F) == 0 ? 0x01 : (val & 0x7F));
             mbc.rombank = card.rombanks[(val & 0x7F) == 0 ? 0x01 : (val & 0x7F)];
         break;
         case 4: case 5: // Select RAM bank or RTC register
             switch(val) {
                 case 0x00: case 0x01: case 0x02: case 0x03:
-                    mbc.srambank = card.srambanks[val];
+                    mbc.srambank = card.srambanks[val & 0x03];
                     mbc3.mode = MBC3_MAP_RAM;
                 break;
                 case 0x08: case 0x09: case 0x0A: case 0x0B: case 0x0C:
@@ -102,6 +104,7 @@ static void mbc3_lower_write(u16 adr, u8 val) {
 static void mbc5_lower_write(u16 adr, u8 val) {
     switch(adr >> 12) {
         case 0: case 1: // En/disable RAM
+            mbc.ram_enabled = (val & 0x0F) == 0x0A;
         break;
         case 2:  // Select lower 8 bit of ROM bank
             mbc5.rombank &= 0xFF00;
@@ -144,7 +147,9 @@ void mbc_set_type(u8 type) {
         case 0: mbc.lower_write_func = mbc0_lower_write; break;
         case 1: mbc.lower_write_func = mbc1_lower_write; break;
         case 2: mbc.lower_write_func = mbc2_lower_write; break;
-        case 3: mbc.lower_write_func = mbc3_lower_write; break;
+        case 3:
+            mbc.lower_write_func = mbc3_lower_write;
+        break;
         case 5: mbc.lower_write_func = mbc5_lower_write; break;
         default:
             assert(0);
@@ -153,6 +158,11 @@ void mbc_set_type(u8 type) {
 }
 
 u8 mbc_upper_read(u16 adr) {
+    if(!mbc.ram_enabled) {
+        printf("Denied RAM access!\n");
+        return 0x00;
+    }
+
     if(mbc.type == 3 && mbc3.mode == MBC3_MAP_RTC) {
         return rtc.latched[rtc.mapped];
     }
@@ -167,6 +177,11 @@ void mbc_lower_write(u16 adr, u8 val) {
 }
 
 void mbc_upper_write(u16 adr, u8 val) {
+    if(!mbc.ram_enabled) {
+        printf("Denied RAM access!\n");
+        return 0x00;
+    }
+
     if(mbc.type == 3 && mbc3.mode == MBC3_MAP_RTC) {
         rtc_write(val);
     }

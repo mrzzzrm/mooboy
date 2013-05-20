@@ -27,6 +27,8 @@ void mem_reset() {
     ram.wrambank = ram.wrambanks[1];
     ram.vrambank = ram.vrambanks[0];
 
+    mbc.ram_enabled = 1;
+
     ram.wrambank_index = 1;
 }
 
@@ -51,7 +53,7 @@ u8 mem_read_byte(u16 adr) {
             return ram.wrambank[adr - 0xD000];
         break;
         case 0xE:
-            mem_read_byte(adr - 0x2000);
+            return mem_read_byte(adr - 0x2000);
         break;
         case 0xF:
             if(adr < 0xFE00) {
@@ -62,6 +64,7 @@ u8 mem_read_byte(u16 adr) {
             }
             else if(adr >= 0xFEA0 && adr < 0xFF00) { // Locked
                 printf("Read from locked memory [%.4X]\n", adr);
+                return 0xFF;
             }
             else if(adr >= 0xFF00 && adr < 0xFF80) { // IO Registers
                 return io_read(adr);
@@ -78,6 +81,7 @@ u8 mem_read_byte(u16 adr) {
             assert(0);
     }
 
+    assert(0);
     return 0x00; // ...and avoid warnings
 }
 
@@ -90,22 +94,22 @@ void mem_write_byte(u16 adr, u8 val) {
         case 0x0: case 0x1: case 0x2: case 0x3:
         case 0x4: case 0x5: case 0x6: case 0x7:
             mbc_lower_write(adr, val);
-        break;
+        return;
         case 0x8: case 0x9:
             ram.vrambank[adr - 0x8000] = val;
-        break;
+        return;
         case 0xA: case 0xB:
             mbc_upper_write(adr, val);
-        break;
+        return;
         case 0xC:
             ram.wrambanks[0][adr - 0xC000] = (mbc.type == 2) ? (val & 0x0F) : val;
-        break;
+        return;
         case 0xD:
             ram.wrambank[adr - 0xD000] = (mbc.type == 2) ? (val & 0x0F) : val;
-        break;
+        return;
         case 0xE:
             mem_write_byte(adr - 0x2000, val);
-        break;
+        return;
 
         case 0xF:
             if(adr < 0xFE00) {
@@ -128,8 +132,9 @@ void mem_write_byte(u16 adr, u8 val) {
 //
 //                printf("%.4X: INTs enabled: %.2X\n", PC-1, cpu.ie);
             }
-        break;
+        return;
     }
+    assert(0);
 }
 
 void mem_write_word(u16 adr, u16 val) {

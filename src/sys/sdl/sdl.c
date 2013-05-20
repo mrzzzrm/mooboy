@@ -158,7 +158,6 @@ static void handle_delay() {
     if(ms_ahead >= DELAY_THRESHOLD) {
         //SDL_Delay(DELAY_THRESHOLD);
     }
-
 }
 
 void sys_init(int argc, const char** argv) {
