@@ -35,8 +35,23 @@ void op_opl_memcall(op_chunk_t *c) {
     static_byte = mem_read_byte(adr);
     xc.opl.b = &static_byte;
     xc.op = c->op;
+
     xc.opr = c->opr;
     c->funcs[xc.sp++](&xc);
+    mem_write_byte(adr, static_byte);
+}
+
+void op_opl_memwrite(op_chunk_t *c) {
+    debug_trace_opl(&OPLW, 2, 1);
+
+    op_chunk_t xc = *c;
+    u16 adr = OPLW;
+
+    xc.opl.b = &static_byte;
+    xc.op = c->op;
+    xc.opr = c->opr;
+    c->funcs[xc.sp++](&xc);
+
     mem_write_byte(adr, static_byte);
 }
 

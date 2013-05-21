@@ -18,9 +18,19 @@ static u16 *wregv_sp[] = {&BC, &DE, &HL, &SP};
 static u16 *wregv_af[] = {&BC, &DE, &HL, &AF};
 
 
-static void chunk_opl_stdb(op_chunk_t *c, u8 b) {
+static void chunk_opl_stdb_rw(op_chunk_t *c, u8 b) {
     if(b == 0x06) {
         PUSH_FUNC(op_opl_memcall);
+        c->opl.w = &HL;
+    }
+    else {
+        c->opl.b = BREG(b);
+    }
+}
+
+static void chunk_opl_stdb_w(op_chunk_t *c, u8 b) {
+    if(b == 0x06) {
+        PUSH_FUNC(op_opl_memwrite);
         c->opl.w = &HL;
     }
     else {
@@ -128,7 +138,7 @@ static op_chunk_t *op_create_chunk(u8 op) {
                                     case 0x00: case 0x02: // 0010 0010 or 0011 0010
                                         c->opr.b = &A;
                                         c->opl.w = &HL;
-                                        PUSH_FUNC(op_opl_memcall);
+                                        PUSH_FUNC(op_opl_memwrite);
                                     break;
                                     case 0x01: case 0x03: // 0010 1010 or 0011 1010
                                         c->opr.w = &HL;
@@ -160,18 +170,18 @@ static op_chunk_t *op_create_chunk(u8 op) {
                             MCS(2);
                         break;
                         case 0x04: // 00XX X100
-                            chunk_opl_stdb(c, (op&0x38)>>3);
+                            chunk_opl_stdb_rw(c, (op&0x38)>>3);
                             PUSH_FUNC(op_inc_b);
                             if(op == 0x34)
                                 MCS(3);
                         case 0x05: // 00XX X101
-                            chunk_opl_stdb(c, (op&0x38)>>3);
+                            chunk_opl_stdb_rw(c, (op&0x38)>>3);
                             PUSH_FUNC(op_dec_b);
                             if(op == 0x35)
                                 MCS(3);
                         break;
                         case 0x06: // 00XX X110
-                            chunk_opl_stdb(c, (op&0x38)>>3);
+                            chunk_opl_stdb_w(c, (op&0x38)>>3);
                             PUSH_FUNC(op_opr_ib);
                             PUSH_FUNC(op_ld_b);
 
@@ -190,7 +200,7 @@ static op_chunk_t *op_create_chunk(u8 op) {
                 break;
                 case 0x01: // 01XX XXXX except 0111 0110
                     chunk_opr_stdb(c, op & 0x07);
-                    chunk_opl_stdb(c, (op & 0x38)>>3);
+                    chunk_opl_stdb_w(c, (op & 0x38)>>3);
                     PUSH_FUNC(op_ld_b);
                     if((op & 0x0F) == 0x06 || (op & 0x0F) == 0x0E || ((op & 0x70) && !(op & 0x08)))
                         MCS(2);
@@ -288,7 +298,7 @@ static op_chunk_t *op_create_chunk(u8 op) {
                                     PUSH_FUNC(op_opr_memread);
                                 }
                                 else {
-                                    PUSH_FUNC(op_opl_memcall);
+                                    PUSH_FUNC(op_opl_memwrite);
                                 }
                                 PUSH_FUNC(op_ld_b);
                             }
@@ -301,7 +311,7 @@ static op_chunk_t *op_create_chunk(u8 op) {
 }
 
 static void chunk_cb_opl_stdb(op_chunk_t *c, u8 b) {
-    chunk_opl_stdb(c, b);
+    chunk_opl_stdb_rw(c, b);
 }
 
 static void chunk_cb_opr_stdb(op_chunk_t *c, u8 op) {

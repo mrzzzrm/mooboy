@@ -6,6 +6,7 @@
 
     // Prefunctions
     void op_opl_memcall(op_chunk_t *c);
+    void op_opl_memwrite(op_chunk_t *c);
     void op_opl_ib(op_chunk_t *c);
     void op_opl_iw(op_chunk_t *c);
     void op_opl_addio(op_chunk_t *c);
