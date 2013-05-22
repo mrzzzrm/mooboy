@@ -131,7 +131,7 @@ static inline void stat_irq(u8 flag) {
 
 static inline void hblank_dma() {
     u16 end;
-
+    emu_step_hw(8);
   //  printf("%.4X %.4X => ", lcd.dma_source, lcd.dma_dest);
     for(end = lcd.dma_source + 0x10; lcd.dma_source < end; lcd.dma_source++, lcd.dma_dest++) {
         mem_write_byte(lcd.dma_dest, mem_read_byte(lcd.dma_source));
@@ -175,17 +175,17 @@ static u8 step_mode(u8 m1) {
 
 void lcd_reset() {
     lcd.c = 0x91;
-    lcd.stat = 0x82;
+    lcd.stat = 0x81;
     lcd.scx = 0;
     lcd.scy = 0;
-    lcd.ly = 0;
+    lcd.ly = 0x90;
     lcd.lyc = 0;
     lcd.wx = 0;
     lcd.wy = 0;
     lcd.bgp = 0xFC;
     lcd.obp[0] = 0xFF;
     lcd.obp[1] = 0xFF;
-    lcd.cc = 0;
+    lcd.cc = lcd.ly * DUR_SCANLINE + DUR_MODE_3;
 
     lcd.dma_source = 0x0000;
     lcd.dma_dest = 0x8000;
@@ -259,6 +259,8 @@ void lcd_dma(u8 v) {
 
 void lcd_cgb_dma() {
     u16 length, source, dest, end;
+
+    emu_step_hw((lcd.dma_length + 1) * 8);
 
     length = (lcd.dma_length + 1) * 0x10;
     source = lcd.dma_source;
