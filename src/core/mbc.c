@@ -78,7 +78,7 @@ static void mbc3_lower_write(u16 adr, u8 val) {
         break;
         case 2: case 3: // Select ROM bank
             //printf("SETTING ROMBANK %i\n", (val & 0x7F) == 0 ? 0x01 : (val & 0x7F));
-            mbc.rombank = card.rombanks[(val & 0x7F) == 0 ? 0x01 : (val & 0x7F)];
+            mbc.rombank = card.rombanks[(val & 0x7F) == 0x00 ? 0x01 : (val & 0x7F)];
         break;
         case 4: case 5: // Select RAM bank or RTC register
             switch(val) {

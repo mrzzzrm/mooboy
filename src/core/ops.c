@@ -32,12 +32,15 @@ void op_opl_memcall(op_chunk_t *c) {
     op_chunk_t xc = *c;
     u16 adr = OPLW;
 
+    emu_step_hw(c->rmcs);
     static_byte = mem_read_byte(adr);
     xc.opl.b = &static_byte;
     xc.op = c->op;
 
     xc.opr = c->opr;
     c->funcs[xc.sp++](&xc);
+
+    emu_step_hw(c->wmcs);
     mem_write_byte(adr, static_byte);
 }
 
@@ -52,6 +55,7 @@ void op_opl_memwrite(op_chunk_t *c) {
     xc.opr = c->opr;
     c->funcs[xc.sp++](&xc);
 
+    emu_step_hw(c->wmcs);
     mem_write_byte(adr, static_byte);
 }
 
@@ -87,7 +91,9 @@ void op_opr_memread(op_chunk_t *c) {
 
     op_chunk_t xc = *c;
 
+    emu_step_hw(c->rmcs);
     static_byte = mem_read_byte(OPRW);
+
     xc.opr.b = &static_byte;
     c->funcs[xc.sp++](&xc);
 }
@@ -98,11 +104,15 @@ void op_opr_memcall(op_chunk_t *c) {
     op_chunk_t xc = *c;
     u16 adr = OPRW;
 
+    emu_step_hw(c->rmcs);
     static_byte = mem_read_byte(adr);
+
     xc.opr.b = &static_byte;
     xc.op = c->op;
     xc.opl = c->opl;
     c->funcs[xc.sp++](&xc);
+
+    emu_step_hw(c->wmcs);
     mem_write_byte(adr, static_byte);
 }
 

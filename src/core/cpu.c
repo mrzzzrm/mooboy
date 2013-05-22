@@ -53,35 +53,21 @@ void cpu_reset() {
 }
 
 u8 cpu_step() {
-    u32 nfcc = cpu.nfcc;
+    u8 op;
+    u32 old_cc;
+    op_chunk_t *chunk;
 
-    if(cpu.halted) {
-        if(ints_handle_standby()) {
-            cpu.halted = 0;
-        }
+    ints_handle();
+    op = FETCH_BYTE;
+    old_cc = cpu.cc;
+    chunk = op_chunk_map[op];
 
-        cpu.step_sf_cycles = 1;
-        cpu.cc += cpu.step_sf_cycles;
-    }
-    else {
-        u8 op;
-        u32 old_cc;
-        op_chunk_t *chunk;
+    assert(chunk->funcs[0] != NULL);
 
-        ints_handle();
-        op = FETCH_BYTE;
-        old_cc = cpu.cc;
-        chunk = op_chunk_map[op];
+    chunk->sp = 0;
+    chunk->funcs[chunk->sp++](chunk);
 
-        assert(chunk->funcs[0] != NULL);
-
-        chunk->sp = 0;
-        chunk->funcs[chunk->sp++](chunk);
-        cpu.cc += chunk->mcs;
-
-        cpu.step_sf_cycles = cpu.cc - old_cc;
-
-        assert(op != 0xFA || cpu.step_sf_cycles == 4);
+    return chunk->mcs;
 //
 //        if(mcs[0][op] == -1)
 //            mcs[0][op] = cpu.step_sf_cycles;
@@ -93,15 +79,6 @@ u8 cpu_step() {
 //            ;
 //        else
 //            assert(0);
-	}
-
-    if(cpu.freq == DOUBLE_CPU_FREQ) {
-        cpu.dfcc += cpu.step_sf_cycles;
-    }
-    cpu.nfcc = cpu.cc - (cpu.dfcc >> 1);
-    cpu.step_nf_cycles = cpu.nfcc - nfcc;
-
-	return cpu.step_sf_cycles;
 }
 
 
