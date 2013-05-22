@@ -208,6 +208,10 @@ void lcd_reset() {
 void lcd_step() {
     u16 m1, m2;
 
+    if(!(lcd.c & 0x80)) {
+        return;
+    }
+
     lcd.cc += cpu.step_nf_cycles;
 
     m1 = lcd.stat & 0x03;
