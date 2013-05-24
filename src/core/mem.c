@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "io.h"
+#include "lcd.h"
 #include "cpu.h"
 #include "mbc.h"
 
@@ -16,6 +17,15 @@ void mem_init() {
 
 void mem_close() {
 
+}
+
+static u8 read_locked_mem(u16 adr) {
+    printf("Denied read from locked memory location %.4X\n", adr);
+    return 0xFF;
+}
+
+static void write_locked_mem(u16 adr, u8 val) {
+    printf("Denied write of %.2X to locked memory location %.4X\n", val, adr);
 }
 
 void mem_reset() {
@@ -41,7 +51,10 @@ u8 mem_read_byte(u16 adr) {
             return mbc.rombank[adr - 0x4000];
         break;
         case 0x8: case 0x9:
-            return ram.vrambank[adr - 0x8000];
+            if((lcd.stat & 0x03) == 0x03 && (lcd.c & 0x80))
+                return read_locked_mem(adr);
+            else
+                return ram.vrambank[adr - 0x8000];
         break;
         case 0xA: case 0xB:
             return mbc_upper_read(adr);
@@ -60,11 +73,13 @@ u8 mem_read_byte(u16 adr) {
                 return mem_read_byte(adr - 0x2000);
             }
             else if(adr >= 0xFE00 && adr < 0xFEA0) { // Sprite attributes
-                return ram.oam[adr - 0xFE00];
+                if((lcd.stat & 0x03) > 0x01 && (lcd.c & 0x80))
+                    return read_locked_mem(adr);
+                else
+                    return ram.oam[adr - 0xFE00];
             }
             else if(adr >= 0xFEA0 && adr < 0xFF00) { // Locked
-                printf("Read from locked memory [%.4X]\n", adr);
-                return 0xFF;
+                return read_locked_mem(adr);
             }
             else if(adr >= 0xFF00 && adr < 0xFF80) { // IO Registers
                 return io_read(adr);
@@ -96,7 +111,10 @@ void mem_write_byte(u16 adr, u8 val) {
             mbc_lower_write(adr, val);
         return;
         case 0x8: case 0x9:
-            ram.vrambank[adr - 0x8000] = val;
+            if((lcd.stat & 0x03) != 0x03 || !(lcd.c & 0x80))
+                ram.vrambank[adr - 0x8000] = val;
+            else
+                write_locked_mem(adr, val);
         return;
         case 0xA: case 0xB:
             mbc_upper_write(adr, val);
@@ -116,10 +134,13 @@ void mem_write_byte(u16 adr, u8 val) {
                 mem_write_byte(adr - 0x2000, val);
             }
             else if(adr >= 0xFE00 && adr < 0xFEA0) { // Sprite attributes
-                ram.oam[adr - 0xFE00] = val;
+                if((lcd.stat & 0x03) <= 0x01 || !(lcd.c & 0x80))
+                    ram.oam[adr - 0xFE00] = val;
+                else
+                    write_locked_mem(adr, val);
             }
             else if(adr >= 0xFEA0 && adr < 0xFF00) { // Locked
-                printf("Write to locked memory [%.4X] = %.2X\n", adr, val);
+                write_locked_mem(adr, val);
             }
             else if(adr >= 0xFF00 && adr < 0xFF80) { // IO Registers
                 return io_write(adr, val);
@@ -129,8 +150,8 @@ void mem_write_byte(u16 adr, u8 val) {
             }
             else {
                 cpu.ie = val & 0x1F;
-//
-                printf("IE %.2X\n", cpu.ie);
+
+//                printf("IE %.2X\n", cpu.ie);
             }
         return;
     }

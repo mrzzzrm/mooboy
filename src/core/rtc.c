@@ -22,15 +22,23 @@ static void rtc_next_day() {
 
 static void rtc_tick(u8 r) {
     u8 *regs[] = {&rtc.ticking[S], &rtc.ticking[M], &rtc.ticking[H]};
-    if(r < 3) {
-        (*regs[r])++;
-        if(*regs[r] > 59) {
-            *regs[r] = 0;
-            rtc_tick(*regs[r+1]);
-        }
-    }
-    else {
-        rtc_next_day();
+    switch(r) {
+        case 0: case 1:
+            (*regs[r])++;
+            if(*regs[r] > 59) {
+                *regs[r] = 0;
+                rtc_tick(r+1);
+            }
+        break;
+        case 2:
+            (*regs[r])++;
+            if(*regs[r] > 24) {
+                *regs[r] = 0;
+                rtc_tick(r+1);
+            }
+        break;
+        case 3:
+            rtc_next_day();
     }
 }
 
@@ -40,7 +48,7 @@ void rtc_reset() {
 
 void rtc_step() {
     if(mbc.type == 3) {
-        rtc.cc += cpu.step_nf_cycles;
+        rtc.cc += cpu.step_sf_cycles;
         if(rtc.ticking[DH] & 0x40 || rtc.cc < cpu.freq) { // Halt bit set or next tick not yet reached
             return;
         }

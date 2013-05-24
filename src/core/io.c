@@ -113,7 +113,7 @@ void io_write(u16 adr, u8 val) {
             if(!(lcd.c & val & 0x80)) {
                 if(val & 0x80) { printf("LCDC ON\n");
                     lcd.stat = (lcd.stat & 0xF8) | 0x04;
-                    lcd.cc = 0;
+                    lcd.cc = 1;
                 }
                 else { printf("LCDC OFF\n");
                     lcd.ly = 0;
@@ -150,24 +150,26 @@ void io_write(u16 adr, u8 val) {
 
         case 0x4F: ram.vrambank = ram.vrambanks[val & 0x01]; break;
 
-        case 0x51: lcd.dma_source = (lcd.dma_source & 0x00FF) | (val << 8); //printf("HDMA1 activity!\n");
+        case 0x51: lcd.dma_source = (lcd.dma_source & 0x00FF) | (val << 8); printf("HDMA source = %.4X\n", lcd.dma_source);
         break;
-        case 0x52: lcd.dma_source = (lcd.dma_source & 0xFF00) | (val & 0xF0); //printf("HDMA2 activity!\n");
+        case 0x52: lcd.dma_source = (lcd.dma_source & 0xFF00) | (val & 0xF0); printf("HDMA source = %.4X\n", lcd.dma_source);
         break;
-        case 0x53: lcd.dma_dest = (lcd.dma_dest & 0x80FF) | ((val & 0x1F) << 8); //printf("HDMA3 activity!\n");
+        case 0x53: lcd.dma_dest = (lcd.dma_dest & 0x80FF) | ((val & 0x1F) << 8); printf("HDMA dest = %.4X\n", lcd.dma_dest);
         break;
-        case 0x54: lcd.dma_dest = (lcd.dma_dest & 0xFF00) | (val & 0xF0);// printf("HDMA4 activity!\n");
+        case 0x54: lcd.dma_dest = (lcd.dma_dest & 0xFF00) | (val & 0xF0);printf("HDMA dest = %.4X\n", lcd.dma_dest);
         break;
         case 0x55:
-            //printf("HDMA %.4X => %.4X (%.2X)!\n", lcd.dma_source, lcd.dma_dest, val);
+            printf("HDMA %.4X => %.4X (%.2X)!\n", lcd.dma_source, lcd.dma_dest, val);
             lcd.dma_length = val & 0x7F;
             if(val & 0x80) {
+                printf("  General pupose HDMA\n");
                 lcd.dma_hblank_inactive = 0x00;
             }
             else {
+                printf("  HBlank HDMA\n");
                 if(lcd.dma_hblank_inactive) {
                     lcd_cgb_dma();
-                    //printf(" ==> Performed!\n");
+                    printf(" ==> Performed!\n");
                     lcd.dma_length = 0x7F;
                 }
                 lcd.dma_hblank_inactive = 0x80;

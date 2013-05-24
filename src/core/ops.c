@@ -530,7 +530,7 @@ void op_di(op_chunk_t *c) {
     if(cpu.ime == IME_ON) {
         cpu.ime = IME_DOWN;
     }
-    printf("DI\n");
+//    printf("DI\n");
 }
 
 void op_ei(op_chunk_t *c) {
@@ -538,7 +538,7 @@ void op_ei(op_chunk_t *c) {
     if(cpu.ime == IME_OFF) {
         cpu.ime = IME_UP;
     }
-    printf("EI\n");
+ //   printf("EI\n");
 }
 
 void op_jp(op_chunk_t *c) {
@@ -631,6 +631,6 @@ void op_reti(op_chunk_t *c) {
 
 //    indents-=2;if(indents < 0) indents = 0;
 //    int i; for(i=0; i<indents;i++) printf(" ");
-    printf("RETI\n");
+//    printf("RETI\n");
 }
 
