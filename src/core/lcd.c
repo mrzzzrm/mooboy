@@ -146,18 +146,10 @@ static inline void hblank_dma() {
 }
 
 static u8 step_mode(u8 m1) {
-//    static int old_fc = 0;
-//    static u32 old_cc = 0;
 
     u16 fc = lcd.cc % DUR_FULL_REFRESH;
     lcd.ly = fc / DUR_SCANLINE;
     STAT_SET_CFLAG(lcd.ly == lcd.lyc ? 1 : 0);
-   // printf("%i\n", lcd.ly);
-//    if(old_fc > fc) {
-//        printf("%.8i %i %.5i %.10i\n", fc, cpu.nfcc, old_fc, old_cc);
-//    }
-//    old_fc = fc;
-//    old_cc = cpu.nfcc;
 
     if(lcd.ly < 144) {
         u16 lc = fc % DUR_SCANLINE;
@@ -207,6 +199,7 @@ void lcd_reset() {
 
 void lcd_step() {
     u16 m1, m2;
+    u8 old_ly;
 
     if(!(lcd.c & 0x80)) {
         return;
@@ -214,9 +207,17 @@ void lcd_step() {
 
     lcd.cc += cpu.step_nf_cycles;
 
+    old_ly = lcd.ly;
     m1 = lcd.stat & 0x03;
     m2 = step_mode(m1);
     STAT_SET_MODE(m2);
+
+
+    if(lcd.ly != old_ly) {
+        if(lcd.ly == lcd.lyc) {
+            stat_irq(SIF_LYC);
+        }
+    }
 
     if(m1 != m2) {
         switch(m2) {
@@ -234,13 +235,9 @@ void lcd_step() {
                 stat_irq(SIF_VBLANK);
                 sys_fb_ready();
                 swap_fb();
-                //SDL_Delay(100);
             break;
             case 0x02:
                 stat_irq(SIF_OAM);
-                if(lcd.ly == lcd.lyc) {
-                    stat_irq(SIF_LYC);
-                }
             break;
             case 0x03:
             break;

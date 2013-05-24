@@ -16,7 +16,7 @@
         u8 sp;
         void (*funcs[5])(op_chunk_t *c);
         op_arg opl, opr; // Pointers to 8/16 Bit memory locations
-        u8 rmcs, wmcs, mcs;
+        u8 rmcs, wmcs, mcs, xmcs;
     };
 
     extern op_chunk_t *op_chunk_map[0x100];

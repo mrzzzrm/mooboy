@@ -65,9 +65,10 @@ u8 cpu_step() {
     assert(chunk->funcs[0] != NULL);
 
     chunk->sp = 0;
+    chunk->xmcs = 0;
     chunk->funcs[chunk->sp++](chunk);
 
-    return chunk->mcs;
+    return chunk->mcs + chunk->xmcs;
 //
 //        if(mcs[0][op] == -1)
 //            mcs[0][op] = cpu.step_sf_cycles;

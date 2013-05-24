@@ -112,8 +112,8 @@ void io_write(u16 adr, u8 val) {
         case 0x40:
             if(!(lcd.c & val & 0x80)) {
                 if(val & 0x80) { printf("LCDC ON\n");
-                    lcd.stat = (lcd.stat & 0xF8) | 0x00;
-                    lcd.cc = 20;
+                    lcd.stat = (lcd.stat & 0xF8) | 0x04;
+                    lcd.cc = 0;
                 }
                 else { printf("LCDC OFF\n");
                     lcd.ly = 0;

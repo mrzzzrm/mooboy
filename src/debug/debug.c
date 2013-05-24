@@ -327,7 +327,7 @@ void debug_after() {
     trace_after();
     u16 sp = dbg.before.cpu.sp.w;
     printf("%.4X(%.2X %.4X %.4X %.4X %.4X %.4X): %12s ", dbg.before.cpu.pc.w, dbg.op, dbg.before.cpu.af.w, dbg.before.cpu.bc.w, dbg.before.cpu.de.w, dbg.before.cpu.hl.w, dbg.before.cpu.sp.w, dbg.trace.data[dbg.trace.size-1]);
-    printf("[%.4X %.4X %.4X %.4X] RB: %i %.2X %.2X %.2X\n", mem_read_word(sp), mem_read_word(sp + 2), mem_read_word(sp + 4), mem_read_word(sp + 6), (u8(*)[0x4000])mbc.rombank - card.rombanks, lcd.c, lcd.stat, lcd.ly);
+    printf("[%.4X] RB: %i %.2X %.2X %.2X(%i/%i/%i/%i) %i %i\n", mem_read_word(sp), (u8(*)[0x4000])mbc.rombank - card.rombanks, lcd.c, lcd.stat, lcd.ly, lcd.cc, cpu.cc, cpu.nfcc, cpu.dfcc, cpu.step_nf_cycles, cpu.step_sf_cycles);
 
     if(dbg.console) {
         fprintf(stderr, "  %s\n", dbg.trace.data[dbg.trace.size-1]);

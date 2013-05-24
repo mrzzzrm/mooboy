@@ -8,7 +8,7 @@
 #include "chunks.h"
 #include "debug/debug.h"
 
-#define CPU_MCS(mcs) cpu.cc += (mcs);
+#define CPU_MCS(mcs) c->xmcs += (mcs);
 
 static u8 static_byte;
 static u16 static_word;
@@ -36,9 +36,11 @@ void op_opl_memcall(op_chunk_t *c) {
     static_byte = mem_read_byte(adr);
     xc.opl.b = &static_byte;
     xc.op = c->op;
-
+    xc.xmcs = 0;
     xc.opr = c->opr;
+
     c->funcs[xc.sp++](&xc);
+    CPU_MCS(xc.xmcs);
 
     emu_step_hw(c->wmcs);
     mem_write_byte(adr, static_byte);
@@ -53,7 +55,10 @@ void op_opl_memwrite(op_chunk_t *c) {
     xc.opl.b = &static_byte;
     xc.op = c->op;
     xc.opr = c->opr;
+    xc.xmcs = 0;
+
     c->funcs[xc.sp++](&xc);
+    CPU_MCS(xc.xmcs);
 
     emu_step_hw(c->wmcs);
     mem_write_byte(adr, static_byte);
@@ -90,12 +95,14 @@ void op_opr_memread(op_chunk_t *c) {
     debug_trace_opr(&OPRW, 2, 1);
 
     op_chunk_t xc = *c;
+    xc.xmcs = 0;
 
     emu_step_hw(c->rmcs);
     static_byte = mem_read_byte(OPRW);
 
     xc.opr.b = &static_byte;
     c->funcs[xc.sp++](&xc);
+    CPU_MCS(xc.xmcs);
 }
 
 void op_opr_memcall(op_chunk_t *c) {
@@ -110,7 +117,9 @@ void op_opr_memcall(op_chunk_t *c) {
     xc.opr.b = &static_byte;
     xc.op = c->op;
     xc.opl = c->opl;
+    xc.xmcs = 0;
     c->funcs[xc.sp++](&xc);
+    CPU_MCS(xc.xmcs);
 
     emu_step_hw(c->wmcs);
     mem_write_byte(adr, static_byte);
