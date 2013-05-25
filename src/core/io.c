@@ -58,11 +58,11 @@ u8 io_read(u16 adr) {
 
         case 0x4F: return ram.vrambank == ram.vrambanks[0] ? 0 : 1; break;
 
-        case 0x51: printf("HDMA LS read: %.2X\n", lcd.dma_source >> 8); return lcd.dma_source >> 8; break;
-        case 0x52: printf("HDMA HS read: %.2X\n", lcd.dma_source & 0xFF); return lcd.dma_source & 0xFF; break;
-        case 0x53: printf("HDMA LD read: %.2X\n", lcd.dma_dest >> 8); return lcd.dma_dest >> 8; break;
-        case 0x54: printf("HDMA LH read: %.2X\n", lcd.dma_dest & 0xFF); return lcd.dma_dest & 0xFF; break;
-        case 0x55: printf("HDMA CNTRL read: %.2X\n", lcd.dma_length | lcd.dma_hblank_inactive); return lcd.dma_length | lcd.dma_hblank_inactive; break;
+        case 0x51: printf("HDMA LS read: %.2X\n", lcd.hdma_source >> 8); return lcd.hdma_source >> 8; break;
+        case 0x52: printf("HDMA HS read: %.2X\n", lcd.hdma_source & 0xFF); return lcd.hdma_source & 0xFF; break;
+        case 0x53: printf("HDMA LD read: %.2X\n", lcd.hdma_dest >> 8); return lcd.hdma_dest >> 8; break;
+        case 0x54: printf("HDMA LH read: %.2X\n", lcd.hdma_dest & 0xFF); return lcd.hdma_dest & 0xFF; break;
+        case 0x55: printf("HDMA CNTRL read: %.2X\n", lcd.hdma_length | lcd.hdma_inactive); return lcd.hdma_length | lcd.hdma_inactive; break;
 
         case 0x56: return 0x40; break;
 
@@ -150,29 +150,29 @@ void io_write(u16 adr, u8 val) {
 
         case 0x4F: ram.vrambank = ram.vrambanks[val & 0x01]; break;
 
-        case 0x51: lcd.dma_source = (lcd.dma_source & 0x00FF) | (val << 8); printf("HDMA source = %.4X\n", lcd.dma_source);
+        case 0x51: lcd.hdma_source = (lcd.hdma_source & 0x00FF) | (val << 8); printf("HDMA source = %.4X\n", lcd.hdma_source);
         break;
-        case 0x52: lcd.dma_source = (lcd.dma_source & 0xFF00) | (val & 0xF0); printf("HDMA source = %.4X\n", lcd.dma_source);
+        case 0x52: lcd.hdma_source = (lcd.hdma_source & 0xFF00) | (val & 0xF0); printf("HDMA source = %.4X\n", lcd.hdma_source);
         break;
-        case 0x53: lcd.dma_dest = (lcd.dma_dest & 0x80FF) | ((val & 0x1F) << 8); printf("HDMA dest = %.4X\n", lcd.dma_dest);
+        case 0x53: lcd.hdma_dest = (lcd.hdma_dest & 0x80FF) | ((val & 0x1F) << 8); printf("HDMA dest = %.4X\n", lcd.hdma_dest);
         break;
-        case 0x54: lcd.dma_dest = (lcd.dma_dest & 0xFF00) | (val & 0xF0);printf("HDMA dest = %.4X\n", lcd.dma_dest);
+        case 0x54: lcd.hdma_dest = (lcd.hdma_dest & 0xFF00) | (val & 0xF0);printf("HDMA dest = %.4X\n", lcd.hdma_dest);
         break;
         case 0x55:
-            printf("HDMA %.4X => %.4X (%.2X)!\n", lcd.dma_source, lcd.dma_dest, val);
-            lcd.dma_length = val & 0x7F;
+            printf("HDMA %.4X => %.4X (%.2X)!\n", lcd.hdma_source, lcd.hdma_dest, val);
+            lcd.hdma_length = val & 0x7F;
             if(val & 0x80) {
                 printf("  HBlank HDMA\n");
-                lcd.dma_hblank_inactive = 0x00;
+                lcd.hdma_inactive = 0x00;
             }
             else {
                 printf("  General pupose HDMA\n");
-                if(lcd.dma_hblank_inactive) {
-                    lcd_cgb_dma();
+                if(lcd.hdma_inactive) {
+                    lcd_gdma();
                     printf(" ==> Performed!\n");
-                    lcd.dma_length = 0x7F;
+                    lcd.hdma_length = 0x7F;
                 }
-                lcd.dma_hblank_inactive = 0x80;
+                lcd.hdma_inactive = 0x80;
             }
         break;
 

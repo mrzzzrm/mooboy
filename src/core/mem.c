@@ -150,7 +150,6 @@ void mem_write_byte(u16 adr, u8 val) {
             }
             else {
                 cpu.ie = val & 0x1F;
-
 //                printf("IE %.2X\n", cpu.ie);
             }
         return;

@@ -167,8 +167,8 @@ static void save_lcd() {
     S(lcd.obps); S(lcd.obpi);
     set_checkpoint();
     save_fb();
-    S(lcd.dma_source); S(lcd.dma_dest);
-    S(lcd.dma_length); S(lcd.dma_hblank_inactive);
+    S(lcd.hdma_source); S(lcd.hdma_dest);
+    S(lcd.hdma_length); S(lcd.hdma_inactive);
     save_lcd_maps();
     set_checkpoint();
 }
@@ -186,8 +186,8 @@ static void load_lcd() {
     R(lcd.obps); R(lcd.obpi);
     assert_checkpoint();
     load_fb();
-    R(lcd.dma_source); R(lcd.dma_dest);
-    R(lcd.dma_length); R(lcd.dma_hblank_inactive);
+    R(lcd.hdma_source); R(lcd.hdma_dest);
+    R(lcd.hdma_length); R(lcd.hdma_inactive);
     load_lcd_maps();
     assert_checkpoint();
 }

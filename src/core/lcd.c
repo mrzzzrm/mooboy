@@ -43,7 +43,7 @@ static void swap_fb() {
     u16 *tmp = lcd.clean_fb;
     lcd.clean_fb = lcd.working_fb;
     lcd.working_fb = tmp;
-    memset(lcd.working_fb, 0x00, sizeof(lcd.fb)/2);
+    //memset(lcd.working_fb, 0x00, sizeof(lcd.fb)/2);
 }
 
 static void draw_line() {
@@ -129,26 +129,25 @@ static inline void stat_irq(u8 flag) {
     }
 }
 
-static inline void hblank_dma() {
+inline void lcd_hdma() {
     u16 end;
     emu_step_hw(8);
-    printf("HBLANK HDMA: %.4X %.4X => ", lcd.dma_source, lcd.dma_dest);
-    for(end = lcd.dma_source + 0x10; lcd.dma_source < end; lcd.dma_source++, lcd.dma_dest++) {
-        mem_write_byte(lcd.dma_dest, mem_read_byte(lcd.dma_source));
+    printf("HBLANK HDMA: %.4X %.4X => ", lcd.hdma_source, lcd.hdma_dest);
+    for(end = lcd.hdma_source + 0x10; lcd.hdma_source < end; lcd.hdma_source++, lcd.hdma_dest++) {
+        mem_write_byte(lcd.hdma_dest, mem_read_byte(lcd.hdma_source));
     }
-    printf("%.4X %.4X\n", lcd.dma_source, lcd.dma_dest);
+    printf("%.4X %.4X\n", lcd.hdma_source, lcd.hdma_dest);
 
-    if(lcd.dma_length == 0x00) {
-        lcd.dma_length = 0x7F;
-        lcd.dma_hblank_inactive = 0x80;
+    if(lcd.hdma_length == 0x00) {
+        lcd.hdma_length = 0x7F;
+        lcd.hdma_inactive = 0x80;
     }
     else {
-        lcd.dma_length--;
+        lcd.hdma_length--;
     }
 }
 
 static u8 step_mode(u8 m1) {
-
     u16 fc = lcd.cc % DUR_FULL_REFRESH;
     lcd.ly = fc / DUR_SCANLINE;
     STAT_SET_CFLAG(lcd.ly == lcd.lyc ? 1 : 0);
@@ -181,10 +180,10 @@ void lcd_reset() {
     lcd.obp[1] = 0xFF;
     lcd.cc = lcd.ly * DUR_SCANLINE + DUR_MODE_3;
 
-    lcd.dma_source = 0x0000;
-    lcd.dma_dest = 0x8000;
-    lcd.dma_length = 0x00;
-    lcd.dma_hblank_inactive = 0x80;
+    lcd.hdma_source = 0x0000;
+    lcd.hdma_dest = 0x8000;
+    lcd.hdma_length = 0x00;
+    lcd.hdma_inactive = 0x80;
 
     memset(lcd.fb, 0x00, sizeof(lcd.fb));
     lcd.clean_fb = lcd.fb[0];
@@ -228,8 +227,8 @@ void lcd_step() {
                 if(lcd.c & LCDC_DISPLAY_ENABLE_BIT) {
                     draw_line();
                 }
-                if(!lcd.dma_hblank_inactive) {
-                    hblank_dma();
+                if(!lcd.hdma_inactive) {
+                    lcd_hdma();
                 }
             break;
             case 0x01:
@@ -256,22 +255,22 @@ void lcd_dma(u8 v) {
     }
 }
 
-void lcd_cgb_dma() {
+void lcd_gdma() {
     u16 length, source, dest, end;
 
-    emu_step_hw((lcd.dma_length + 1) * 8);
+    emu_step_hw((lcd.hdma_length + 1) * 8);
 
-    length = (lcd.dma_length + 1) * 0x10;
-    source = lcd.dma_source;
-    dest = lcd.dma_dest;
+    length = (lcd.hdma_length + 1) * 0x10;
+    source = lcd.hdma_source;
+    dest = lcd.hdma_dest;
     end = source + length;
 
     for(; source < end; source++, dest++) {
         mem_write_byte(dest, mem_read_byte(source));
     }
 
-    lcd.dma_length = 0x7F;
-    lcd.dma_hblank_inactive = 0x80;
+    lcd.hdma_length = 0x7F;
+    lcd.hdma_inactive = 0x80;
 }
 
 void lcd_c_dirty() {

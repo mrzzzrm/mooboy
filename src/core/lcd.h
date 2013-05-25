@@ -34,8 +34,8 @@ typedef struct {
     u16 *clean_fb;
     u16 *working_fb;
 
-    u16 dma_source, dma_dest;
-    u8 dma_length, dma_hblank_inactive;
+    u16 hdma_source, hdma_dest;
+    u8 hdma_length, hdma_inactive;
 
     u8 *bg_map, *bg_attr_map;
     u8 *wnd_map, *wnd_attr_map;
@@ -55,7 +55,8 @@ void lcd_reset();
 
 void lcd_step();
 void lcd_dma(u8 v);
-void lcd_cgb_dma();
+void lcd_gdma();
+void lcd_hdma();
 
 void lcd_c_dirty();
 void lcd_obp0_dirty();
