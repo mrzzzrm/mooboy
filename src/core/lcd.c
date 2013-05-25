@@ -132,16 +132,18 @@ static inline void stat_irq(u8 flag) {
 static inline void hblank_dma() {
     u16 end;
     emu_step_hw(8);
-  //  printf("%.4X %.4X => ", lcd.dma_source, lcd.dma_dest);
+    printf("HBLANK HDMA: %.4X %.4X => ", lcd.dma_source, lcd.dma_dest);
     for(end = lcd.dma_source + 0x10; lcd.dma_source < end; lcd.dma_source++, lcd.dma_dest++) {
         mem_write_byte(lcd.dma_dest, mem_read_byte(lcd.dma_source));
     }
-   // printf("%.4X %.4X\n", lcd.dma_source, lcd.dma_dest);
+    printf("%.4X %.4X\n", lcd.dma_source, lcd.dma_dest);
 
-    lcd.dma_length--;
     if(lcd.dma_length == 0x00) {
         lcd.dma_length = 0x7F;
         lcd.dma_hblank_inactive = 0x80;
+    }
+    else {
+        lcd.dma_length--;
     }
 }
 
