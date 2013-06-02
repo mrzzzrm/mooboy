@@ -16,8 +16,8 @@ typedef struct {
 } ram_t;
 
 typedef struct {
-    u8 (*srambanks)[0x2000];
-    u8 (*rombanks)[0x4000];
+    u8 srambanks[4][0x2000];
+    u8 rombanks[256][0x4000];
     u16 romsize;
     u16 sramsize;
 } card_t;

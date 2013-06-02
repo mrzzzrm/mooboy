@@ -43,12 +43,71 @@ static void swap_fb() {
     u16 *tmp = lcd.clean_fb;
     lcd.clean_fb = lcd.working_fb;
     lcd.working_fb = tmp;
-    //memset(lcd.working_fb, 0x00, sizeof(lcd.fb)/2);
+}
+
+static void draw_line_dmg(u8 *maps_scan, u8 *obj_scan) {
+    u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
+    u8 x;
+
+    for(x = 0; x < LCD_WIDTH; x++, pixel++) {
+        if(OBJ_PRIORITY(obj_scan[x])) {
+            if(maps_scan[x] != 0) {
+                *pixel = lcd.bgp_map[maps_scan[x]];
+            }
+            else {
+                *pixel = lcd.obp_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
+            }
+        }
+        else {
+            if(OBJ_DATA(obj_scan[x]) != 0) {
+                *pixel = lcd.obp_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
+            }
+            else {
+                *pixel = lcd.bgp_map[maps_scan[x]];
+            }
+        }
+    }
+}
+
+static void draw_line_cgb(u8 *maps_scan, u8 *obj_scan) {
+    u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
+    u8 x;
+
+    for(x = 0; x < LCD_WIDTH; x++, pixel++) {
+        u8 bg_priority;
+
+        if(lcd.c & LCDC_BG_ENABLE_BIT) {
+            if(maps_scan[x] & MAPS_PRIORITY_BIT) {
+                bg_priority = 1;
+            }
+            else {
+                bg_priority = obj_scan[x] & OBJ_PRIORITY_BIT ? 1 : 0;
+            }
+        }
+        else {
+            bg_priority = 0;
+        }
+
+        if(bg_priority) {
+            if(MAPS_DATA(maps_scan[x]) != 0 || OBJ_DATA(obj_scan[x]) == 0) {
+                *pixel = lcd.bgpd_map[MAPS_PALETTE(maps_scan[x])][MAPS_DATA(maps_scan[x])];
+            }
+            else {
+                *pixel = lcd.obpd_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
+            }
+        }
+        else {
+            if(OBJ_DATA(obj_scan[x]) != 0) {
+                *pixel = lcd.obpd_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
+            }
+            else {
+                *pixel = lcd.bgpd_map[MAPS_PALETTE(maps_scan[x])][MAPS_DATA(maps_scan[x])];
+            }
+        }
+    }
 }
 
 static void draw_line() {
-    u8 x;
-    u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
     u8 maps_scan[LCD_WIDTH];
     u8 obj_scan[LCD_WIDTH];
 
@@ -58,85 +117,28 @@ static void draw_line() {
     if(lcd.c & LCDC_OBJ_ENABLE_BIT) {
         lcd_scan_obj(obj_scan);
     }
+    lcd_scan_maps(maps_scan);
 
     if(emu.hw == DMG_HW) {
-        lcd_scan_maps(maps_scan);
-        for(x = 0; x < LCD_WIDTH; x++, pixel++) {
-            if(OBJ_PRIORITY(obj_scan[x])) {
-                if(maps_scan[x] != 0) {
-                    *pixel = lcd.bgp_map[maps_scan[x]];
-                }
-                else {
-                    *pixel = lcd.obp_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
-                }
-            }
-            else {
-                if(OBJ_DATA(obj_scan[x]) != 0) {
-                    *pixel = lcd.obp_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
-                }
-                else {
-                    *pixel = lcd.bgp_map[maps_scan[x]];
-                }
-            }
-        }
+        draw_line_dmg(maps_scan, obj_scan);
     }
     else {
-        lcd_scan_maps(maps_scan);
-        //printf("%.3i: ", lcd.ly);
-        for(x = 0; x < LCD_WIDTH; x++, pixel++) {
-            u8 bg_priority;
-
-            if(lcd.c & LCDC_BG_ENABLE_BIT) {
-                if(maps_scan[x] & MAPS_PRIORITY_BIT) {
-                    bg_priority = 1;
-                }
-                else {
-                    bg_priority = obj_scan[x] & OBJ_PRIORITY_BIT ? 1 : 0;
-                }
-            }
-            else {
-                bg_priority = 0;
-            }
-
-            //printf("%i", MAPS_PALETTE(maps_scan[x]));
-            if(bg_priority) {
-                if(MAPS_DATA(maps_scan[x]) != 0 || OBJ_DATA(obj_scan[x]) == 0) {
-                    *pixel = lcd.bgpd_map[MAPS_PALETTE(maps_scan[x])][MAPS_DATA(maps_scan[x])];
-                }
-                else {
-                    *pixel = lcd.obpd_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
-                }
-            }
-            else {
-                if(OBJ_DATA(obj_scan[x]) != 0) {
-                    *pixel = lcd.obpd_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
-                }
-                else {
-                    *pixel = lcd.bgpd_map[MAPS_PALETTE(maps_scan[x])][MAPS_DATA(maps_scan[x])];
-                }
-            }
-        }
-        //printf("\n");
+        draw_line_cgb(maps_scan, obj_scan);
     }
 }
 
 static inline void stat_irq(u8 flag) {
     if((lcd.c & LCDC_DISPLAY_ENABLE_BIT) && (lcd.stat & flag)) {
         cpu.irq |= IF_LCDSTAT;
-//        if(flag == SIF_HBLANK) {
-//            printf("HBLANK INT in LY %i\n", lcd.ly);
-//        }
     }
 }
 
 inline void lcd_hdma() {
     u16 end;
     emu_step_hw(8);
-    printf("HBLANK HDMA: %.4X %.4X => ", lcd.hdma_source, lcd.hdma_dest);
     for(end = lcd.hdma_source + 0x10; lcd.hdma_source < end; lcd.hdma_source++, lcd.hdma_dest++) {
         mem_write_byte(lcd.hdma_dest, mem_read_byte(lcd.hdma_source));
     }
-    printf("%.4X %.4X\n", lcd.hdma_source, lcd.hdma_dest);
 
     if(lcd.hdma_length == 0x00) {
         lcd.hdma_length = 0x7F;

@@ -572,7 +572,6 @@ void op_jr(op_chunk_t *c) {
 
 void op_call(op_chunk_t *c) {
     debug_trace_op("CALL"); debug_trace_opl(&OPLW, 2, 0);
-    u16 _pc = PC;
 
     CPU_MCS(3);
     switch(c->op) {

@@ -69,17 +69,6 @@ u8 cpu_step() {
     chunk->funcs[chunk->sp++](chunk);
 
     return chunk->mcs + chunk->xmcs;
-//
-//        if(mcs[0][op] == -1)
-//            mcs[0][op] = cpu.step_sf_cycles;
-//        else if(mcs[0][op] == cpu.step_sf_cycles)
-//            ;
-//        else if(mcs[1][op] == -1)
-//            mcs[1][op] = cpu.step_sf_cycles;
-//        else if(mcs[1][op] == cpu.step_sf_cycles)
-//            ;
-//        else
-//            assert(0);
 }
 
 

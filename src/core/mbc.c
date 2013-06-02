@@ -179,7 +179,6 @@ void mbc_lower_write(u16 adr, u8 val) {
 void mbc_upper_write(u16 adr, u8 val) {
     if(!mbc.ram_enabled) {
         printf("Denied RAM access!\n");
-        return 0x00;
     }
 
     if(mbc.type == 3 && mbc3.mode == MBC3_MAP_RTC) {

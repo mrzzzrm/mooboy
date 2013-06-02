@@ -19,22 +19,18 @@ void timers_reset() {
 }
 
 void timers_step() {
-    static int last = 0;
-
     if(timers.tac & 0x04) {
         timers.tima_cc += cpu.step_nf_cycles;
         u16 per_tick = MCS_PER_TIMA[timers.tac & 0x03];
         while(timers.tima_cc >= per_tick) {
             timers.tima++;
             timers.tima_cc -= per_tick;
-            last = cpu.nfcc;
             if(timers.tima == 0x00) {
                 cpu.irq |= IF_TIMER;
                 timers.tima = timers.tma;
             }
         }
     }
- //   printf("%i %i %i\n", timers.tima, cpu.cc, timers.tima_cc);
 
     timers.div_cc += cpu.step_sf_cycles;
     while(timers.div_cc >= MCS_PER_DIVT) { // Runs faster or slower depending on gameboy cpu speed

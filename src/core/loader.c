@@ -94,25 +94,21 @@ static void init_rombanks(u8 ref, u8 *data, u32 datasize) {
     card.romsize = rom_bankcount(ref);printf("%i\n", ref);
         assert(card.romsize != 0);
         assert(card.romsize * 0x4000 == datasize);
-    card.rombanks = realloc(card.rombanks, card.romsize * sizeof(*card.rombanks));
     memcpy(card.rombanks, data, datasize);
 
     fprintf(stderr, "ROM-size set to %d banks, ref = %.2X\n", card.romsize, ref);
 }
 
-static void init_xrambanks(u8 ref) {
+static void init_srambanks(u8 ref) {
     switch(ref) {
         case 0x00:
             card.sramsize = 1;
-            card.srambanks = realloc(card.srambanks, sizeof(*card.srambanks) * card.sramsize);
         break;
         case 0x01: case 0x02:
             card.sramsize = 1;
-            card.srambanks = realloc(card.srambanks, sizeof(*card.srambanks) * card.sramsize);
         break;
         case 0x03:
             card.sramsize = 4;
-            card.srambanks = realloc(card.srambanks, sizeof(*card.srambanks) * card.sramsize);
         break;
         default:
             assert(0);
@@ -127,7 +123,7 @@ void load_rom(u8 *data, uint datasize) {
     init_mode(data[0x0143]);
     init_mbc(data[0x0147]);
     init_rombanks(data[0x0148], data, datasize);
-    init_xrambanks(data[0x0149]);
+    init_srambanks(data[0x0149]);
 
     mbc.rombank = card.rombanks[1];
     mbc.srambank = card.srambanks[0];

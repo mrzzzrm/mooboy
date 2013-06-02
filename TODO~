@@ -1,15 +1,12 @@
 [Emulator]
-    - Manage double-freq-mode correctly for everything continuing to operate in normal speed
-    - Insert delay after every hblank-dma
     - Implement and handle (non-)cgb mode correctly
-    - Find a different solution for the saving of memorybank-pointers
-    - Sprite ordering in CGB mode
+    - Strip core/sound.c from all platformdependant code
+    - Fix soundbugs
+    - Rearrange core/loader.c
+    
 
 [Game Bugs]
-    - Pokemon Gold: GameFreak-Intro running to slow
-    - Pokemon Gold: Clouds in intro messed up on DMG-HW
-    - Pokemon Crystal: Black screen after credits
     - MrDriller: Blocks not shown
-    - Top Gun: Transparent areas are painted red
-    - Top Gear 2: Black screen after car chosen
+    - Pokemon Crystal: Blue background in welcome screen
+    
     

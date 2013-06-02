@@ -250,36 +250,38 @@ void sound_unlock() {
 void sound_mix() {
     sample_t samples[4];
     SDL_mutexP(mutex);
-        u16 *buf = (u16*)sound.buf;
 
-        if(!sound.on) {
-            buf[sound.buf_end*2 + 0] = 0x0000;
-            buf[sound.buf_end*2 + 1] = 0x0000;
+    u16 *buf = (u16*)sound.buf;
+
+    if(!sound.on) {
+        buf[sound.buf_end*2 + 0] = 0x0000;
+        buf[sound.buf_end*2 + 1] = 0x0000;
+    }
+    else {
+        if((sound.buf_end + 1) % sound.buf_size == sound.buf_start) {
+            //printf("WARNING: Sound-Buffer overrun!\n");
+            sound.buf_start = 0;
+            sound.buf_end = 0;
+        }
+
+        samples[0] = sqw_mix(&ch1);
+        samples[1] = sqw_mix(&ch2);
+        samples[2] = wave_mix();
+        samples[3] = noise_mix();
+        if(0) {
+            buf[sound.buf_end*2 + 0] = (samples[0].l + samples[1].l + samples[2].l + samples[3].l)*sound.so1_volume*0x40;
+            buf[sound.buf_end*2 + 1] = (samples[0].r + samples[1].r + samples[2].r + samples[3].r)*sound.so2_volume*0x40;
         }
         else {
-            if((sound.buf_end + 1) % sound.buf_size == sound.buf_start) {
-                //printf("WARNING: Sound-Buffer overrun!\n");
-                sound.buf_start = 0;
-                sound.buf_end = 0;
-            }
-
-            samples[0] = sqw_mix(&ch1);
-            samples[1] = sqw_mix(&ch2);
-            samples[2] = wave_mix();
-            samples[3] = noise_mix();
-            if(0) {
-                buf[sound.buf_end*2 + 0] = (samples[0].l + samples[1].l + samples[2].l + samples[3].l)*sound.so1_volume*0x40;
-                buf[sound.buf_end*2 + 1] = (samples[0].r + samples[1].r + samples[2].r + samples[3].r)*sound.so2_volume*0x40;
-            }
-            else {
-                buf[sound.buf_end*2 + 0] = 0;
-                buf[sound.buf_end*2 + 1] = 0;
-            }
-
+            buf[sound.buf_end*2 + 0] = 0;
+            buf[sound.buf_end*2 + 1] = 0;
         }
-        sound.buf_end++;
-        sound.buf_end %= sound.buf_size;
-        sound.sample++;
+
+    }
+    sound.buf_end++;
+    sound.buf_end %= sound.buf_size;
+    sound.sample++;
+
     SDL_mutexV(mutex);
 }
 

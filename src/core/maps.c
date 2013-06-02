@@ -79,7 +79,7 @@ static inline void cgb_scan_line(u8 *map, u8 *attr_map, u8 *scan) {
         line = attributes & VFLIP_BIT ? 7-ty : ty;
 
         if(attributes & HFLIP_BIT) {
-            //scan_tile_line_flipped(scan, &tdt[((tile_index + index_offset)%256)*0x10 + line*2]);
+            scan_tile_line_flipped(scan, &tdt[((tile_index + index_offset)%256)*0x10 + line*2]);
         }
         else {
             scan_tile_line(scan, &tdt[((tile_index + index_offset)%256)*0x10 + line*2]);
