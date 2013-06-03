@@ -45,7 +45,7 @@ int main(int argc, const char **argv) {
     init(argc, argv);
     emu_set_hw(CGB_HW);
     //sprintf(rom, "airforcedelta.gbc");
-    sprintf(rom, "allstar.gbc");
+    sprintf(rom, "crystal.gbc");
     load_romfile(rom);
     emu_run();
     close();

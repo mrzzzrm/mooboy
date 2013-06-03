@@ -65,7 +65,9 @@ void rtc_map_register(u8 val) {
 
 void rtc_latch(u8 val) {
     switch(val) {
-        case 0x00: rtc.prelatched = 1; break;
+        case 0x00:
+            rtc.prelatched = 1;
+        break;
         case 0x01:
             if(rtc.prelatched) {
                 memcpy(rtc.latched, rtc.ticking, sizeof(rtc.latched));

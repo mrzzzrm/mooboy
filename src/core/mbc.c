@@ -81,16 +81,17 @@ static void mbc3_lower_write(u16 adr, u8 val) {
             mbc.rombank = card.rombanks[(val & 0x7F) == 0x00 ? 0x01 : (val & 0x7F)];
         break;
         case 4: case 5: // Select RAM bank or RTC register
-            switch(val) {
+            switch(val & 0x0F) {
                 case 0x00: case 0x01: case 0x02: case 0x03:
                     mbc.srambank = card.srambanks[val & 0x03];
-                    mbc3.mode = MBC3_MAP_RAM;
+                    mbc3.mode = MBC3_MAP_RAM;// printf("RAM mapped!\n");
                 break;
                 case 0x08: case 0x09: case 0x0A: case 0x0B: case 0x0C:
-                    rtc_map_register(val);
-                    mbc3.mode = MBC3_MAP_RTC;
+                    rtc_map_register(val & 0x0F);
+                    mbc3.mode = MBC3_MAP_RTC; //printf("RTC registers mapped!\n");
                 break;
-                default:;
+                default:
+                    printf("Unknown write %.2X to %.4X\n", val, adr);
             }
         break;
         case 6: case 7: // Latch Clock Data (First write 0x00, then 0x01)
@@ -110,7 +111,6 @@ static void mbc5_lower_write(u16 adr, u8 val) {
             mbc5.rombank &= 0xFF00;
             mbc5.rombank |= val;//printf("L Selected ROMbank %i\n", mbc5.rombank);
             if(mbc5.rombank >= card.romsize) {
-                printf("Crasher: ");
                 debug_after();
                 assert(0);
             }
@@ -122,16 +122,14 @@ static void mbc5_lower_write(u16 adr, u8 val) {
             mbc5.rombank &= 0xFEFF;
             mbc5.rombank |= ((u16)val&0x01)<<8;
             if(mbc5.rombank >= card.romsize) {
-                printf("Crasher: ");
                 debug_after();
                 assert(0);
             }
-         //   printf("SETTING ROMBANK %i\n", mbc5.rombank);
+
             mbc.rombank = card.rombanks[mbc5.rombank];//printf("H Selected ROMbank %i\n", mbc5.rombank);
         break;
         case 4: case 5:
             if((val&0x0F) >= card.sramsize) {
-     //           printf("Selected invalid rambank %.2X\n", val&0x0F);
                 return;
             }
             mbc.srambank = card.srambanks[val & 0x01];
@@ -143,6 +141,8 @@ static void mbc5_lower_write(u16 adr, u8 val) {
 }
 
 void mbc_set_type(u8 type) {
+    mbc.type = type;
+
     switch(type) {
         case 0: mbc.lower_write_func = mbc0_lower_write; break;
         case 1: mbc.lower_write_func = mbc1_lower_write; break;
@@ -167,8 +167,8 @@ u8 mbc_upper_read(u16 adr) {
         return rtc.latched[rtc.mapped];
     }
     else {
-        adr -= 0xA000;
-        return mbc.srambank[adr];
+         adr -= 0xA000;
+         return mbc.srambank[adr];
     }
 }
 

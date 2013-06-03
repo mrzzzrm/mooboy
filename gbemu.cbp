@@ -38,13 +38,10 @@
 				<Option compiler="gcc" />
 				<Option parameters="--rom ./rom/gelb.gbc" />
 				<Compiler>
-					<Add option="-pg" />
-					<Add option="-g" />
 					<Add directory="src/core" />
 					<Add directory="debug" />
 				</Compiler>
 				<Linker>
-					<Add option="-pg" />
 					<Add option="-lSDL" />
 					<Add option="-lSDL_gfx" />
 				</Linker>

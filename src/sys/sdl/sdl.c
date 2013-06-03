@@ -156,7 +156,7 @@ static void handle_delay() {
     long ms_ahead = cc_ahead / ((long)cpu.freq/1000);
 
     if(ms_ahead >= DELAY_THRESHOLD) {
-        SDL_Delay(DELAY_THRESHOLD);
+        //SDL_Delay(DELAY_THRESHOLD);
     }
 }
 
