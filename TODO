@@ -3,7 +3,6 @@
     - Strip core/sound.c from all platformdependant code
     - Fix soundbugs
     - Rearrange core/loader.c
-    - RTC isn't working as it should
     - Rethink the current system-clock mechanisms
     - SRAM saving
 

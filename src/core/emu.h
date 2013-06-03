@@ -12,6 +12,7 @@
 typedef struct {
     int hw;
     int mode;
+    char title[17];
 } emu_t;
 
 extern emu_t emu;

@@ -54,12 +54,10 @@ void cpu_reset() {
 
 u8 cpu_step() {
     u8 op;
-    u32 old_cc;
     op_chunk_t *chunk;
 
     ints_handle();
     op = FETCH_BYTE;
-    old_cc = cpu.cc;
     chunk = op_chunk_map[op];
 
     assert(chunk->funcs[0] != NULL);

@@ -14,6 +14,7 @@ typedef struct mbc_s {
     u8 ram_enabled;
 
     u8 has_rtc;
+    u8 has_ram;
     u8 has_battery;
 } mbc_t;
 

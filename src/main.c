@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-//#include <SDL/SDL.h>
+#include <assert.h>
 
 #include "core/emu.h"
 #include "sys/sys.h"
@@ -21,17 +21,15 @@ static void init(int argc, const char **argv) {
 
 static void error() {
     printf("Error: %s\n", err_msg());
-    sys_error();
+    assert(0);
 }
 
-static void load_romfile(char *romname) {
-    char rompath[256];
+static void load_romfile() {
     u8 *romdata;
     size_t romsize;
 
-    sprintf(rompath, "rom/%s", romname);
-    printf("Loading ROM: %s\n", rompath);
-    if((romdata = io_load_binary(rompath, &romsize)) == NULL) {
+    printf("Loading ROM: %s\n", sys_get_rompath());
+    if((romdata = io_load_binary(sys_get_rompath(), &romsize)) == NULL) {
         error();
     }
     printf("Firing emu with romdata (size=%i)\n", romsize);
@@ -44,10 +42,9 @@ int main(int argc, const char **argv) {
 
     init(argc, argv);
     emu_set_hw(CGB_HW);
-    //sprintf(rom, "airforcedelta.gbc");
-    sprintf(rom, "crystal.gbc");
-    load_romfile(rom);
+    load_romfile();
     emu_run();
+    sys_save_sram();
     close();
 
     return EXIT_SUCCESS;

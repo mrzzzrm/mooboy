@@ -21,6 +21,9 @@ static unsigned int last_sec_cc;
 static unsigned int last_delay_cc;
 static time_t delay_start;
 static time_t last_sec;
+static char rompath[256] = "rom/gold.gbc";
+static int running;
+
 
 u32 palette[] = {
     0xFFFFFFFF,
@@ -93,7 +96,7 @@ static void update_joypad() {
             }
         }
         else if(event.type == SDL_QUIT) {
-            exit(EXIT_SUCCESS);
+            running = 0;
         }
    }
 }
@@ -201,26 +204,14 @@ bool sys_new_rom()  {
 }
 
 const char *sys_get_rompath() {
-//    const char *rom;
-//    if((rom = cmd_get("--rom")) == NULL) {
-//        err_set(ERR_ROM_NOT_FOUND);
-//        return NULL;
-//    }
-//    return rom;
-
+    return rompath;
 }
 
-void sys_sleep(time_t ticks) {
-    SDL_Delay(ticks);
-}
 
-void sys_error() {
-    exit(EXIT_FAILURE);
-}
-
-void sys_invoke() {
+int sys_invoke() {
     //printf("%i\n", cpu.freq);
 
+    running = 1;
     invoke_count++;
     time_t dur = SDL_GetTicks() - last_sec;
     if(dur > 1000) {
@@ -232,6 +223,17 @@ void sys_invoke() {
 
     update_joypad();
     handle_delay();
+
+    return running;
+}
+
+void sys_save_sram() {
+    printf("Saving SRAM\n");
+}
+
+u8 *sys_load_sram(int *size) {
+    printf("Loading SRAM\n");
+
 }
 
 void sys_fb_ready() {

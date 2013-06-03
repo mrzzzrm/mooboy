@@ -1,18 +1,18 @@
-#ifndef MEM_H
-#define MEM_H
+#ifndef CORE_MEM_H
+#define CORE_MEM_H
 
 #include "util/defines.h"
 
 typedef struct {
-    u8 wrambanks[8][0x1000]; // GB - 2 banks; CGB - 8 banks
+    u8 rambanks[8][0x1000]; // GB - 2 banks; CGB - 8 banks
     u8 vrambanks[2][0x2000]; // 2nd bank for GBC
     u8 hram[0x80];
     u8 oam[0xA0];
 
-    u8 *wrambank;
+    u8 *rambank;
     u8 *vrambank;
 
-    u8 wrambank_index;
+    u8 rambank_index;
 } ram_t;
 
 typedef struct {

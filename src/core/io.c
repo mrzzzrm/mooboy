@@ -71,7 +71,7 @@ u8 io_read(u16 adr) {
         case 0x6A: return lcd.obps | lcd.obpi; break;
         case 0x6B: return lcd.obpd[lcd.obps]; break;
 
-        case 0x70: return ram.wrambank_index | 0xF8; break;
+        case 0x70: return ram.rambank_index | 0xF8; break;
 
         default:;
             printf("Unknown IO read: %.2X\n", r);
@@ -196,8 +196,8 @@ void io_write(u16 adr, u8 val) {
         break;
 
         case 0x70:
-            ram.wrambank_index = (val & 0x07) != 0 ? val & 0x07 : 0x01;
-            ram.wrambank = ram.wrambanks[ram.wrambank_index];
+            ram.rambank_index = (val & 0x07) != 0 ? val & 0x07 : 0x01;
+            ram.rambank = ram.rambanks[ram.rambank_index];
         break;
 
         default:;

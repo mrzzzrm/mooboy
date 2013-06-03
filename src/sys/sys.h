@@ -6,15 +6,16 @@
 
     void sys_init(int argc, const char** argv);
     void sys_close();
-    void sys_invoke();
+    int sys_invoke();
     void sys_fb_ready();
+
+    void sys_save_sram();
+    u8 *sys_load_sram(int *size);
 
     bool sys_running();
     bool sys_new_rom();
 
     const char *sys_get_rompath();
 
-    void sys_error();
-    void sys_sleep(time_t ticks);
 
 #endif // SYS_H

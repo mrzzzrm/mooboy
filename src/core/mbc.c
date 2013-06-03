@@ -27,10 +27,8 @@ static void mbc1_lower_write(u16 adr, u8 val) {
             mbc1.rombank &= 0xE0;
             mbc1.rombank |= (val & 0x1F) == 0x00 ? 0x01 : (val & 0x1F);
             if(mbc1.rombank >= card.romsize) {
-                printf("Ignored setting of ROM-bank %i\n", mbc1.rombank);
                 mbc1.rombank = 1;
             }
-            printf("SETTING ROMBANK %i\n", mbc1.rombank);
             mbc.rombank = card.rombanks[mbc1.rombank];
         break;
         case 0x4: case 0x5:
@@ -38,13 +36,11 @@ static void mbc1_lower_write(u16 adr, u8 val) {
                 mbc1.rombank &= 0x1F;
                 mbc1.rombank |= (val & 0x03) << 5;
                 if(mbc1.rombank >= card.romsize) {
-                printf("Ignored setting of ROM-bank %i\n", mbc1.rombank);
                     mbc1.rombank = 1;
                 }
                 mbc.rombank = card.rombanks[mbc1.rombank];
             }
             else { // Cartridge RAM bits
-                printf("SETTING RAMBANK %i\n", val & 0x03);
                 mbc.srambank = card.srambanks[val & 0x03];
             }
         break;
@@ -147,9 +143,7 @@ void mbc_set_type(u8 type) {
         case 0: mbc.lower_write_func = mbc0_lower_write; break;
         case 1: mbc.lower_write_func = mbc1_lower_write; break;
         case 2: mbc.lower_write_func = mbc2_lower_write; break;
-        case 3:
-            mbc.lower_write_func = mbc3_lower_write;
-        break;
+        case 3: mbc.lower_write_func = mbc3_lower_write; break;
         case 5: mbc.lower_write_func = mbc5_lower_write; break;
         default:
             assert(0);
@@ -179,6 +173,7 @@ void mbc_lower_write(u16 adr, u8 val) {
 void mbc_upper_write(u16 adr, u8 val) {
     if(!mbc.ram_enabled) {
         printf("Denied RAM access!\n");
+        return;
     }
 
     if(mbc.type == 3 && mbc3.mode == MBC3_MAP_RTC) {

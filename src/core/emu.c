@@ -90,7 +90,9 @@ void emu_run() {
             }
 //            debug_after();
         }
-        sys_invoke();
+        if(!sys_invoke()) {
+            break;
+        }
     }
 }
 

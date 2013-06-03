@@ -243,7 +243,7 @@ static void save_mem() {
     set_checkpoint();
 
     for(b = 0; b < 8; b++) {
-        SV(ram.wrambanks[b]);
+        SV(ram.rambanks[b]);
     }
     set_checkpoint();
     for(b = 0; b < 2; b++) {
@@ -253,9 +253,9 @@ static void save_mem() {
 
     SV(ram.hram);
     SV(ram.oam);
-    S(BYTE(((u8(*)[0x1000])ram.wrambank - ram.wrambanks)));
+    S(BYTE(((u8(*)[0x1000])ram.rambank - ram.rambanks)));
     S(BYTE(((u8(*)[0x2000])ram.vrambank - ram.vrambanks)));
-    S(ram.wrambank_index);
+    S(ram.rambank_index);
     set_checkpoint();
 }
 
@@ -277,7 +277,7 @@ static void load_mem() {
 
 
     for(b = 0; b < 8; b++) {
-        RV(ram.wrambanks[b]);
+        RV(ram.rambanks[b]);
     }
     assert_checkpoint();
     for(b = 0; b < 2; b++) {
@@ -287,9 +287,9 @@ static void load_mem() {
 
     RV(ram.hram);
     RV(ram.oam);
-    R(byte); ram.wrambank = ram.wrambanks[byte];
+    R(byte); ram.rambank = ram.rambanks[byte];
     R(byte); ram.vrambank = ram.vrambanks[byte];
-    R(ram.wrambank_index);
+    R(ram.rambank_index);
     assert_checkpoint();
 }
 

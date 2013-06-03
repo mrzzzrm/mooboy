@@ -29,17 +29,17 @@ static void write_locked_mem(u16 adr, u8 val) {
 }
 
 void mem_reset() {
-    memset(ram.wrambanks, 0x00, sizeof(ram.wrambanks));
+    memset(ram.rambanks, 0x00, sizeof(ram.rambanks));
     memset(ram.hram, 0x00, sizeof(ram.hram));
     memset(ram.vrambanks, 0x00, sizeof(ram.vrambanks));
     memset(ram.oam, 0x00, sizeof(ram.oam));
 
-    ram.wrambank = ram.wrambanks[1];
+    ram.rambank = ram.rambanks[1];
     ram.vrambank = ram.vrambanks[0];
 
     mbc.ram_enabled = 1;
 
-    ram.wrambank_index = 1;
+    ram.rambank_index = 1;
 }
 
 u8 mem_read_byte(u16 adr) {
@@ -60,10 +60,10 @@ u8 mem_read_byte(u16 adr) {
             return mbc_upper_read(adr);
         break;
         case 0xC:
-            return ram.wrambanks[0][adr - 0xC000];
+            return ram.rambanks[0][adr - 0xC000];
         break;
         case 0xD:
-            return ram.wrambank[adr - 0xD000];
+            return ram.rambank[adr - 0xD000];
         break;
         case 0xE:
             return mem_read_byte(adr - 0x2000);
@@ -120,10 +120,10 @@ void mem_write_byte(u16 adr, u8 val) {
             mbc_upper_write(adr, val);
         return;
         case 0xC:
-            ram.wrambanks[0][adr - 0xC000] = (mbc.type == 2) ? (val & 0x0F) : val;
+            ram.rambanks[0][adr - 0xC000] = (mbc.type == 2) ? (val & 0x0F) : val;
         return;
         case 0xD:
-            ram.wrambank[adr - 0xD000] = (mbc.type == 2) ? (val & 0x0F) : val;
+            ram.rambank[adr - 0xD000] = (mbc.type == 2) ? (val & 0x0F) : val;
         return;
         case 0xE:
             mem_write_byte(adr - 0x2000, val);
