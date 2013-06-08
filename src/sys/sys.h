@@ -9,8 +9,8 @@
     int sys_invoke();
     void sys_fb_ready();
 
-    void sys_save_sram();
-    u8 *sys_load_sram(int *size);
+    void sys_save_card();
+    void sys_load_card();
 
     bool sys_running();
     bool sys_new_rom();

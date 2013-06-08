@@ -1,5 +1,5 @@
-#ifndef CPU_H
-#define CPU_H
+#ifndef CORE_CPU_H
+#define CORE_CPU_H
 
 #include "mem.h"
 #include "util/defines.h"
@@ -37,6 +37,4 @@ void cpu_reset();
 u8 cpu_exec(u8 op);
 u8 cpu_step();
 
-extern int mcs[2][256];
-
-#endif // CPU_H
+#endif // CORE_CPU_H

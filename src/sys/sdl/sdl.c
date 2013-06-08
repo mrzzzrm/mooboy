@@ -1,8 +1,11 @@
 #include "sys/sys.h"
 #include <SDL/SDL.h>
 #include <SDL/SDL_gfxPrimitives.h>
+#include <assert.h>
 #include "util/cmd.h"
 #include "core/cpu.h"
+#include "core/rtc.h"
+#include "core/mbc.h"
 #include "core/lcd.h"
 #include "core/emu.h"
 #include "core/joy.h"
@@ -40,33 +43,6 @@ static void set_pixel(SDL_Surface *surface, unsigned int x, unsigned int y, u32 
      pixelColor(surface, x, y, color);
 }
 
-static void timing_check() {
-    FILE *f = fopen("timing.txt", "w");
-    int x = 0;
-    for(x = 0; x < 256; x++) {
-        if(mcs[0][x] == -1)
-            fprintf(f, "X,");
-        else if(mcs[1][x] != -1)
-            fprintf(f, "%i,", mcs[1][x] < mcs[0][x] ? mcs[1][x] :  mcs[0][x]);
-        else
-            fprintf(f, "%i,", mcs[0][x]);
-
-        if((x+1) % 16 == 0)
-            fprintf(f, "\n");
-    }
-    for(x = 0; x < 256; x++) {
-        if(mcs[1][x] == -1)
-            fprintf(f, "X,");
-        else if(mcs[1][x] != -1)
-            fprintf(f, "%i,", mcs[1][x] < mcs[0][x] ? mcs[0][x] :  mcs[1][x]);
-        else
-            fprintf(f, "Y,");
-
-        if((x+1) % 16 == 0)
-            fprintf(f, "\n");
-    }
-    fclose(f);
-}
 
 static void update_joypad() {
    SDL_Event event;
@@ -76,7 +52,6 @@ static void update_joypad() {
             switch(event.key.keysym.sym) {
                 case SDLK_m:    load_state(); break;
                 case SDLK_n:    save_state(); break;
-                case SDLK_l:    timing_check(); break;
                 default: break;
             }
         }
@@ -227,13 +202,74 @@ int sys_invoke() {
     return running;
 }
 
-void sys_save_sram() {
-    printf("Saving SRAM\n");
+void sys_save_card() {
+    char sramfile[256];
+    FILE *file;
+    size_t written;
+
+    if(!mbc.has_battery || !(mbc.has_ram || mbc.has_rtc)) {
+        return;
+    }
+
+    sprintf(sramfile, "%s.card", sys_get_rompath());
+    file = fopen(sramfile, "w");
+    assert(file);
+
+    if(mbc.has_ram) {
+        printf("Saving SRAM\n");
+        written = fwrite(card.srambanks, 1, card.sramsize * sizeof(*card.srambanks), file);
+        assert(written == card.sramsize * sizeof(*card.srambanks));
+    }
+
+    if(mbc.has_rtc) {
+        printf("Saving RTC\n");
+        written = fwrite(rtc.latched,     1, sizeof(rtc.latched), file);    assert (written == sizeof(rtc.latched));
+        written = fwrite(rtc.ticking,     1, sizeof(rtc.ticking), file);    assert (written == sizeof(rtc.ticking));
+        written = fwrite(&rtc.mapped,     1, sizeof(rtc.mapped), file);     assert (written == sizeof(rtc.mapped));
+        written = fwrite(&rtc.prelatched, 1, sizeof(rtc.prelatched), file); assert (written == sizeof(rtc.prelatched));
+        written = fwrite(&rtc.cc,         1, sizeof(rtc.cc), file);         assert (written == sizeof(rtc.cc));
+    }
+
+    fclose(file);
 }
 
-u8 *sys_load_sram(int *size) {
-    printf("Loading SRAM\n");
+void sys_load_card() {
+    char sramfile[256];
+    FILE *file;
+    size_t read;
+    u8 dummy;
 
+    if(!mbc.has_battery || !(mbc.has_ram || mbc.has_rtc)) {
+        return;
+    }
+
+    sprintf(sramfile, "%s.card", sys_get_rompath());
+    file = fopen(sramfile, "r");
+    if(file == NULL) {
+        printf("No SRAM-file found\n");
+        return;
+    }
+
+    if(mbc.has_ram) {
+        printf("Loading SRAM\n");
+        read = fread(card.srambanks, 1, card.sramsize * sizeof(*card.srambanks), file);
+        assert(read == card.sramsize * sizeof(*card.srambanks));
+    }
+
+    if(mbc.has_rtc) {
+        printf("Loading RTC\n");
+        read = fread(rtc.latched,     1, sizeof(rtc.latched), file);    assert (read == sizeof(rtc.latched));
+        read = fread(rtc.ticking,     1, sizeof(rtc.ticking), file);    assert (read == sizeof(rtc.ticking));
+        read = fread(&rtc.mapped,     1, sizeof(rtc.mapped), file);     assert (read == sizeof(rtc.mapped));
+        read = fread(&rtc.prelatched, 1, sizeof(rtc.prelatched), file); assert (read == sizeof(rtc.prelatched));
+        read = fread(&rtc.cc,         1, sizeof(rtc.cc), file);         assert (read == sizeof(rtc.cc));
+    }
+
+    fread(&dummy, 1, 1, file);
+    assert(feof(file));
+
+
+    fclose(file);
 }
 
 void sys_fb_ready() {

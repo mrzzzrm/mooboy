@@ -32,7 +32,7 @@ static void init_card(u8 ref) {
     mbc.has_ram = 0;
     mbc.has_rtc = 0;
 
-    if(hn == 0x00) {
+    if(hn == 0x0) {
         switch(ln) {
             case 0x0: case 0x8: case 0x9:
                 mbc_set_type(0);
@@ -59,13 +59,13 @@ static void init_card(u8 ref) {
             break;
         }
     }
-    else if(hn == 0x01) {
+    else if(hn == 0x1) {
         switch(ln) {
             case 0x0: case 0x1: case 0x2:  case 0x3:
                 mbc_set_type(3);
                 mbc.has_battery = ln == 0 || ln == 3;
                 mbc.has_rtc = ln == 0;
-                mbc.has_ram = ln != 0;
+                mbc.has_ram = ln != 1;
             break;
             case 0x5: case 0x6: case 0x7:
                 mbc_set_type(4); // This is weird, as there is no such MBC...
@@ -87,12 +87,12 @@ static void init_card(u8 ref) {
     printf("Full cardridge type: %.2X\n", ref);
 }
 
-static void init_rom(u8 ref, u8 *data, u32 datasize) {
+static void init_rom(u8 ref, u8 *rom, u32 romsize) {
     card.romsize = rom_bankcount(ref);
         assert(card.romsize != 0);
-        assert(card.romsize * 0x4000 == datasize);
-        assert(datasize <  sizeof(card.rombanks));
-    memcpy(card.rombanks, data, datasize);
+        assert(card.romsize * 0x4000 == romsize);
+        assert(romsize <  sizeof(card.rombanks));
+    memcpy(card.rombanks, rom, romsize);
 
     fprintf(stderr, "ROM-size set to %d banks, ref = %.2X\n", card.romsize, ref);
 }
@@ -104,13 +104,15 @@ static void init_sram(u8 ref) {
     fprintf(stderr, "Cardridge-RAM set to %d banks by ref %i \n", card.sramsize, ref);
 }
 
-void load_rom(u8 *data, uint datasize) {
-    assert(datasize > 0x014F);
+void load_rom(u8 *rom, uint romsize) {
+    assert(romsize > 0x014F);
 
-    init_mode(data[0x0143]);
-    init_card(data[0x0147]);
-    init_rom(data[0x0148], data, datasize);
-    init_sram(data[0x0149]);
+    init_mode(rom[0x0143]);
+    init_card(rom[0x0147]);
+    init_rom(rom[0x0148], rom, romsize);
+    init_sram(rom[0x0149]);
+
+    sys_load_card();
 
     mbc.rombank = card.rombanks[1];
     mbc.srambank = card.srambanks[0];

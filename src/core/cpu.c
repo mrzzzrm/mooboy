@@ -12,7 +12,6 @@
 
 cpu_t cpu;
 
-int mcs[2][256];
 
 void cpu_init() {
     op_create_chunks();
@@ -44,12 +43,6 @@ void cpu_reset() {
     cpu.halted = 0;
 
     cpu.freq_switch = 0x00;
-
-    int x = 0;
-    for(x = 0; x < 256; x++) {
-        mcs[0][x] = -1;
-        mcs[1][x] = -1;
-    }
 }
 
 u8 cpu_step() {

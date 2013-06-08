@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "core/mbc.h"
 #include "core/emu.h"
 #include "sys/sys.h"
 #include "util/err.h"
@@ -44,7 +45,8 @@ int main(int argc, const char **argv) {
     emu_set_hw(CGB_HW);
     load_romfile();
     emu_run();
-    sys_save_sram();
+
+    sys_save_card();
     close();
 
     return EXIT_SUCCESS;
