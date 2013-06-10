@@ -69,7 +69,7 @@ static void draw_line_dmg(u8 *maps_scan, u8 *obj_scan) {
     }
 }
 
-static void draw_line_cgb(u8 *maps_scan, u8 *obj_scan) {
+static void draw_line_cgb_mode(u8 *maps_scan, u8 *obj_scan) {
     u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
     u8 x;
 
@@ -107,6 +107,30 @@ static void draw_line_cgb(u8 *maps_scan, u8 *obj_scan) {
     }
 }
 
+static void draw_line_non_cgb_mode(u8 *maps_scan, u8 *obj_scan) {
+    u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
+    u8 x;
+
+    for(x = 0; x < LCD_WIDTH; x++, pixel++) {
+        if(OBJ_PRIORITY(obj_scan[x])) {
+            if(maps_scan[x] != 0) {
+                *pixel = lcd.bgpd_map[1][maps_scan[x]];
+            }
+            else {
+                *pixel = lcd.obpd_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
+            }
+        }
+        else {
+            if(OBJ_DATA(obj_scan[x]) != 0) {
+                *pixel = lcd.obpd_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
+            }
+            else { printf("%i", lcd.bgpd_map[1][maps_scan[x]]);
+                *pixel = lcd.bgpd_map[1][maps_scan[x]];
+            }
+        }
+    }
+}
+
 static void draw_line() {
     u8 maps_scan[LCD_WIDTH];
     u8 obj_scan[LCD_WIDTH];
@@ -123,7 +147,10 @@ static void draw_line() {
         draw_line_dmg(maps_scan, obj_scan);
     }
     else {
-        draw_line_cgb(maps_scan, obj_scan);
+        if(emu.mode == CGB_MODE)
+            draw_line_cgb_mode(maps_scan, obj_scan);
+        else
+            draw_line_non_cgb_mode(maps_scan, obj_scan);
     }
 }
 
@@ -193,6 +220,8 @@ void lcd_reset() {
 
     memset(lcd.bgpd, 0x00, sizeof(lcd.bgpd));
     memset(lcd.obpd, 0x00, sizeof(lcd.obpd));
+    memset(lcd.bgpd_map, 0x00, sizeof(lcd.bgpd_map));
+    memset(lcd.obpd_map, 0x00, sizeof(lcd.obpd_map));
 
     lcd_c_dirty();
     lcd_bgp_dirty();

@@ -24,7 +24,7 @@ static unsigned int last_sec_cc;
 static unsigned int last_delay_cc;
 static time_t delay_start;
 static time_t last_sec;
-static char rompath[256] = "rom/gold.gbc";
+static char rompath[256] = "rom/tetris.gb";
 static int running;
 
 

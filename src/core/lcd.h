@@ -43,6 +43,9 @@ typedef struct {
     u8 bgp_map[4];
     u8 obp_map[2][4];
 
+    u8 cgb_bgp_map[4];
+    u8 cgb_obp_map[2][4];
+
     u16 bgpd_map[8][4];
     u16 obpd_map[8][4];
 
