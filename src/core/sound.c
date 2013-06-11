@@ -3,6 +3,7 @@
 #include "defines.h"
 #include <assert.h>
 #include <stdlib.h>
+// TODO: This include should vanish eventually
 #include <SDL/SDL.h>
 
 typedef struct {
@@ -10,13 +11,13 @@ typedef struct {
 } sample_t;
 
 sound_t sound;
-sqw_t ch1;
-sqw_t ch2;
+sqw_t sqw[2];
 sweep_t sweep;
-env_t env1, env2, env3;
+env_t env[3];
 wave_t wave;
 noise_t noise;
 
+// TODO: Deprecated
 static SDL_mutex *mutex;
 
 static void tick_length_counter(counter_t *counter, u8 *on) {
@@ -29,8 +30,8 @@ static void tick_length_counter(counter_t *counter, u8 *on) {
 }
 
 static void tick_length_counters() {
-    tick_length_counter(&ch1.counter, &ch1.on);
-    tick_length_counter(&ch2.counter, &ch2.on);
+    tick_length_counter(&sqw[0].counter, &sqw[0].on);
+    tick_length_counter(&sqw[1].counter, &sqw[1].on);
     tick_length_counter(&wave.counter, &wave.on);
     tick_length_counter(&noise.counter, &noise.on);
 }
@@ -40,10 +41,10 @@ static void tick_sweep() {
         sweep.tick++;
         if(sweep.tick >= sweep.period) {
             if(sweep.dir) {
-                ch1.freq -= ch1.freq >> sweep.shift;
+                sqw[0].freq -= sqw[0].freq >> sweep.shift;
             }
             else {
-                ch1.freq += ch1.freq >> sweep.shift;
+                sqw[0].freq += sqw[0].freq >> sweep.shift;
             }
             sweep.tick = 0;
         }
@@ -70,9 +71,9 @@ static void tick_envelope(env_t *env, u8 *volume) {
 }
 
 static void tick_envelopes() {
-    tick_envelope(&env1, &ch1.volume);
-    tick_envelope(&env2, &ch2.volume);
-    tick_envelope(&env3, &noise.volume);
+    tick_envelope(&env[0], &sqw[0].volume);
+    tick_envelope(&env[1], &sqw[1].volume);
+    tick_envelope(&env[2], &noise.volume);
  }
 
 static void timer_step() {
@@ -154,6 +155,7 @@ static sample_t wave_mix() {
     return r;
 }
 
+// TODO: There definitly is a bug in here...
 static sample_t noise_mix() {
     sample_t r = {0,0};
     u32 freq;
@@ -193,6 +195,7 @@ static sample_t noise_mix() {
     return r;
 }
 
+// TDOD: sound.freq should be solved differently - at least being retrieved from sys_
 void sound_init() {
     mutex = SDL_CreateMutex();
 
@@ -219,11 +222,9 @@ void sound_reset() {
     sound.next_sample = 0;
     sound.next_sample_cc = 0;
 
-    memset(&ch1, 0x00, sizeof(ch1));
-    memset(&env1, 0x00, sizeof(env1));
+    memset(&sqw, 0x00, sizeof(sqw));
+    memset(&env, 0x00, sizeof(env));
     memset(&sweep, 0x00, sizeof(sweep));
-    memset(&ch2, 0x00, sizeof(ch2));
-    memset(&env2, 0x00, sizeof(env2));
     memset(&wave, 0x00, sizeof(wave));
     memset(&noise, 0x00, sizeof(noise));
 
@@ -239,14 +240,18 @@ void sound_step() {
     }
 }
 
+// TODO: Remove SDL, sys_ handled mutexes
 void sound_lock() {
     SDL_mutexP(mutex);
 }
 
+// TODO: Remove SDL, sys_ handled mutexes
 void sound_unlock() {
     SDL_mutexV(mutex);
 }
 
+// TODO: Remove SDL, sys_ handled mutexes
+// TODO: Handle userdefined on/off elsewhere, sound-off shouldn't use resources
 void sound_mix() {
     sample_t samples[4];
     SDL_mutexP(mutex);
@@ -264,8 +269,8 @@ void sound_mix() {
             sound.buf_end = 0;
         }
 
-        samples[0] = sqw_mix(&ch1);
-        samples[1] = sqw_mix(&ch2);
+        samples[0] = sqw_mix(&sqw[0]);
+        samples[1] = sqw_mix(&sqw[1]);
         samples[2] = wave_mix();
         samples[3] = noise_mix();
         if(0) {
@@ -293,44 +298,44 @@ void sound_write(u8 sadr, u8 val) {
             sweep.shift = val & 0x07;
         break;
         case 0x11:
-            ch1.duty = val >> 6;
-            ch1.counter.length = val & 0x3F;
+            sqw[0].duty = val >> 6;
+            sqw[0].counter.length = val & 0x3F;
         break;
         case 0x12:
-            ch1.volume = val >> 4;
-            env1.dir = (val & 0x08) >> 3;
-            env1.sweep = val & 0x07;
+            sqw[0].volume = val >> 4;
+            env[0].dir = (val & 0x08) >> 3;
+            env[0].sweep = val & 0x07;
         break;
         case 0x13:
-            ch1.freq &= 0xFF00;
-            ch1.freq |= val;
+            sqw[0].freq &= 0xFF00;
+            sqw[0].freq |= val;
         break;
         case 0x14:
-            ch1.freq &= 0xF8FF;
-            ch1.freq |= (val&0x07)<<8;
-            ch1.counter.expires = val & 0x40;
+            sqw[0].freq &= 0xF8FF;
+            sqw[0].freq |= (val&0x07)<<8;
+            sqw[0].counter.expires = val & 0x40;
             if(val & 0x80) {
-                ch1.on = 1;
+                sqw[0].on = 1;
             }
         break;
         case 0x16:
-            ch2.duty = val >> 6;
-            ch2.counter.length = 0x40 - (val & 0x3F);
+            sqw[1].duty = val >> 6;
+            sqw[1].counter.length = 0x40 - (val & 0x3F);
         break;
         case 0x17:
-            ch2.volume = val >> 4;
-            env2.dir = (val & 0x08) >> 3;
-            env2.sweep = val & 0x07;
+            sqw[1].volume = val >> 4;
+            env[1].dir = (val & 0x08) >> 3;
+            env[1].sweep = val & 0x07;
         break;
         case 0x18:
-            ch2.freq &= 0xFF00;
-            ch2.freq |= val;
+            sqw[1].freq &= 0xFF00;
+            sqw[1].freq |= val;
         break;
         case 0x19:
-            ch2.freq &= 0x00FF;
-            ch2.freq |= (val&0x07) << 8;
-            ch2.counter.expires = val & 0x40;
-            ch2.on |= val & 0x80;
+            sqw[1].freq &= 0x00FF;
+            sqw[1].freq |= (val&0x07) << 8;
+            sqw[1].counter.expires = val & 0x40;
+            sqw[1].on |= val & 0x80;
         break;
         case 0x1A:
             wave.on = val;
@@ -356,8 +361,8 @@ void sound_write(u8 sadr, u8 val) {
         break;
         case 0x21:
             noise.volume = val >> 4;
-            env3.dir = val & 0x08;
-            env3.sweep = val & 0x07;
+            env[2].dir = val & 0x08;
+            env[2].sweep = val & 0x07;
         break;
         case 0x22:
             noise.shift = val >> 4;
@@ -376,8 +381,8 @@ void sound_write(u8 sadr, u8 val) {
             sound.so2_volume = val >> 4;
         break;
         case 0x25:
-            ch1.l =   val & 0x01; ch1.r =   val & 0x10;
-            ch2.l =   val & 0x02; ch2.r =   val & 0x20;
+            sqw[0].l =   val & 0x01; sqw[0].r =   val & 0x10;
+            sqw[1].l =   val & 0x02; sqw[1].r =   val & 0x20;
             wave.l =  val & 0x04; wave.r =  val & 0x40;
             noise.l = val & 0x08; noise.r = val & 0x80;
         break;
@@ -400,28 +405,28 @@ u8 sound_read(u8 sadr) {
             return (sweep.period << 4) | (sweep.dir << 3) | sweep.shift;
         break;
         case 0x11:
-            return ch1.duty << 6;
+            return sqw[0].duty << 6;
         break;
         case 0x12:
-            return (ch1.volume << 4) || (env1.dir << 3) | env1.sweep;
+            return (sqw[0].volume << 4) || (env[0].dir << 3) | env[0].sweep;
         break;
         case 0x13:
             return 0x00;
         break;
         case 0x14:
-            return ch1.counter.expires;
+            return sqw[0].counter.expires;
         break;
         case 0x16:
-            return ch2.duty << 6;
+            return sqw[1].duty << 6;
         break;
         case 0x17:
-            return (ch2.volume << 4) | (env2.dir << 3) | env2.sweep;
+            return (sqw[1].volume << 4) | (env[1].dir << 3) | env[1].sweep;
         break;
         case 0x18:
             return 0x00;
         break;
         case 0x19:
-            return ch2.counter.expires;
+            return sqw[1].counter.expires;
         break;
         case 0x1A:
             return wave.on;
@@ -442,7 +447,7 @@ u8 sound_read(u8 sadr) {
             return noise.counter.length;
         break;
         case 0x21:
-            return (noise.volume << 4) | (env3.dir << 3) | (env3.sweep);
+            return (noise.volume << 4) | (env[2].dir << 3) | (env[2].sweep);
         break;
         case 0x22:
             return (noise.shift << 4) || (noise.width) | (noise.divr);
@@ -455,8 +460,8 @@ u8 sound_read(u8 sadr) {
         break;
         case 0x25:
             return
-            (ch1.l ? 0x01 : 0x00) | (ch1.r ? 0x10 : 0x00) |
-            (ch2.l ? 0x02 : 0x00) | (ch2.r ? 0x20 : 0x00) |
+            (sqw[0].l ? 0x01 : 0x00) | (sqw[0].r ? 0x10 : 0x00) |
+            (sqw[1].l ? 0x02 : 0x00) | (sqw[1].r ? 0x20 : 0x00) |
             (wave.l ? 0x04 : 0x00) | (wave.r ? 0x40 : 0x00) |
             (noise.l ? 0x08 : 0x00) | (noise.r ? 0x80 : 0x00);
         break;
@@ -465,8 +470,8 @@ u8 sound_read(u8 sadr) {
             (sound.on ? 0x80 : 0x00) |
             (noise.on ? 0x08 : 0x00) |
             (wave.on ? 0x04 : 0x00) |
-            (ch2.on ? 0x02 : 0x00) |
-            (ch1.on ? 0x01 : 0x00);
+            (sqw[1].on ? 0x02 : 0x00) |
+            (sqw[0].on ? 0x01 : 0x00);
         break;
 
         case 0x30: case 0x31: case 0x32: case 0x33:

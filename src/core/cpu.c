@@ -12,7 +12,6 @@
 
 cpu_t cpu;
 
-
 void cpu_init() {
     op_create_chunks();
 }

@@ -24,7 +24,7 @@ static unsigned int last_sec_cc;
 static unsigned int last_delay_cc;
 static time_t delay_start;
 static time_t last_sec;
-static char rompath[256] = "rom/tetris.gb";
+static char rompath[256] = "rom/gold.gbc";
 static int running;
 
 
@@ -134,7 +134,7 @@ static void handle_delay() {
     long ms_ahead = cc_ahead / ((long)cpu.freq/1000);
 
     if(ms_ahead >= DELAY_THRESHOLD) {
-        //SDL_Delay(DELAY_THRESHOLD);
+        SDL_Delay(DELAY_THRESHOLD);
     }
 }
 

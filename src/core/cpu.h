@@ -30,7 +30,6 @@ typedef struct cpu_s {
 } cpu_t;
 
 extern cpu_t cpu;
-extern int indents;
 
 void cpu_init();
 void cpu_reset();

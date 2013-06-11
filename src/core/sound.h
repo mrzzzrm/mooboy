@@ -1,5 +1,5 @@
-#ifndef SOUND_H
-#define SOUND_H
+#ifndef CORE_SOUND_H
+#define CORE_SOUND_H
 
     #include "util/defines.h"
 
@@ -70,8 +70,9 @@
     } noise_t;
 
     extern sound_t sound;
-    extern sqw_t ch1, ch2;
-    extern env_t env1, env2, env3;
+
+    extern sqw_t sqw[2];
+    extern env_t env[3];
     extern sweep_t sweep;
     extern wave_t wave;
     extern noise_t noise;

@@ -174,7 +174,7 @@ void io_write(u16 adr, u8 val) {
             lcd.bgps = val & 0x3F;
             lcd.bgpi = val & 0x80;
         break;
-        case 0x69: printf("BGPD changed\n");
+        case 0x69:
             lcd.bgpd[lcd.bgps] = val;
             lcd_bgpd_dirty(lcd.bgps);
             if(lcd.bgpi) {

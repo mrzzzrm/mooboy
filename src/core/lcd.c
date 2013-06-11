@@ -36,8 +36,11 @@
 #define MAP_COLUMNS 32
 #define MAP_ROWS 32
 
-
 lcd_t lcd;
+
+static u8 non_cgb_palettes[1][4] = {
+    {0x0000, 0xa100, 0x0f80, 0x003f}
+};
 
 static void swap_fb() {
     u16 *tmp = lcd.clean_fb;
@@ -114,18 +117,18 @@ static void draw_line_non_cgb_mode(u8 *maps_scan, u8 *obj_scan) {
     for(x = 0; x < LCD_WIDTH; x++, pixel++) {
         if(OBJ_PRIORITY(obj_scan[x])) {
             if(maps_scan[x] != 0) {
-                *pixel = lcd.bgpd_map[1][maps_scan[x]];
+                *pixel = non_cgb_palettes[lcd.non_cgb_bgp][maps_scan[x]];
             }
             else {
-                *pixel = lcd.obpd_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
+                *pixel = non_cgb_palettes[0][OBJ_DATA(obj_scan[x])];
             }
         }
         else {
             if(OBJ_DATA(obj_scan[x]) != 0) {
-                *pixel = lcd.obpd_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
+                *pixel = non_cgb_palettes[0][OBJ_DATA(obj_scan[x])];
             }
-            else { printf("%i", lcd.bgpd_map[1][maps_scan[x]]);
-                *pixel = lcd.bgpd_map[1][maps_scan[x]];
+            else {
+                *pixel = non_cgb_palettes[lcd.non_cgb_bgp][maps_scan[x]];
             }
         }
     }
@@ -222,6 +225,10 @@ void lcd_reset() {
     memset(lcd.obpd, 0x00, sizeof(lcd.obpd));
     memset(lcd.bgpd_map, 0x00, sizeof(lcd.bgpd_map));
     memset(lcd.obpd_map, 0x00, sizeof(lcd.obpd_map));
+
+    lcd.non_cgb_bgp = 0;
+    lcd.non_cgb_obp[0] = 0;
+    lcd.non_cgb_obp[1] = 0;
 
     lcd_c_dirty();
     lcd_bgp_dirty();
