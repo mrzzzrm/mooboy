@@ -5,6 +5,8 @@
     - Rearrange core/loader.c
     - Rethink the current system-clock mechanisms
     - SRAM saving
+    - Rearrange sys<->emu connection
+    - Efficient SDL-renderer
 
 [Game Bugs]
     - MrDriller: Blocks not shown
