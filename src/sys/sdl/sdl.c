@@ -1,4 +1,5 @@
 #include "sys/sys.h"
+#include "video.h"
 #include <SDL/SDL.h>
 #include <SDL/SDL_gfxPrimitives.h>
 #include <assert.h>
@@ -273,40 +274,14 @@ void sys_load_card() {
 }
 
 void sys_fb_ready() {
-    unsigned int x, y;
-    static time_t last = 0;
-    SDL_Surface *s = SDL_GetVideoSurface();
+    SDL_Rect area;
 
-    if(last == 0) {
-        last = SDL_GetTicks();
-    }
+    area.x = 0;
+    area.y = 0;
+    area.w = SDL_GetVideoSurface()->w;
+    area.h = SDL_GetVideoSurface()->h;
 
-    if(SDL_GetTicks() - last < 16) {
-        return;
-    }
-    else {
-        last += 16;
-    }
-
-    for(y = 0; y < FB_HEIGHT; y++) {
-        for(x = 0; x < FB_WIDTH; x++) {
-            if(emu.hw == DMG_HW) {
-                pixelColor(s, x, y, palette[lcd.clean_fb[y*FB_WIDTH + x] % 4]);
-//                boxColor(s, x*1, y*1, x*1, y*1, palette[lcd.clean_fb[y*FB_WIDTH + x] % 4]);
-            }
-            else {
-                u16 col = lcd.clean_fb[y*FB_WIDTH + x];
-                u32 r = ((col >> 0) & 0x001F)  << 3 << 24;
-                u32 g = ((col >> 5) & 0x001F)  << 3 << 16;
-                u32 b = ((col >> 10) & 0x001F) << 3 << 8;
-//
-//                if((r | g | b) != 0)
-//                printf("%.8X ", r | g | b | 0xFF);
-                boxColor(s, x*PIXELSIZE, y*PIXELSIZE, x*PIXELSIZE+PIXELSIZE-1, y*PIXELSIZE+PIXELSIZE-1, r | g | b | 0xFF);
-            }
-        }
-    }
-
-    SDL_Flip(s);
+    sdl_render(SDL_GetVideoSurface(), area, 0);
+    SDL_Flip(SDL_GetVideoSurface());
 }
 

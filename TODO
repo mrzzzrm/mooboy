@@ -3,7 +3,7 @@
     - Strip core/sound.c from all platformdependant code
     - Fix soundbugs
     - Rearrange core/loader.c
-    - Rethink the current system-clock mechanisms
+    - Rethink the current system-clock mechanisms including chunk-timing. There HAS to be a cleaner solution
     - SRAM saving
     - Rearrange sys<->emu connection
     - Efficient SDL-renderer
