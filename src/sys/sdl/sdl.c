@@ -29,21 +29,6 @@ static char rompath[256] = "rom/gold.gbc";
 static int running;
 
 
-u32 palette[] = {
-    0xFFFFFFFF,
-    0xAAAAAAFF,
-    0x555555FF,
-    0x000000FF,
-    0xFF0000FF,
-    0x00FF00FF,
-    0x0000FFFF,
-    0xFFFF00FF
-};
-
-static void set_pixel(SDL_Surface *surface, unsigned int x, unsigned int y, u32 color) {
-     pixelColor(surface, x, y, color);
-}
-
 
 static void update_joypad() {
    SDL_Event event;
@@ -135,7 +120,7 @@ static void handle_delay() {
     long ms_ahead = cc_ahead / ((long)cpu.freq/1000);
 
     if(ms_ahead >= DELAY_THRESHOLD) {
-        SDL_Delay(DELAY_THRESHOLD);
+       // SDL_Delay(DELAY_THRESHOLD);
     }
 }
 
@@ -147,7 +132,7 @@ void sys_init(int argc, const char** argv) {
     cmd_init(argc, argv);
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    SDL_Surface *screen = SDL_SetVideoMode(160*PIXELSIZE, 144*PIXELSIZE, 24, SDL_DOUBLEBUF);
+    SDL_Surface *screen = SDL_SetVideoMode(480, 480, 24, SDL_DOUBLEBUF);
 
     last_sec = SDL_GetTicks();
 
@@ -165,6 +150,8 @@ void sys_init(int argc, const char** argv) {
         exit(1);
     }
     SDL_PauseAudio(0);
+
+    sdl_video_init();
 }
 
 void sys_close() {
@@ -281,7 +268,7 @@ void sys_fb_ready() {
     area.w = SDL_GetVideoSurface()->w;
     area.h = SDL_GetVideoSurface()->h;
 
-    sdl_render(SDL_GetVideoSurface(), area, 0);
+    sdl_video_render(SDL_GetVideoSurface(), area);
     SDL_Flip(SDL_GetVideoSurface());
 }
 
