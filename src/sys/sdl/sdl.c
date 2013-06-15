@@ -27,6 +27,15 @@ static time_t delay_start;
 static time_t last_sec;
 static char rompath[256] = "rom/gold.gbc";
 static int running;
+SDL_mutex *audio_mutex;
+
+void sys_lock_audiobuf() {
+    SDL_mutexP(audio_mutex);
+}
+
+void sys_unlock_audiobuf() {
+    SDL_mutexV(audio_mutex);
+}
 
 
 
@@ -64,20 +73,20 @@ static void update_joypad() {
 
 static u16 get_available_samples() {
     u16 r;
-    sound_lock();
+    sys_lock_audiobuf();
     if(sound.buf_start > sound.buf_end) {
         r = sound.buf_size - (sound.buf_start - sound.buf_end) + 1;
     }
     else {
         r = sound.buf_end - sound.buf_start;
     }
-    sound_unlock();
+    sys_unlock_audiobuf();
 
     return r;
 }
 
 void move_buf(void *nichtVerwendet, Uint8 *stream, int length) {
-    sound_lock();
+    sys_lock_audiobuf();
     u16 requested_samples = length / (sound.sample_size * 2);
     u16 available_samples;
     u16 served_samples;
@@ -104,7 +113,7 @@ void move_buf(void *nichtVerwendet, Uint8 *stream, int length) {
 
     sound.buf_start += requested_samples;
     sound.buf_start %= sound.buf_size;
-    sound_unlock();
+    sys_unlock_audiobuf();
 
 //    moved += requested_samples;
 }
@@ -120,7 +129,7 @@ static void handle_delay() {
     long ms_ahead = cc_ahead / ((long)cpu.freq/1000);
 
     if(ms_ahead >= DELAY_THRESHOLD) {
-       // SDL_Delay(DELAY_THRESHOLD);
+       SDL_Delay(DELAY_THRESHOLD);
     }
 }
 
@@ -132,7 +141,7 @@ void sys_init(int argc, const char** argv) {
     cmd_init(argc, argv);
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    SDL_Surface *screen = SDL_SetVideoMode(480, 480, 24, SDL_DOUBLEBUF);
+    SDL_Surface *screen = SDL_SetVideoMode(320, 288, 16, SDL_DOUBLEBUF);
 
     last_sec = SDL_GetTicks();
 
@@ -145,11 +154,13 @@ void sys_init(int argc, const char** argv) {
     format.callback = move_buf;
     format.userdata = NULL;
 
-    if (SDL_OpenAudio(&format, NULL) < 0 ) {
-        fprintf(stderr, "Audio-Gerät konnte nicht geöffnet werden: %s\n", SDL_GetError());
-        exit(1);
-    }
-    SDL_PauseAudio(0);
+    audio_mutex = SDL_CreateMutex();
+
+//    if (SDL_OpenAudio(&format, NULL) < 0 ) {
+//        fprintf(stderr, "Audio-Gerät konnte nicht geöffnet werden: %s\n", SDL_GetError());
+//        exit(1);
+//    }
+//    SDL_PauseAudio(0);
 
     sdl_video_init();
 }

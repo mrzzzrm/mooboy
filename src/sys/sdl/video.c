@@ -104,6 +104,23 @@ static void area_render(SDL_Surface *surface, SDL_Rect area) {
 void sdl_video_init() {
     int c, p;
 
+    rgb16.colorpool = malloc(sizeof(*rgb16.colorpool) * 0x10000);
+    for(c = 0; c < 0x10000; c++) {
+        rgb16.colorpool[c] = malloc(24);
+        for(p = 0; p < 24;) {
+            u8 r, g, b;
+            u16 val;
+
+            r = ((c >> 10) & 0x001F);
+            g = ((c >> 5) & 0x001F);
+            b = ((c >> 0) & 0x001F);
+
+            val = (b<<11) | (g<<6) | (r<<0);
+
+            rgb16.colorpool[c][p++] = val & 0x00FF;
+            rgb16.colorpool[c][p++] = val >> 8;
+        }
+    }
     rgb24.colorpool = malloc(sizeof(*rgb24.colorpool) * 0x10000);
     for(c = 0; c < 0x10000; c++) {
         rgb24.colorpool[c] = malloc(24);

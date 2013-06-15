@@ -15,6 +15,9 @@
     bool sys_running();
     bool sys_new_rom();
 
+    void sys_lock_audiobuf();
+    void sys_unlock_audiobuf();
+
     const char *sys_get_rompath();
 
 

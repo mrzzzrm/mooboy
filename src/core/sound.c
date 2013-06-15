@@ -3,8 +3,6 @@
 #include "defines.h"
 #include <assert.h>
 #include <stdlib.h>
-// TODO: This include should vanish eventually
-#include <SDL/SDL.h>
 
 typedef struct {
     u16 l, r;
@@ -17,8 +15,6 @@ env_t env[3];
 wave_t wave;
 noise_t noise;
 
-// TODO: Deprecated
-static SDL_mutex *mutex;
 
 static void tick_length_counter(counter_t *counter, u8 *on) {
     if(counter->length > 0) {
@@ -197,8 +193,6 @@ static sample_t noise_mix() {
 
 // TDOD: sound.freq should be solved differently - at least being retrieved from sys_
 void sound_init() {
-    mutex = SDL_CreateMutex();
-
     sound.freq = 44100;
     sound.sample = 0;
     sound.buf_size = 4096;
@@ -241,20 +235,10 @@ void sound_step() {
 }
 
 // TODO: Remove SDL, sys_ handled mutexes
-void sound_lock() {
-    SDL_mutexP(mutex);
-}
-
-// TODO: Remove SDL, sys_ handled mutexes
-void sound_unlock() {
-    SDL_mutexV(mutex);
-}
-
-// TODO: Remove SDL, sys_ handled mutexes
 // TODO: Handle userdefined on/off elsewhere, sound-off shouldn't use resources
 void sound_mix() {
     sample_t samples[4];
-    SDL_mutexP(mutex);
+    sys_lock_audiobuf();
 
     u16 *buf = (u16*)sound.buf;
 
@@ -273,7 +257,7 @@ void sound_mix() {
         samples[1] = sqw_mix(&sqw[1]);
         samples[2] = wave_mix();
         samples[3] = noise_mix();
-        if(0) {
+        if(1) {
             buf[sound.buf_end*2 + 0] = (samples[0].l + samples[1].l + samples[2].l + samples[3].l)*sound.so1_volume*0x40;
             buf[sound.buf_end*2 + 1] = (samples[0].r + samples[1].r + samples[2].r + samples[3].r)*sound.so2_volume*0x40;
         }
@@ -287,7 +271,7 @@ void sound_mix() {
     sound.buf_end %= sound.buf_size;
     sound.sample++;
 
-    SDL_mutexV(mutex);
+    sys_unlock_audiobuf();
 }
 
 void sound_write(u8 sadr, u8 val) {
