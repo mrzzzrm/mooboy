@@ -193,7 +193,7 @@ static sample_t noise_mix() {
 
 // TDOD: sound.freq should be solved differently - at least being retrieved from sys_
 void sound_init() {
-    sound.freq = 44100;
+    sound.freq = 22050;
     sound.sample = 0;
     sound.buf_size = 4096;
     sound.buf_start = 0;

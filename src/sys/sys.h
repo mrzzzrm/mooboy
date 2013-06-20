@@ -4,6 +4,12 @@
     #include <time.h>
     #include "util/defines.h"
 
+    typedef struct {
+        int frameskip;
+    } sys_t;
+
+    extern sys_t sys;
+
     void sys_init(int argc, const char** argv);
     void sys_close();
     int sys_invoke();

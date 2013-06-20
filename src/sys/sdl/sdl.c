@@ -140,8 +140,10 @@ void sys_init(int argc, const char** argv) {
     delay_start = 0;
     cmd_init(argc, argv);
 
+    sys.frameskip = 1;
+
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    SDL_Surface *screen = SDL_SetVideoMode(320, 288, 16, SDL_DOUBLEBUF);
+    SDL_Surface *screen = SDL_SetVideoMode(320, 288, 16, 0);
 
     last_sec = SDL_GetTicks();
 
@@ -156,11 +158,11 @@ void sys_init(int argc, const char** argv) {
 
     audio_mutex = SDL_CreateMutex();
 
-//    if (SDL_OpenAudio(&format, NULL) < 0 ) {
-//        fprintf(stderr, "Audio-Gerät konnte nicht geöffnet werden: %s\n", SDL_GetError());
-//        exit(1);
-//    }
-//    SDL_PauseAudio(0);
+    if (SDL_OpenAudio(&format, NULL) < 0 ) {
+        fprintf(stderr, "Audio-Gerät konnte nicht geöffnet werden: %s\n", SDL_GetError());
+        exit(1);
+    }
+    SDL_PauseAudio(0);
 
     sdl_video_init();
 }
@@ -190,7 +192,7 @@ int sys_invoke() {
     time_t dur = SDL_GetTicks() - last_sec;
     if(dur > 1000) {
         last_sec = SDL_GetTicks();
-        fprintf(stderr, "Invokes: %i %.2f%%\n", invoke_count, ((double)(cpu.cc - last_sec_cc)*100.0f*dur)/(cpu.freq*1000));
+        printf("Invokes: %i %.2f%%\n", invoke_count, ((double)(cpu.cc - last_sec_cc)*100.0f*dur)/(cpu.freq*1000));
         invoke_count = 0;
         last_sec_cc = cpu.cc;
     }
