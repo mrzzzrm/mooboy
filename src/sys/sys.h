@@ -1,30 +1,31 @@
 #ifndef SYS_H
 #define SYS_H
 
-    #include <time.h>
-    #include "util/defines.h"
+#include <time.h>
+#include "util/defines.h"
 
-    typedef struct {
-        int frameskip;
-    } sys_t;
+typedef struct {
+    time_t ticks;
+} sys_t;
 
-    extern sys_t sys;
+extern sys_t sys;
 
-    void sys_init(int argc, const char** argv);
-    void sys_close();
-    int sys_invoke();
-    void sys_fb_ready();
 
-    void sys_save_card();
-    void sys_load_card();
+void sys_init(int argc, const char** argv);
+void sys_close();
 
-    bool sys_running();
-    bool sys_new_rom();
+int sys_invoke();
+void sys_fb_ready();
 
-    void sys_lock_audiobuf();
-    void sys_unlock_audiobuf();
+void sys_save_card();
+void sys_load_card();
 
-    const char *sys_get_rompath();
+bool sys_running();
+bool sys_new_rom();
 
+void sys_lock_audiobuf();
+void sys_unlock_audiobuf();
+
+const char *sys_get_rompath();
 
 #endif // SYS_H

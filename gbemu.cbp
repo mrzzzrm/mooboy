@@ -207,10 +207,33 @@
 		<Unit filename="src/sys/sdl/audio.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="src/sys/sdl/audio.h">
+			<Option target="sdl_release" />
+			<Option target="sdl_debug" />
+			<Option target="pandora" />
+		</Unit>
+		<Unit filename="src/sys/sdl/framerate.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/sys/sdl/framerate.h">
+			<Option target="sdl_release" />
+			<Option target="sdl_debug" />
+			<Option target="pandora" />
+		</Unit>
+		<Unit filename="src/sys/sdl/input.c">
+			<Option compilerVar="CC" />
+			<Option target="sdl_release" />
+			<Option target="sdl_debug" />
+			<Option target="pandora" />
+		</Unit>
+		<Unit filename="src/sys/sdl/input.h">
+			<Option target="sdl_release" />
+			<Option target="sdl_debug" />
+			<Option target="pandora" />
+		</Unit>
 		<Unit filename="src/sys/sdl/sdl.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src/sys/sdl/sdl.h" />
 		<Unit filename="src/sys/sdl/state.c">
 			<Option compilerVar="CC" />
 		</Unit>

@@ -1,5 +1,7 @@
-#ifndef JOY_H
-#define JOY_H
+#ifndef CORE_JOY_H
+#define CORE_JOY_H
+
+#include "util/defines.h"
 
 #define JOY_BUTTON_RIGHT    0x01
 #define JOY_BUTTON_LEFT     0x02

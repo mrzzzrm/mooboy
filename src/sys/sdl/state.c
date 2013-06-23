@@ -360,7 +360,7 @@ static void load_checkpoints() {
     bytes_handled = 0;
 }
 
-void save_state() {
+void state_save() {
     printf("Saving\n");
     f = fopen("state.sav", "w");
     assert(f);
@@ -380,7 +380,7 @@ void save_state() {
     fclose(f);
 }
 
-void load_state() {
+void state_load() {
     printf("Loading\n");
     f = fopen("state.sav", "r");
     assert(f);

@@ -3,7 +3,7 @@
 
 #include <SDL/SDL.h>
 
-void sdl_video_init();
-void sdl_video_render(SDL_Surface *surface, SDL_Rect area);
+void video_init();
+void video_render(SDL_Surface *surface, SDL_Rect area);
 
 #endif

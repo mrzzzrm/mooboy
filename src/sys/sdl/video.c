@@ -5,15 +5,12 @@
 #include "core/emu.h"
 #include "core/lcd.h"
 
-#define FRAMESKIP_MAX 10
 
 static u8 buf[32768];
 static int line_length;
 static int bytes_per_pixel;
 static int bytes_per_line;
 static SDL_Rect area;
-static time_t last_render;
-static int skipped;
 
 sys_t sys;
 
@@ -28,24 +25,6 @@ static u32 dmg_palette[] = {
     0x555555FF,
     0x000000FF
 };
-
-static int frameskip() {
-    skipped++;
-    if(SDL_GetTicks() - last_render <= skipped * 16) {
-        return 0;
-    }
-    if(sys.frameskip > 0) {
-        if(skipped > sys.frameskip) {
-            return 0;
-        }
-    }
-    else {
-        if(skipped > FRAMESKIP_MAX) {
-            return 0;
-        }
-    }
-    return 1;
-}
 
 // TODO: This is bufferable since aheight won't change for a
 //       while and fbline depends on aline and aheight
@@ -126,11 +105,8 @@ static void area_render(SDL_Surface *surface, SDL_Rect area) {
 
 }
 
-void sdl_video_init() {
+void video_init() {
     int c, p;
-
-    last_render = 0;
-    skipped = 0;
 
     rgb16.colorpool = malloc(sizeof(*rgb16.colorpool) * 0x10000);
     for(c = 0; c < 0x10000; c++) {
@@ -160,22 +136,7 @@ void sdl_video_init() {
     }
 }
 
-void sdl_video_render(SDL_Surface *surface, SDL_Rect area) {
-    if(frameskip()) {
-        return;
-    }
-    else {
-        skipped = 0;
-    }
-
-    if(SDL_GetTicks() - last_render < 16) {
-        return;
-    }
-    else {
-        last_render = SDL_GetTicks();
-    }
-
-
+void video_render(SDL_Surface *surface, SDL_Rect area) {
     if(area.x == 0 && area.w == surface->w) {
         fullwidth_render(surface, area);
     }
