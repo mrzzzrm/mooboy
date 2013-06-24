@@ -6,6 +6,8 @@
 
 typedef struct {
     time_t ticks;
+    int fb_ready;
+    unsigned int bits_per_pixel;
 } sys_t;
 
 extern sys_t sys;
@@ -13,6 +15,8 @@ extern sys_t sys;
 
 void sys_init(int argc, const char** argv);
 void sys_close();
+
+void sys_begin();
 
 int sys_invoke();
 void sys_fb_ready();

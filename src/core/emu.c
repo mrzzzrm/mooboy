@@ -71,6 +71,7 @@ void emu_step_hw(u8 mcs) {
 
 void emu_run() {
     debug_init();
+    sys_begin();
 
     for(;;) {
         unsigned int t;
