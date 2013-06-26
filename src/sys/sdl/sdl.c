@@ -23,7 +23,7 @@ static size_t last_sec_cc;
 static size_t last_delay_cc;
 static time_t delay_start;
 static time_t last_sec;
-static char rompath[256] = "rom/gold.gbc";
+static char rompath[256] = "rom/mario.gb";
 static int running;
 static int fb_ready;
 

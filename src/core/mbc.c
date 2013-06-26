@@ -105,7 +105,6 @@ static void mbc5_lower_write(u16 adr, u8 val) {
             mbc5.rombank &= 0xFF00;
             mbc5.rombank |= val;
             if(mbc5.rombank >= card.romsize) {
-                debug_after();
                 assert(0);
             }
             mbc.rombank = card.rombanks[mbc5.rombank];
@@ -115,7 +114,6 @@ static void mbc5_lower_write(u16 adr, u8 val) {
             mbc5.rombank &= 0xFEFF;
             mbc5.rombank |= ((u16)val&0x01)<<8;
             if(mbc5.rombank >= card.romsize) {
-                debug_after();
                 assert(0);
             }
 

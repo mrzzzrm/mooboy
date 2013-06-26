@@ -70,14 +70,12 @@ void emu_step_hw(u8 mcs) {
 }
 
 void emu_run() {
-    debug_init();
     sys_begin();
 
     for(;;) {
         unsigned int t;
         for(t = 0; t < QUANTUM; t++) {
-//            debug_update();
-//            debug_before();
+
             if(cpu.halted) {
                 if(ints_handle_standby()) {
                     cpu.halted = 0;
@@ -89,7 +87,6 @@ void emu_run() {
                 u8 mcs = cpu_step();
                 emu_step_hw(mcs);
             }
-//            debug_after();
         }
         if(!sys_invoke()) {
             break;
