@@ -38,7 +38,7 @@
 
 lcd_t lcd;
 
-static u8 non_cgb_palettes[1][4] = {
+static u16 non_cgb_palettes[1][4] = {
     {0x0000, 0xa100, 0x0f80, 0x003f}
 };
 

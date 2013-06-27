@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <time.h>
 #include "core/cpu.h"
 #include "core/joy.h"
 #include "core/rtc.h"
@@ -114,7 +115,7 @@ static void load_joy() {
 }
 
 static void save_fb() {
-    int f, p;
+    int f;
     for(f = 0; f < 2; f++) {
         SV(lcd.fb[f]);
     }
@@ -126,7 +127,7 @@ static void save_fb() {
 }
 
 static void load_fb() {
-    int f, p;
+    int f;
     for(f = 0; f < 2; f++) {
         RV(lcd.fb[f]);
     }

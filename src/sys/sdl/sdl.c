@@ -13,28 +13,28 @@
 #include "core/sound.h"
 #include "state.h"
 #include "input.h"
+#include "audio.h"
+#include "framerate.h"
 #include "performance.h"
 
 
 sys_t sys;
 
-static size_t invoke_count;
-static size_t last_sec_cc;
-static size_t last_delay_cc;
-static time_t delay_start;
-static time_t last_sec;
-static char rompath[256] = "rom/mario.gb";
 static int running;
-static int fb_ready;
 
 void sys_init(int argc, const char** argv) {
-    last_sec_cc = 0;
     sys.fb_ready = 0;
+    sys.quantum_length = 1000;
     sys.bits_per_pixel = 16;
+    sprintf(sys.rompath, "rom/gold.gbc");
 
-    last_sec = SDL_GetTicks();
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    SDL_Surface *screen = SDL_SetVideoMode(320, 288, sys.bits_per_pixel, 0);
+#ifdef PANDORA
+    SDL_SetVideoMode(534, 480, sys.bits_per_pixel, SDL_FULLSCREEN);
+    SDL_ShowCursor(0);
+#else
+    SDL_SetVideoMode(534, 480, sys.bits_per_pixel, 0);
+#endif
 
     cmd_init(argc, argv);
     audio_init();
@@ -45,7 +45,7 @@ void sys_init(int argc, const char** argv) {
 }
 
 void sys_close() {
-
+    SDL_Quit();
 }
 
 bool sys_running()  {
@@ -54,10 +54,6 @@ bool sys_running()  {
 
 bool sys_new_rom()  {
     return TRUE;
-}
-
-const char *sys_get_rompath() {
-    return rompath;
 }
 
 static void render() {
@@ -80,6 +76,9 @@ static void handle_events() {
 
     while(SDL_PollEvent(&event)) {
         if(event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
+            if(event.key.keysym.sym == SDLK_ESCAPE) {
+                running = 0;
+            }
             input_event(event.type, event.key.keysym.sym);
         }
         else if(event.type == SDL_QUIT) {
@@ -102,9 +101,8 @@ int sys_invoke() {
     }
     framerate_curb();
 
-
     handle_events();
-    performance_update();
+    performance_invoked();
 
     return running;
 }

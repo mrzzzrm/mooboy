@@ -7,7 +7,9 @@
 typedef struct {
     time_t ticks;
     int fb_ready;
+    char rompath[256];
     unsigned int bits_per_pixel;
+    unsigned int quantum_length;
 } sys_t;
 
 extern sys_t sys;

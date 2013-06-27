@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+#include "sys/sys.h"
 #include "mem.h"
 #include "emu.h"
 #include "mbc.h"

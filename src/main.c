@@ -29,8 +29,8 @@ static void load_romfile() {
     u8 *romdata;
     size_t romsize;
 
-    printf("Loading ROM: %s\n", sys_get_rompath());
-    if((romdata = io_load_binary(sys_get_rompath(), &romsize)) == NULL) {
+    printf("Loading ROM: %s\n", sys.rompath);
+    if((romdata = io_load_binary(sys.rompath, &romsize)) == NULL) {
         error();
     }
     printf("Firing emu with romdata (size=%i)\n", romsize);
@@ -39,8 +39,6 @@ static void load_romfile() {
 }
 
 int main(int argc, const char **argv) {
-    char rom[256];
-
     init(argc, argv);
     emu_set_hw(CGB_HW);
     load_romfile();

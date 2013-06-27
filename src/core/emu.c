@@ -12,7 +12,6 @@
 #include "sys/sys.h"
 #include "sound.h"
 
-#define QUANTUM 1000
 
 emu_t emu;
 
@@ -74,7 +73,7 @@ void emu_run() {
 
     for(;;) {
         unsigned int t;
-        for(t = 0; t < QUANTUM; t++) {
+        for(t = 0; t < sys.quantum_length; t++) {
 
             if(cpu.halted) {
                 if(ints_handle_standby()) {

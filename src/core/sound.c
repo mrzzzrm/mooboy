@@ -1,8 +1,11 @@
 #include "sound.h"
 #include "cpu.h"
 #include "defines.h"
+#include "sys/sys.h"
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 typedef struct {
     u16 l, r;
@@ -90,7 +93,7 @@ static sample_t sqw_mix(sqw_t *ch) {
     sample_t r = {0,0};
     int wavelen;
     int wavesam;
-    u16 amp;
+    u16 amp = 0;
 
     if(!ch->on) {
         return r;
