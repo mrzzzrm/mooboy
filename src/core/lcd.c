@@ -39,7 +39,7 @@
 lcd_t lcd;
 
 static u16 non_cgb_palettes[1][4] = {
-    {0x0000, 0xa100, 0x0f80, 0x003f}
+    {0x7bde, 0x5294, 0x294a, 0x0000}
 };
 
 static void swap_fb() {
@@ -117,7 +117,7 @@ static void draw_line_non_cgb_mode(u8 *maps_scan, u8 *obj_scan) {
     for(x = 0; x < LCD_WIDTH; x++, pixel++) {
         if(OBJ_PRIORITY(obj_scan[x])) {
             if(maps_scan[x] != 0) {
-                *pixel = non_cgb_palettes[lcd.non_cgb_bgp][maps_scan[x]];
+                *pixel = non_cgb_palettes[0][maps_scan[x]];
             }
             else {
                 *pixel = non_cgb_palettes[0][OBJ_DATA(obj_scan[x])];
@@ -128,7 +128,7 @@ static void draw_line_non_cgb_mode(u8 *maps_scan, u8 *obj_scan) {
                 *pixel = non_cgb_palettes[0][OBJ_DATA(obj_scan[x])];
             }
             else {
-                *pixel = non_cgb_palettes[lcd.non_cgb_bgp][maps_scan[x]];
+                *pixel = non_cgb_palettes[0][maps_scan[x]];
             }
         }
     }

@@ -13,12 +13,26 @@ static int bytes_per_pixel;
 static int bytes_per_line;
 static SDL_Rect area;
 
+static u16 dmg_palette[4] = {
+    {0x7bde, 0x5294, 0x294a, 0x0000}
+};
+
 sys_t sys;
 
-static struct {
-    u8 **colorpool;
-} rgb8, rgb16, rgb24, rgba32;
 
+static inline u16 cgb_to_rgb(u16 cgb_color) {
+    u16 r, g, b;
+
+    r = (cgb_color & (0x001F << 10));
+    g = (cgb_color & (0x001F << 5));
+    b = (cgb_color & 0x001F);
+
+    return (b<<11) | (g << 1) | (r>>10);
+}
+
+static inline u16 dmg_to_rgb(u16 dmg_color) {
+    return dmg_palette[dmg_color];
+}
 
 // TODO: This is bufferable since aheight won't change for a
 //       while and fbline depends on aline and aheight
@@ -37,7 +51,7 @@ static inline void fw_render_buffer(SDL_Surface *surface, void *buf, int bufline
     memcpy(surface->pixels + bytes_per_line * y, buf, buflines * bytes_per_line);
 }
 
-static inline void cgb_fw_render_fbline(int line) {
+static void cgb_fw_render_fbline(int line) {
     int fb_pixel, buf_pos, ax, ppos, fbx;
     u16 s_color, fb_color;
     u16 r, g, b;
@@ -48,14 +62,7 @@ static inline void cgb_fw_render_fbline(int line) {
     fbx = 0;
 
     for(ax = 0; ax < area.w; fbx++) {
-        fb_color = lcd.clean_fb[fb_pixel++];
-
-        r = (fb_color & (0x001F << 10));
-        g = (fb_color & (0x001F << 5));
-        b = (fb_color & 0x001F);
-
-        s_color = (b<<11) | (g << 1) | (r>>10);
-
+        s_color = cgb_to_rgb(lcd.clean_fb[fb_pixel++]);
         pixels_to_set = acolumns_in_fbpixel(ax, area.w, fbx);
 
         for(ppos = 0; ppos < pixels_to_set; ppos++, ax++) {
@@ -63,7 +70,27 @@ static inline void cgb_fw_render_fbline(int line) {
             buf[buf_pos++] = s_color >> 8;
         }
     }
+}
 
+static void dmg_fw_render_fbline(int line) {
+    int fb_pixel, buf_pos, ax, ppos, fbx;
+    u16 s_color, fb_color;
+    u16 r, g, b;
+    int pixels_to_set;
+
+    buf_pos = 0;
+    fb_pixel = line * 160;
+    fbx = 0;
+
+    for(ax = 0; ax < area.w; fbx++) {
+        s_color = dmg_to_rgb(lcd.clean_fb[fb_pixel++]);
+        pixels_to_set = acolumns_in_fbpixel(ax, area.w, fbx);
+
+        for(ppos = 0; ppos < pixels_to_set; ppos++, ax++) {
+            buf[buf_pos++] = s_color & 0x00FF;
+            buf[buf_pos++] = s_color >> 8;
+        }
+    }
 }
 
 static void fw_render_fbline(int line) {
@@ -71,7 +98,7 @@ static void fw_render_fbline(int line) {
         cgb_fw_render_fbline(line);
     }
     else {
-
+        dmg_fw_render_fbline(line);
     }
 }
 
@@ -104,24 +131,24 @@ static void fullwidth_render(SDL_Surface *surface, SDL_Rect _area) {
     }
 }
 
+
 static void area_render(SDL_Surface *surface, SDL_Rect area) {
     int x, y;
     int fbx = 0, fby = 0;
 
-    for(x = 0; x < 160; x++) {
-        for(y = 0; y < 144; y++) {
-            u8 r, g, b;
-            u16 val, c;
 
-            c = lcd.clean_fb[y * 160 + x];
-
-            r = ((c >> 10) & 0x001F);
-            g = ((c >> 5) & 0x001F);
-            b = ((c >> 0) & 0x001F);
-
-            val = (b<<11) | (g<<6) | (r<<0);
-
-            fb_color[x][y] = val;
+    if(emu.hw == CGB_HW) {
+        for(x = 0; x < 160; x++) {
+            for(y = 0; y < 144; y++) {
+                fb_color[x][y] = cgb_to_rgb(lcd.clean_fb[y * 160 + x]);
+            }
+        }
+    }
+    else {
+        for(x = 0; x < 160; x++) {
+            for(y = 0; y < 144; y++) {
+                fb_color[x][y] = dmg_to_rgb(lcd.clean_fb[y * 160 + x]);
+            }
         }
     }
 
@@ -137,34 +164,7 @@ static void area_render(SDL_Surface *surface, SDL_Rect area) {
 }
 
 void video_init() {
-    int c, p;
 
-    rgb16.colorpool = malloc(sizeof(*rgb16.colorpool) * 0x10000);
-    for(c = 0; c < 0x10000; c++) {
-        rgb16.colorpool[c] = malloc(24);
-        for(p = 0; p < 24;) {
-            u8 r, g, b;
-            u16 val;
-
-            r = ((c >> 10) & 0x001F);
-            g = ((c >> 5) & 0x001F);
-            b = ((c >> 0) & 0x001F);
-
-            val = (b<<11) | (g<<6) | (r<<0);
-
-            rgb16.colorpool[c][p++] = val & 0x00FF;
-            rgb16.colorpool[c][p++] = val >> 8;
-        }
-    }
-    rgb24.colorpool = malloc(sizeof(*rgb24.colorpool) * 0x10000);
-    for(c = 0; c < 0x10000; c++) {
-        rgb24.colorpool[c] = malloc(24);
-        for(p = 0; p < 24;) {
-            rgb24.colorpool[c][p++] = ((c >> 10) & 0x001F) << 3;
-            rgb24.colorpool[c][p++] = ((c >> 5) & 0x001F) << 3;
-            rgb24.colorpool[c][p++] = ((c >> 0) & 0x001F) << 3;
-        }
-    }
 }
 
 void video_render(SDL_Surface *surface, SDL_Rect area) {

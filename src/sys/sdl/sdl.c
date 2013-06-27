@@ -26,7 +26,7 @@ void sys_init(int argc, const char** argv) {
     sys.fb_ready = 0;
     sys.quantum_length = 1000;
     sys.bits_per_pixel = 16;
-    sprintf(sys.rompath, "rom/gold.gbc");
+    sprintf(sys.rompath, "rom/crystal.gbc");
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 #ifdef PANDORA
