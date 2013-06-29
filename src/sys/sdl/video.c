@@ -116,9 +116,8 @@ static void fullwidth_render(SDL_Surface *surface, SDL_Rect _area) {
         alines_to_fill = alines_in_fbline(aline, area.h, fbline);
         if(alines_to_fill > 0) {
             fw_render_fbline(fbline);
-            buflines = 1;
 
-            for(;alines_to_fill >= buflines * 2; buflines *= 2) {
+            for(buflines = 1; alines_to_fill >= buflines * 2; buflines *= 2) {
                 memcpy(&buf[buflines * bytes_per_line], buf, buflines * bytes_per_line);
             }
             fw_render_buffer(surface, buf, buflines, aline);

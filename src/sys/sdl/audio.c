@@ -34,6 +34,11 @@ static void handout_buf(void *_unused, Uint8 *stream, int length) {
     u16 available_samples;
     u16 served_samples;
 
+    if(!sys.sound_on) {
+        memset(stream, 0x00, length);
+        return;
+    }
+
     while((available_samples = get_available_samples()) < requested_samples) {
         sound_mix();
     }

@@ -24,6 +24,7 @@ static int running;
 
 void sys_init(int argc, const char** argv) {
     sys.fb_ready = 0;
+    sys.sound_on = 1;
     sys.quantum_length = 1000;
     sys.bits_per_pixel = 16;
     sprintf(sys.rompath, "rom/crystal.gbc");
@@ -33,7 +34,7 @@ void sys_init(int argc, const char** argv) {
     SDL_SetVideoMode(534, 480, sys.bits_per_pixel, SDL_FULLSCREEN);
     SDL_ShowCursor(0);
 #else
-    SDL_SetVideoMode(534, 480, sys.bits_per_pixel, 0);
+    SDL_SetVideoMode(480, 432, sys.bits_per_pixel, 0);
 #endif
 
     cmd_init(argc, argv);

@@ -8,7 +8,7 @@ framerate_t framerate;
 
 void framerate_init() {
     framerate.limit_framerate = 1;
-    framerate.frameskip = ;
+    framerate.frameskip = 1;
     framerate.max_frameskip = 5;
     framerate.delay_threshold = 10;
 

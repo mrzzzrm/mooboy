@@ -45,6 +45,7 @@ static void tick_sweep() {
             else {
                 sqw[0].freq += sqw[0].freq >> sweep.shift;
             }
+            sqw[0].freq &= 0x07FF;
             sweep.tick = 0;
         }
     }
@@ -100,10 +101,12 @@ static sample_t sqw_mix(sqw_t *ch) {
     }
 
     if(ch->freq == 2048) {
+   //     printf("?");
         return r;
     }
     wavelen = sound.freq / (131072 / (2048 - ch->freq));
     if(wavelen == 0) {
+        printf("! %i\n", ch->freq);
         return r;
     }
     wavesam = sound.sample % wavelen;
@@ -138,8 +141,11 @@ static sample_t wave_mix() {
     if(wavelen == 0) {
         return r;
     }
-    wavesam = (sound.sample % wavelen);
-    realsam = (wavesam*0x20)/wavelen;
+    else {
+        wavesam = (sound.sample % wavelen);
+        realsam = (wavesam*0x20)/wavelen;
+    }
+
 
     if(realsam%2 == 0) {
         amp = wave.data[realsam>>1] >> 4;
@@ -173,10 +179,8 @@ static sample_t noise_mix() {
     }
     assert(freq != 0);
     wavelen = sound.freq / freq;
-    if(wavelen == 0) {
-        return r;
-    }
-    if(sound.sample / wavelen != (sound.sample+1) / wavelen) {
+
+    if(wavelen == 0 || sound.sample / wavelen != (sound.sample+1) / wavelen) {
         u8 b = ((noise.lsfr+0x0001) & 0x03) >= 0x0002 ? 1 : 0;
         noise.lsfr >>= 1;
         noise.lsfr &= 0xBFFF;
@@ -196,7 +200,7 @@ static sample_t noise_mix() {
 
 // TDOD: sound.freq should be solved differently - at least being retrieved from sys_
 void sound_init() {
-    sound.freq = 22050;
+    sound.freq = 44100;
     sound.sample = 0;
     sound.buf_size = 4096;
     sound.buf_start = 0;
@@ -260,15 +264,11 @@ void sound_mix() {
         samples[1] = sqw_mix(&sqw[1]);
         samples[2] = wave_mix();
         samples[3] = noise_mix();
-        if(1) {
-            buf[sound.buf_end*2 + 0] = (samples[0].l + samples[1].l + samples[2].l + samples[3].l)*sound.so1_volume*0x40;
-            buf[sound.buf_end*2 + 1] = (samples[0].r + samples[1].r + samples[2].r + samples[3].r)*sound.so2_volume*0x40;
-        }
-        else {
-            buf[sound.buf_end*2 + 0] = 0;
-            buf[sound.buf_end*2 + 1] = 0;
-        }
-
+        buf[sound.buf_end*2 + 0] = (samples[0].l + samples[1].l + samples[2].l + samples[3].l)*sound.so1_volume*0x40;
+        buf[sound.buf_end*2 + 1] = (samples[0].r + samples[1].r + samples[2].r + samples[3].r)*sound.so2_volume*0x40;
+//
+//        buf[sound.buf_end*2 + 0] = (samples[0].l)*sound.so1_volume*0x40;
+//        buf[sound.buf_end*2 + 1] = (samples[0].r)*sound.so2_volume*0x40;
     }
     sound.buf_end++;
     sound.buf_end %= sound.buf_size;
@@ -368,8 +368,8 @@ void sound_write(u8 sadr, u8 val) {
             sound.so2_volume = val >> 4;
         break;
         case 0x25:
-            sqw[0].l =   val & 0x01; sqw[0].r =   val & 0x10;
-            sqw[1].l =   val & 0x02; sqw[1].r =   val & 0x20;
+            sqw[0].l = val & 0x01; sqw[0].r = val & 0x10;
+            sqw[1].l = val & 0x02; sqw[1].r = val & 0x20;
             wave.l =  val & 0x04; wave.r =  val & 0x40;
             noise.l = val & 0x08; noise.r = val & 0x80;
         break;
