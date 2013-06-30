@@ -107,12 +107,13 @@ static void load_cpu() {
 }
 
 static void save_joy() {
-    S(joy.state); S(joy.col);
+    S(joy.col);
     set_checkpoint();
 }
 
 static void load_joy() {
-    R(joy.state); R(joy.col);
+    joy.state = 0xFF;
+    R(joy.col);
     assert_checkpoint();
 }
 
