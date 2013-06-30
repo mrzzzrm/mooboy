@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <time.h>
+#include <SDL/SDL.h>
+#include "sys/sys.h"
+#include "sys/sdl/framerate.h"
 #include "core/cpu.h"
 #include "core/joy.h"
 #include "core/rtc.h"
@@ -58,7 +61,6 @@ static u32 load(u8 size) {
 }
 
 static void _set_checkpoint(int line) {
-
     assert(current_checkpoint < CHECKPOINTS);
     //fprintf(stderr, "SET CHCEKPOINT %i@%i - %i bytes written", current_checkpoint, line, bytes_handled);
     S(checkpoints[current_checkpoint]);
@@ -332,6 +334,15 @@ static void load_timers() {
     assert_checkpoint();
 }
 
+static void save_sys() {
+    S(sys.ticks);
+}
+
+static void load_sys() {
+    R(sys.ticks);
+
+    sys.ticks_diff = SDL_GetTicks() - sys.ticks;
+}
 
 static void flush() {
 
@@ -376,6 +387,7 @@ void state_save() {
     save_rtc();
     save_sound();
     save_timers();
+    save_sys();
 
     flush();
     fclose(f);
@@ -396,6 +408,7 @@ void state_load() {
     load_rtc();
     load_sound();
     load_timers();
+    load_sys();
 
     R(byte);
     assert(feof(f));

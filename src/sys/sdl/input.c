@@ -1,6 +1,7 @@
 #include "input.h"
 #include "state.h"
 #include "core/joy.h"
+#include "sys/sys.h"
 #include <SDL/SDL.h>
 
 input_t input;
@@ -35,6 +36,13 @@ void input_event(int type, int key) {
             state_load();
         if(key == input.keys.save)
             state_save();
+        if(key == input.keys.menu) {
+            if(sys.in_menu)
+                sys.ticks_diff += SDL_GetTicks() - sys.pause_start;
+            else
+                 sys.pause_start = SDL_GetTicks();
+            sys.in_menu = !sys.in_menu;
+        }
     }
 
     if(key == input.keys.up)    joy_set_button(JOY_BUTTON_UP, state);

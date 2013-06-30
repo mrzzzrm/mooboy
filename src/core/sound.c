@@ -475,5 +475,3 @@ u8 sound_read(u8 sadr) {
     return 0;
 }
 
-
-

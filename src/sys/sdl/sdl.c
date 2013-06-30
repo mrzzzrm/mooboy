@@ -25,9 +25,11 @@ static int running;
 void sys_init(int argc, const char** argv) {
     sys.fb_ready = 0;
     sys.sound_on = 1;
+    sys.in_menu = 0;
+    sys.pause_start = 0;
     sys.quantum_length = 1000;
     sys.bits_per_pixel = 16;
-    sprintf(sys.rompath, "rom/crystal.gbc");
+    sprintf(sys.rompath, "rom/mario4.gbc");
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 #ifdef PANDORA
@@ -36,6 +38,8 @@ void sys_init(int argc, const char** argv) {
 #else
     SDL_SetVideoMode(480, 432, sys.bits_per_pixel, 0);
 #endif
+
+    sys.ticks_diff = SDL_GetTicks();
 
     cmd_init(argc, argv);
     audio_init();
@@ -91,7 +95,7 @@ static void handle_events() {
 
 int sys_invoke() {
     running = 1;
-    sys.ticks = SDL_GetTicks();
+    sys.ticks = SDL_GetTicks() - sys.ticks_diff;
 
     if(sys.fb_ready) {
         if(!framerate_skip()) {
@@ -104,6 +108,10 @@ int sys_invoke() {
 
     handle_events();
     performance_invoked();
+
+    while(sys.in_menu) {
+        handle_events();
+    }
 
     return running;
 }

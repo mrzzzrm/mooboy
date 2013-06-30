@@ -6,8 +6,11 @@
 
 typedef struct {
     time_t ticks;
+    time_t ticks_diff;
+    time_t pause_start;
     int fb_ready;
     int sound_on;
+    int in_menu;
     char rompath[256];
     unsigned int bits_per_pixel;
     unsigned int quantum_length;
