@@ -51,7 +51,7 @@ static u32 load(u8 size) {
     int b;
     for(b = 0; b < size; b++) {
         assert(!feof(f));
-        fread(&byte, 1, 1, f);
+        assert(fread(&byte, 1, 1, f) == 1);
        // printf(".", byte);
         re |= byte << (8*b);
         bytes_handled++;

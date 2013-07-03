@@ -8,6 +8,7 @@ typedef struct {
     unsigned int slept;
     unsigned int skipped;
     unsigned int invokes;
+    unsigned int frames;
 
     float speed;
 

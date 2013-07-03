@@ -14,7 +14,7 @@ static int bytes_per_line;
 static SDL_Rect area;
 
 static u16 dmg_palette[4] = {
-    {0x7bde, 0x5294, 0x294a, 0x0000}
+    0x7bde, 0x5294, 0x294a, 0x0000
 };
 
 sys_t sys;
@@ -53,8 +53,7 @@ static inline void fw_render_buffer(SDL_Surface *surface, void *buf, int bufline
 
 static void cgb_fw_render_fbline(int line) {
     int fb_pixel, buf_pos, ax, ppos, fbx;
-    u16 s_color, fb_color;
-    u16 r, g, b;
+    u16 s_color;
     int pixels_to_set;
 
     buf_pos = 0;
@@ -74,8 +73,7 @@ static void cgb_fw_render_fbline(int line) {
 
 static void dmg_fw_render_fbline(int line) {
     int fb_pixel, buf_pos, ax, ppos, fbx;
-    u16 s_color, fb_color;
-    u16 r, g, b;
+    u16 s_color;
     int pixels_to_set;
 
     buf_pos = 0;
@@ -152,7 +150,7 @@ static void area_render(SDL_Surface *surface, SDL_Rect area) {
     }
 
     for(y = 0; y < area.h; y++) {
-        u16 *line = &surface->pixels[(y+area.y) * surface->pitch];
+        u16 *line = (u16*)&((u8*)surface->pixels)[(y+area.y) * surface->pitch];
         fby = (y * 144) / area.h;
 
         for(x = 0; x < area.w; x++, fbx++) {

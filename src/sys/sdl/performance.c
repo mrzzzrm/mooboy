@@ -21,6 +21,7 @@ void performance_begin() {
     performance.slept = 0;
     performance.skipped = 0;
     performance.invokes = 0;
+    performance.frames = 0;
     performance.speed = 0;
     performance.last_update_ticks = 0;
     performance.last_update_cc = 0;
@@ -37,13 +38,14 @@ void performance_invoked() {
     performance.speed = (double)((cpu.nfcc - performance.last_update_cc) * 1000.0 * 100.0) / (NORMAL_CPU_FREQ * performance.update_period);
 
 
-    snprintf(statusline, sizeof(statusline), "S/S: %i/%i frames, speed: %6.2f %%", performance.skipped, performance.slept, performance.speed);
+    snprintf(statusline, sizeof(statusline), "Skipped %i/%i Slept %i/%li frames, speed: %6.2f %%", performance.skipped, performance.frames, performance.slept, performance.update_period, performance.speed);
 
     SDL_FillRect(performance.statuslabel, NULL, 0);
     stringColor(performance.statuslabel, 0, 0, statusline, 0xaaaaaaff);
 
     performance.slept = 0;
     performance.skipped = 0;
+    performance.frames = 0;
 
     performance.last_update_ticks = sys.ticks;
     performance.last_update_cc = cpu.nfcc;

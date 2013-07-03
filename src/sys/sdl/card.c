@@ -69,7 +69,7 @@ void sys_load_card() {
         read = fread(&rtc.cc,         1, sizeof(rtc.cc), file);         assert (read == sizeof(rtc.cc));
     }
 
-    fread(&dummy, 1, 1, file);
+    assert(fread(&dummy, 1, 1, file) == 0);
     assert(feof(file));
 
 

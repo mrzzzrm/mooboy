@@ -29,7 +29,7 @@ void sys_init(int argc, const char** argv) {
     sys.pause_start = 0;
     sys.quantum_length = 1000;
     sys.bits_per_pixel = 16;
-    sprintf(sys.rompath, "rom/mario4.gbc");
+    sprintf(sys.rompath, "rom/gold.gbc");
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 #ifdef PANDORA
@@ -103,6 +103,7 @@ int sys_invoke() {
         }
 
         sys.fb_ready = 0;
+        performance.frames++;
     }
     framerate_curb();
 
