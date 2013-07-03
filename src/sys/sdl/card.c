@@ -20,13 +20,11 @@ void sys_save_card() {
     assert(file);
 
     if(mbc.has_ram) {
-        printf("Saving SRAM\n");
         written = fwrite(card.srambanks, 1, card.sramsize * sizeof(*card.srambanks), file);
         assert(written == card.sramsize * sizeof(*card.srambanks));
     }
 
     if(mbc.has_rtc) {
-        printf("Saving RTC\n");
         written = fwrite(rtc.latched,     1, sizeof(rtc.latched), file);    assert (written == sizeof(rtc.latched));
         written = fwrite(rtc.ticking,     1, sizeof(rtc.ticking), file);    assert (written == sizeof(rtc.ticking));
         written = fwrite(&rtc.mapped,     1, sizeof(rtc.mapped), file);     assert (written == sizeof(rtc.mapped));
@@ -55,13 +53,11 @@ void sys_load_card() {
     }
 
     if(mbc.has_ram) {
-        printf("Loading SRAM\n");
         read = fread(card.srambanks, 1, card.sramsize * sizeof(*card.srambanks), file);
         assert(read == card.sramsize * sizeof(*card.srambanks));
     }
 
     if(mbc.has_rtc) {
-        printf("Loading RTC\n");
         read = fread(rtc.latched,     1, sizeof(rtc.latched), file);    assert (read == sizeof(rtc.latched));
         read = fread(rtc.ticking,     1, sizeof(rtc.ticking), file);    assert (read == sizeof(rtc.ticking));
         read = fread(&rtc.mapped,     1, sizeof(rtc.mapped), file);     assert (read == sizeof(rtc.mapped));
@@ -74,4 +70,6 @@ void sys_load_card() {
 
 
     fclose(file);
+
+    printf("Card loaded\n");
 }

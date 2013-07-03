@@ -38,7 +38,7 @@ void performance_invoked() {
     performance.speed = (double)((cpu.nfcc - performance.last_update_cc) * 1000.0 * 100.0) / (NORMAL_CPU_FREQ * performance.update_period);
 
 
-    snprintf(statusline, sizeof(statusline), "Skipped %i/%i Slept %i/%li frames, speed: %6.2f %%", performance.skipped, performance.frames, performance.slept, performance.update_period, performance.speed);
+    snprintf(statusline, sizeof(statusline), "Skipped %i/%i Slept %6.2f %% frames, speed: %6.2f %%", performance.skipped, performance.frames, (float)performance.slept*100/performance.update_period, performance.speed);
 
     SDL_FillRect(performance.statuslabel, NULL, 0);
     stringColor(performance.statuslabel, 0, 0, statusline, 0xaaaaaaff);
