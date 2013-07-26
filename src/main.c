@@ -41,7 +41,6 @@ static void load_romfile() {
 int main(int argc, const char **argv) {
     init(argc, argv);
     emu_set_hw(CGB_HW);
-    load_romfile();
     emu_run();
 
     sys_save_card();

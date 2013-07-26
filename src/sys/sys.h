@@ -11,6 +11,8 @@ typedef struct {
     int fb_ready;
     int sound_on;
     int in_menu;
+    int rom_loaded;
+    int running;
     char rompath[256];
     unsigned int bits_per_pixel;
     unsigned int quantum_length;
@@ -37,5 +39,7 @@ void sys_lock_audiobuf();
 void sys_unlock_audiobuf();
 
 const char *sys_get_rompath();
+
+void sys_handle_events(void (*input_handle)(int, int));
 
 #endif // SYS_H

@@ -37,7 +37,7 @@ void mem_reset() {
     ram.rambank = ram.rambanks[1];
     ram.vrambank = ram.vrambanks[0];
 
-    mbc.ram_enabled = 1;
+    mbc.ram_selected = 1;
 
     ram.rambank_index = 1;
 }

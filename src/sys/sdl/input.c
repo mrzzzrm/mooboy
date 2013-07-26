@@ -37,10 +37,9 @@ void input_event(int type, int key) {
         if(key == input.keys.save)
             state_save();
         if(key == input.keys.menu) {
-            if(sys.in_menu)
-                sys.ticks_diff += SDL_GetTicks() - sys.pause_start;
-            else
-                 sys.pause_start = SDL_GetTicks();
+            if(!sys.in_menu) {
+                sys.pause_start = SDL_GetTicks();
+            }
             sys.in_menu = !sys.in_menu;
         }
     }

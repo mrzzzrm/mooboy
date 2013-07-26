@@ -10,6 +10,7 @@
 #include "ints.h"
 #include "loader.h"
 #include "sys/sys.h"
+#include "sys/menu/menu.h"
 #include "sound.h"
 
 
@@ -71,24 +72,29 @@ void emu_step_hw(u8 mcs) {
 void emu_run() {
     sys_begin();
 
-    for(;;) {
+    while(sys.running) {
         unsigned int t;
-        for(t = 0; t < sys.quantum_length; t++) {
+        if(sys.rom_loaded) {
+            for(t = 0; t < sys.quantum_length; t++) {
 
-            if(cpu.halted) {
-                if(ints_handle_standby()) {
-                    cpu.halted = 0;
+                if(cpu.halted) {
+                    if(ints_handle_standby()) {
+                        cpu.halted = 0;
+                    }
+
+                    emu_step_hw(1);
                 }
-
-                emu_step_hw(1);
+                else {
+                    u8 mcs = cpu_step();
+                    emu_step_hw(mcs);
+                }
             }
-            else {
-                u8 mcs = cpu_step();
-                emu_step_hw(mcs);
+            if(!sys_invoke()) {
+                break;
             }
         }
-        if(!sys_invoke()) {
-            break;
+        else {
+            menu();
         }
     }
 }

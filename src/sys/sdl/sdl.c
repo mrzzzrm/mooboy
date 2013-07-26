@@ -16,6 +16,7 @@
 #include "audio.h"
 #include "framerate.h"
 #include "performance.h"
+#include "sys/menu/menu.h"
 
 
 sys_t sys;
@@ -25,7 +26,9 @@ static int running;
 void sys_init(int argc, const char** argv) {
     sys.fb_ready = 0;
     sys.sound_on = 1;
-    sys.in_menu = 0;
+    sys.in_menu = 1;
+    sys.running = 1;
+    sys.rom_loaded = 0;
     sys.pause_start = 0;
     sys.quantum_length = 1000;
     sys.bits_per_pixel = 16;
@@ -47,6 +50,8 @@ void sys_init(int argc, const char** argv) {
     framerate_init();
     performance_init();
     input_init();
+
+    menu_init();
 }
 
 void sys_close() {
@@ -76,7 +81,7 @@ static void render() {
     SDL_Flip(SDL_GetVideoSurface());
 }
 
-static void handle_events() {
+void sys_handle_events(void (*input_handle)(int, int)) {
    SDL_Event event;
 
     while(SDL_PollEvent(&event)) {
@@ -84,7 +89,7 @@ static void handle_events() {
             if(event.key.keysym.sym == SDLK_ESCAPE) {
                 running = 0;
             }
-            input_event(event.type, event.key.keysym.sym);
+            input_handle(event.type, event.key.keysym.sym);
         }
         else if(event.type == SDL_QUIT) {
             running = 0;
@@ -107,11 +112,11 @@ int sys_invoke() {
     }
     framerate_curb();
 
-    handle_events();
+    sys_handle_events(input_event);
     performance_invoked();
 
-    while(sys.in_menu) {
-        handle_events();
+    if(sys.in_menu) {
+        menu();
     }
 
     return running;
