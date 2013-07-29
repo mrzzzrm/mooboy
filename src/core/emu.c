@@ -16,7 +16,6 @@
 
 emu_t emu;
 
-
 void emu_init() {
     emu.hw = CGB_HW;
     emu.mode = CGB_MODE;
@@ -73,15 +72,13 @@ void emu_run() {
     sys_begin();
 
     while(sys.running) {
-        unsigned int t;
-        if(sys.rom_loaded) {
+        if(sys.rom_loaded && !sys.in_menu) {
+            unsigned int t;
             for(t = 0; t < sys.quantum_length; t++) {
-
                 if(cpu.halted) {
                     if(ints_handle_standby()) {
                         cpu.halted = 0;
                     }
-
                     emu_step_hw(1);
                 }
                 else {
@@ -89,9 +86,7 @@ void emu_run() {
                     emu_step_hw(mcs);
                 }
             }
-            if(!sys_invoke()) {
-                break;
-            }
+            sys_invoke();
         }
         else {
             menu();

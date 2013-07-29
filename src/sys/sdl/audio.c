@@ -29,15 +29,16 @@ static u16 get_available_samples() {
 }
 
 static void handout_buf(void *_unused, Uint8 *stream, int length) {
-    sys_lock_audiobuf();
     u16 requested_samples = length / (sound.sample_size * 2);
     u16 available_samples;
     u16 served_samples;
 
-    if(!sys.sound_on) {
+    if(!sys.sound_on || sys.in_menu) {
         memset(stream, 0x00, length);
         return;
     }
+
+    sys_lock_audiobuf();
 
     while((available_samples = get_available_samples()) < requested_samples) {
         sound_mix();

@@ -26,20 +26,22 @@ void sys_close();
 
 void sys_begin();
 
-int sys_invoke();
+void sys_pause();
+void sys_run();
+
+void sys_invoke();
 void sys_fb_ready();
 
 void sys_save_card();
 void sys_load_card();
 
-bool sys_running();
-bool sys_new_rom();
-
 void sys_lock_audiobuf();
 void sys_unlock_audiobuf();
 
-const char *sys_get_rompath();
+void sys_get_rompath_base(char *buf);
 
 void sys_handle_events(void (*input_handle)(int, int));
+
+
 
 #endif // SYS_H

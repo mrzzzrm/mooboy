@@ -32,15 +32,14 @@ void input_event(int type, int key) {
     u8 state = type == SDL_KEYUP ? JOY_STATE_RELEASED : JOY_STATE_PRESSED;
 
     if(type == SDL_KEYUP) {
-        if(key == input.keys.load)
-            state_load();
-        if(key == input.keys.save)
-            state_save();
         if(key == input.keys.menu) {
-            if(!sys.in_menu) {
-                sys.pause_start = SDL_GetTicks();
-            }
             sys.in_menu = !sys.in_menu;
+            if(sys.in_menu) {
+                sys_pause();
+            }
+            else {
+                sys_run();
+            }
         }
     }
 

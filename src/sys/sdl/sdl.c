@@ -21,8 +21,6 @@
 
 sys_t sys;
 
-static int running;
-
 void sys_init(int argc, const char** argv) {
     sys.fb_ready = 0;
     sys.sound_on = 1;
@@ -55,15 +53,29 @@ void sys_init(int argc, const char** argv) {
 }
 
 void sys_close() {
+    menu_close();
+
     SDL_Quit();
 }
 
-bool sys_running()  {
-    return TRUE;
+void sys_pause() {
+    sys.pause_start = SDL_GetTicks();
 }
 
-bool sys_new_rom()  {
-    return TRUE;
+void sys_run() {
+    sys.ticks_diff += SDL_GetTicks() - sys.pause_start;
+}
+
+void sys_get_rompath_base(char *buf) {
+    int c;
+    strcpy(buf, sys.rompath);
+    for(c = (int)strlen(buf)-2; c >= 0 && buf[c] != '.'; c--) {
+
+    }
+
+    if(c > 0) {
+        buf[c] = '\0';
+    }
 }
 
 static void render() {
@@ -86,20 +98,16 @@ void sys_handle_events(void (*input_handle)(int, int)) {
 
     while(SDL_PollEvent(&event)) {
         if(event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-            if(event.key.keysym.sym == SDLK_ESCAPE) {
-                running = 0;
-            }
             input_handle(event.type, event.key.keysym.sym);
         }
-        else if(event.type == SDL_QUIT) {
-            running = 0;
+        if(event.type == SDL_QUIT) {
+            sys.running = 0;
         }
     }
 }
 
 
-int sys_invoke() {
-    running = 1;
+void sys_invoke() {
     sys.ticks = SDL_GetTicks() - sys.ticks_diff;
 
     if(sys.fb_ready) {
@@ -114,12 +122,6 @@ int sys_invoke() {
 
     sys_handle_events(input_event);
     performance_invoked();
-
-    if(sys.in_menu) {
-        menu();
-    }
-
-    return running;
 }
 
 void sys_begin() {

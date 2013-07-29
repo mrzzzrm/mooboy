@@ -50,7 +50,6 @@ static u32 load(u8 size) {
     u32 re = 0;
     int b;
     for(b = 0; b < size; b++) {
-        assert(!feof(f));
         assert(fread(&byte, 1, 1, f) == 1);
        // printf(".", byte);
         re |= byte << (8*b);
@@ -71,7 +70,7 @@ static void _set_checkpoint(int line) {
 static void _assert_checkpoint(int line) {
     //fprintf(stderr, "ASSERT CHCEKPOINT %i@%i - %i bytes read\n", current_checkpoint, line, bytes_handled);
     if(current_checkpoint >= CHECKPOINTS) {
-        fprintf(stderr,  "\nSavestate corrupt in line %i: to many checkpoints\n", line);
+        fprintf(stderr,  "\nSavestate corrupt in line %i: too many checkpoints\n", line);
         fclose(f);
         assert(0);
     }
@@ -337,16 +336,14 @@ static void load_timers() {
 
 static void save_sys() {
     S(sys.ticks);
+    set_checkpoint();
 }
 
 static void load_sys() {
     R(sys.ticks);
 
     sys.ticks_diff = SDL_GetTicks() - sys.ticks;
-}
-
-static void flush() {
-
+    assert_checkpoint();
 }
 
 static void init_checkpoints() {
@@ -373,9 +370,9 @@ static void load_checkpoints() {
     bytes_handled = 0;
 }
 
-void state_save() {
-    printf("Saving\n");
-    f = fopen("state.sav", "w");
+void state_save(const char *filename) {
+    printf("Saving %s\n", filename);
+    f = fopen(filename, "wb");
     assert(f);
 
     init_checkpoints();
@@ -390,13 +387,12 @@ void state_save() {
     save_timers();
     save_sys();
 
-    flush();
     fclose(f);
 }
 
-void state_load() {
-    printf("Loading\n");
-    f = fopen("state.sav", "r");
+int state_load(const char *filename) {
+    printf("Loading %s\n", filename);
+    f = fopen(filename, "rb");
     assert(f);
 
     load_checkpoints();
@@ -411,10 +407,10 @@ void state_load() {
     load_timers();
     load_sys();
 
-    R(byte);
-    assert(feof(f));
+    assert(fread(&byte, 1, 1, f) == 0);
 
-    flush();
     fclose(f);
+
+    return 0;
 }
 
