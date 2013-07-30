@@ -6,7 +6,7 @@
 
 typedef struct {
     time_t ticks;
-    time_t ticks_diff;
+    long long ticks_diff;
     time_t pause_start;
     int fb_ready;
     int sound_on;
@@ -37,8 +37,6 @@ void sys_load_card();
 
 void sys_lock_audiobuf();
 void sys_unlock_audiobuf();
-
-void sys_get_rompath_base(char *buf);
 
 void sys_handle_events(void (*input_handle)(int, int));
 

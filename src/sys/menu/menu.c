@@ -39,26 +39,24 @@ static void set_slot(int label, int i) {
 }
 
 static void load_state() {
-    char file[256], base[256];
-    sys_get_rompath_base(base);
-    sprintf(file, "%s.sav%i", base, load_slot);
+    char file[256];
+    sprintf(file, "%s.sav%i", sys.rompath, load_slot);
     if(state_load(file) == 0) {
         sys.in_menu = 0;
     }
 }
 
 static void save_state() {
-    char file[256], base[256];
-    sys_get_rompath_base(base);
-    sprintf(file, "%s.sav%i", base, save_slot);
+    char file[256];
+    sprintf(file, "%s.sav%i", sys.rompath, save_slot);
     state_save(file);
 }
 
 static void setup() {
-    menu_list_set_visible(list, LABEL_RESUME, sys.rom_loaded);
-    menu_list_set_visible(list, LABEL_RESET, sys.rom_loaded);
-    menu_list_set_visible(list, LABEL_LOAD_STATE, sys.rom_loaded);
-    menu_list_set_visible(list, LABEL_SAVE_STATE, sys.rom_loaded);
+    menu_listentry_visible(list, LABEL_RESUME, sys.rom_loaded);
+    menu_listentry_visible(list, LABEL_RESET, sys.rom_loaded);
+    menu_listentry_visible(list, LABEL_LOAD_STATE, sys.rom_loaded);
+    menu_listentry_visible(list, LABEL_SAVE_STATE, sys.rom_loaded);
     menu_list_select_first(list);
 }
 
@@ -74,12 +72,12 @@ static void draw() {
 }
 
 static void menu_input_event(int type, int key) {
+    menu_list_input(list, type, key);
+
     if(type == SDL_KEYDOWN) {
         int label = menu_list_selected_id(list);
 
         switch(key) {
-            case SDLK_UP: menu_list_up(list); break;
-            case SDLK_DOWN: menu_list_down(list); break;
             case KEY_ACCEPT:
                 switch(label) {
                     case LABEL_RESUME: sys.in_menu = 0; break;

@@ -341,8 +341,8 @@ static void save_sys() {
 
 static void load_sys() {
     R(sys.ticks);
-
-    sys.ticks_diff = SDL_GetTicks() - sys.ticks;
+    sys.ticks_diff = sys.ticks - SDL_GetTicks();
+    sys_pause();
     assert_checkpoint();
 }
 

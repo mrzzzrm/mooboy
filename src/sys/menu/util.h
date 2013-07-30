@@ -43,9 +43,8 @@ void menu_listentry_val_int(menu_list_t *list, int key, int ival);
 int menu_listentry_index(menu_list_t *list, int key);
 int menu_list_selected_id(menu_list_t *list);
 void menu_list_select_first(menu_list_t *list);
-void menu_list_set_visible(menu_list_t *list, int id, int visible);
+void menu_listentry_visible(menu_list_t *list, int id, int visible);
 void menu_draw_list(menu_list_t *list);
-void menu_list_up(menu_list_t *list);
-void menu_list_down(menu_list_t *list);
+void menu_list_input(menu_list_t *list, int type, int key);
 
 #endif

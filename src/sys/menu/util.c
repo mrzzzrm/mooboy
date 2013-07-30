@@ -115,7 +115,7 @@ void menu_list_select_first(menu_list_t *list) {
     }
 }
 
-void menu_list_set_visible(menu_list_t *list, int id, int visible) {
+void menu_listentry_visible(menu_list_t *list, int id, int visible) {
     int e;
     for(e = 0; e < list->num_entries; e++) {
         if(list->entries[e]->id == id) {
@@ -159,7 +159,7 @@ void menu_draw_list(menu_list_t *list) {
     }
 }
 
-void menu_list_up(menu_list_t *list) {
+static void list_up(menu_list_t *list) {
     int new_selected = list->selected;
     while(new_selected > 0) {
         new_selected--;
@@ -174,7 +174,7 @@ void menu_list_up(menu_list_t *list) {
     }
 }
 
-void menu_list_down(menu_list_t *list) {
+static void list_down(menu_list_t *list) {
     int new_selected = list->selected;
     while(new_selected < list->num_entries - 1) {
         new_selected++;
@@ -186,5 +186,15 @@ void menu_list_down(menu_list_t *list) {
 
     if(list->selected >= list->first_visible + list->num_visible) {
         list->first_visible = list->selected - list->num_visible + 1;
+    }
+}
+
+
+void menu_list_input(menu_list_t *list, int type, int key) {
+    if(type == SDL_KEYDOWN) {
+        switch(key) {
+            case SDLK_UP: list_up(list); break;
+            case SDLK_DOWN: list_down(list); break;
+        }
     }
 }

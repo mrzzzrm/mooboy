@@ -20,6 +20,30 @@ static char cwd[256];
 static menu_list_t *list = NULL;
 static direntry_t **direntries = NULL;
 
+static void save_dir() {
+    FILE *file = fopen("romdir.txt", "w");
+    fprintf(file, cwd);
+    fclose(file);
+}
+
+static int load_dir() {
+    FILE *file = fopen("romdir.txt", "r");
+    if(file == NULL) {
+        return 0;
+    }
+    fgets(cwd, sizeof(cwd), file);
+    if(!feof(file)) {
+        fclose(file);
+        return 0;
+    }
+    fclose(file);
+    DIR *dir = opendir(cwd);
+    if(dir == NULL) {
+        return 0;
+    }
+    closedir(dir);
+    return 1;
+}
 
 static void draw() {
     SDL_FillRect(SDL_GetVideoSurface(), NULL, 0);
@@ -51,7 +75,7 @@ static void sort_entries() {
             if(!direntries[e]->is_file && direntries[e+1]->is_file) {
                 continue;
             }
-            if(strcmp(direntries[e]->name, direntries[e+1]->name) > 0) {
+            if(strcasecmp(direntries[e]->name, direntries[e+1]->name) > 0) {
                 swap_entries(e);
                 swapped = 1;
             }
@@ -101,6 +125,7 @@ static void poll_dir() {
         direntries = realloc(direntries, sizeof(*direntries) * (list->num_entries));
         direntries[list->num_entries - 1] = direntry;
     }
+    closedir(dir);
     sort_entries();
 }
 
@@ -119,6 +144,7 @@ static void change_dir(const char *name) {
     else {
         strcpy(&cwd[strlen(cwd)], name);
     }
+    save_dir();
     poll_dir();
 }
 
@@ -130,6 +156,10 @@ static void error() {
 static void load_rom(const char *name) {
     u8 *romdata;
     size_t romsize;
+
+    if(sys.rom_loaded) {
+        sys_save_card();
+    }
 
     sprintf(sys.rompath, "%s%s", cwd, name);
 
@@ -146,10 +176,10 @@ static void load_rom(const char *name) {
 }
 
 static void rom_input_event(int type, int key) {
+    menu_list_input(list, type, key);
+
     if(type == SDL_KEYDOWN) {
         switch(key) {
-            case SDLK_UP: menu_list_up(list); break;
-            case SDLK_DOWN: menu_list_down(list); break;
             case SDLK_RETURN:
                 if(direntries[list->selected]->is_file) {
                     load_rom(direntries[list->selected]->name);
@@ -167,12 +197,13 @@ static void rom_input_event(int type, int key) {
 
 void menu_rom_init() {
     int l;
-
-    assert(getcwd(cwd, sizeof(cwd)));
-    l = strlen(cwd);
-    if(cwd[l - 1] != '/') {
-        cwd[l] = '/';
-        cwd[l + 1] = '\0';
+    if(!load_dir()) {
+        assert(getcwd(cwd, sizeof(cwd)));
+        l = strlen(cwd);
+        if(cwd[l - 1] != '/') {
+            cwd[l] = '/';
+            cwd[l + 1] = '\0';
+        }
     }
 }
 

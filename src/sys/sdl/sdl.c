@@ -40,7 +40,7 @@ void sys_init(int argc, const char** argv) {
     SDL_SetVideoMode(480, 432, sys.bits_per_pixel, 0);
 #endif
 
-    sys.ticks_diff = SDL_GetTicks();
+    sys.ticks_diff = -(long long)SDL_GetTicks();
 
     cmd_init(argc, argv);
     audio_init();
@@ -63,19 +63,7 @@ void sys_pause() {
 }
 
 void sys_run() {
-    sys.ticks_diff += SDL_GetTicks() - sys.pause_start;
-}
-
-void sys_get_rompath_base(char *buf) {
-    int c;
-    strcpy(buf, sys.rompath);
-    for(c = (int)strlen(buf)-2; c >= 0 && buf[c] != '.'; c--) {
-
-    }
-
-    if(c > 0) {
-        buf[c] = '\0';
-    }
+    sys.ticks_diff -= SDL_GetTicks() - sys.pause_start;
 }
 
 static void render() {
@@ -87,9 +75,7 @@ static void render() {
     area.h = SDL_GetVideoSurface()->h;
 
     video_render(SDL_GetVideoSurface(), area);
-
     SDL_BlitSurface(performance.statuslabel, NULL, SDL_GetVideoSurface(), NULL);
-
     SDL_Flip(SDL_GetVideoSurface());
 }
 
@@ -106,9 +92,8 @@ void sys_handle_events(void (*input_handle)(int, int)) {
     }
 }
 
-
 void sys_invoke() {
-    sys.ticks = SDL_GetTicks() - sys.ticks_diff;
+    sys.ticks = SDL_GetTicks() + sys.ticks_diff;
 
     if(sys.fb_ready) {
         if(!framerate_skip()) {
