@@ -11,7 +11,7 @@ static TTF_Font *font;
 void menu_util_init() {
     if(!TTF_WasInit()) {
         assert(!TTF_Init());
-        font = TTF_OpenFont("data/basic5.ttf", FONT_SIZE);
+        font = TTF_OpenFont("data/Xolonium.ttf", FONT_SIZE);
         assert(font != NULL);
     }
 }
@@ -22,7 +22,7 @@ void menu_util_close() {
 
 menu_label_t *menu_label(const char *text) {
     menu_label_t *label;
-    SDL_Color unselected   = {200, 150, 150}, selected = {255, 200, 200};
+    SDL_Color unselected = {180, 180, 200}, selected = {120, 120, 255};
 
     label = malloc(sizeof(*label));
     label->surfaces[0] = TTF_RenderText_Blended(font, text, unselected);
