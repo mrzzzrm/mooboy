@@ -84,8 +84,9 @@ void menu_options() {
     menu_listentry_visible(list, LABEL_LOAD_LOCAL, sys.rom_loaded);
 
     while(sys.running && !finished) {
-        sys_handle_events(options_input_event);
         draw();
+        sys_handle_events(options_input_event);
+        menu_list_update(list);
     }
 }
 

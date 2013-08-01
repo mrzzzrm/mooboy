@@ -38,6 +38,7 @@ void emu_reset() {
     timers_reset();
     rtc_reset();
     sound_reset();
+    serial_reset();
 }
 
 void emu_load_rom(u8 *data, size_t size) {

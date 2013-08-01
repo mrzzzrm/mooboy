@@ -217,8 +217,9 @@ void menu_rom() {
     poll_dir();
 
     while(sys.running && sys.in_menu && !finished) {
-        sys_handle_events(rom_input_event);
         draw();
+        sys_handle_events(rom_input_event);
+        menu_list_update(list);
     }
 }
 

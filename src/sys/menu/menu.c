@@ -138,6 +138,7 @@ void menu() {
     while(sys.running && sys.in_menu) {
         draw();
         sys_handle_events(menu_input_event);
+        menu_list_update(list);
     }
     sys_run();
 }

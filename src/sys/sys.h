@@ -40,6 +40,8 @@ void sys_unlock_audiobuf();
 
 void sys_handle_events(void (*input_handle)(int, int));
 
+void sys_serial_shift(int send, int bit);
+
 
 
 #endif // SYS_H

@@ -5,8 +5,46 @@
 #include <assert.h>
 
 #define FONT_SIZE 40
+#define SCROLL_THRESHOLD 500
+#define SCROLL_DELAY 60
+#define SCROLL_NOT_PRESSED 0
+#define SCROLL_TO_THRESHOLD 1
+#define SCROLL_ACTIVE 2
+
 
 static TTF_Font *font;
+
+static void list_up(menu_list_t *list) {
+    int new_selected = list->selected;
+    while(new_selected > 0) {
+        new_selected--;
+        if(list->entries[new_selected]->is_visible) {
+            list->selected = new_selected;
+            break;
+        }
+    }
+
+    if(list->selected < list->first_visible) {
+        list->first_visible = list->selected;
+    }
+    list->last_scroll[0] = SDL_GetTicks();
+}
+
+static void list_down(menu_list_t *list) {
+    int new_selected = list->selected;
+    while(new_selected < list->num_entries - 1) {
+        new_selected++;
+        if(list->entries[new_selected]->is_visible) {
+            list->selected = new_selected;
+            break;
+        }
+    }
+
+    if(list->selected >= list->first_visible + list->num_visible) {
+        list->first_visible = list->selected - list->num_visible + 1;
+    }
+    list->last_scroll[1] = SDL_GetTicks();
+}
 
 void menu_util_init() {
     if(!TTF_WasInit()) {
@@ -53,8 +91,29 @@ menu_list_t *menu_new_list(const char *title) {
     list->selected = 0;
     list->num_visible = 1;
     list->first_visible = 0;
+    list->scroll_state[0] = SCROLL_NOT_PRESSED; list->scroll_state[1] = SCROLL_NOT_PRESSED;
+    list->last_scroll[0] = 0; list->last_scroll[1] = 0;
 
     return list;
+}
+
+void menu_list_update(menu_list_t *list) {
+    int d;
+    for(d = 0; d < 2; d++) {
+        if(list->scroll_state[d] == SCROLL_TO_THRESHOLD) {
+            if(SDL_GetTicks() - list->last_scroll[d] > SCROLL_THRESHOLD) {
+                list->scroll_state[d] = SCROLL_ACTIVE;
+            }
+        }
+        if(list->scroll_state[d] == SCROLL_ACTIVE && SDL_GetTicks() - list->last_scroll[d] > SCROLL_DELAY) {
+            if(d == 0) {
+                list_up(list);
+            }
+            else {
+                list_down(list);
+            }
+        }
+    }
 }
 
 void menu_free_list(menu_list_t *list) {
@@ -159,42 +218,23 @@ void menu_draw_list(menu_list_t *list) {
     }
 }
 
-static void list_up(menu_list_t *list) {
-    int new_selected = list->selected;
-    while(new_selected > 0) {
-        new_selected--;
-        if(list->entries[new_selected]->is_visible) {
-            list->selected = new_selected;
-            break;
-        }
-    }
-
-    if(list->selected < list->first_visible) {
-        list->first_visible = list->selected;
-    }
-}
-
-static void list_down(menu_list_t *list) {
-    int new_selected = list->selected;
-    while(new_selected < list->num_entries - 1) {
-        new_selected++;
-        if(list->entries[new_selected]->is_visible) {
-            list->selected = new_selected;
-            break;
-        }
-    }
-
-    if(list->selected >= list->first_visible + list->num_visible) {
-        list->first_visible = list->selected - list->num_visible + 1;
-    }
-}
-
-
 void menu_list_input(menu_list_t *list, int type, int key) {
     if(type == SDL_KEYDOWN) {
         switch(key) {
-            case SDLK_UP: list_up(list); break;
-            case SDLK_DOWN: list_down(list); break;
+            case SDLK_UP:
+                list_up(list);
+                list->scroll_state[0] = SCROLL_TO_THRESHOLD;
+            break;
+            case SDLK_DOWN:
+                list_down(list);
+                list->scroll_state[1] = SCROLL_TO_THRESHOLD;
+            break;
+        }
+    }
+    if(type == SDL_KEYUP) {
+        switch(key) {
+            case SDLK_UP: list->scroll_state[0] = SCROLL_NOT_PRESSED; break;
+            case SDLK_DOWN: list->scroll_state[1] = SCROLL_NOT_PRESSED; break;
         }
     }
 }

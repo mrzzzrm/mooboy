@@ -27,6 +27,9 @@ typedef struct {
     int selected;
     int num_visible;
     int first_visible;
+
+    int scroll_state[2];
+    time_t last_scroll[2];
 } menu_list_t;
 
 void menu_util_init();
@@ -36,6 +39,7 @@ void menu_free_label(menu_label_t *label);
 void menu_blit(SDL_Surface *s, int x, int y);
 
 menu_list_t *menu_new_list(const char *title);
+void menu_list_update(menu_list_t *list);
 void menu_free_list(menu_list_t *list);
 void menu_new_listentry(menu_list_t *list, const char *text, int id);
 void menu_listentry_val(menu_list_t *list, int key, const char *val);
