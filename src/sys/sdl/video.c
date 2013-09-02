@@ -2,7 +2,7 @@
 #include <assert.h>
 #include "util/defines.h"
 #include "sys/sys.h"
-#include "core/emu.h"
+#include "core/moo.h"
 #include "core/lcd.h"
 
 
@@ -92,7 +92,7 @@ static void dmg_fw_render_fbline(int line) {
 }
 
 static void fw_render_fbline(int line) {
-    if(emu.hw == CGB_HW) {
+    if(moo.hw == CGB_HW) {
         cgb_fw_render_fbline(line);
     }
     else {
@@ -134,7 +134,7 @@ static void area_render(SDL_Surface *surface, SDL_Rect area) {
     int fbx = 0, fby = 0;
 
 
-    if(emu.hw == CGB_HW) {
+    if(moo.hw == CGB_HW) {
         for(x = 0; x < 160; x++) {
             for(y = 0; y < 144; y++) {
                 fb_color[x][y] = cgb_to_rgb(lcd.clean_fb[y * 160 + x]);

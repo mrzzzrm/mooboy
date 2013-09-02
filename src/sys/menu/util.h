@@ -18,6 +18,7 @@ typedef struct menu_list_entry_s {
     menu_label_t *val;
     int id;
     int is_visible;
+    void (*accept_func)(void);
 } menu_listentry_t;
 
 typedef struct {
@@ -41,7 +42,7 @@ void menu_blit(SDL_Surface *s, int x, int y);
 menu_list_t *menu_new_list(const char *title);
 void menu_list_update(menu_list_t *list);
 void menu_free_list(menu_list_t *list);
-void menu_new_listentry(menu_list_t *list, const char *text, int id);
+void menu_new_listentry(menu_list_t *list, const char *text, int id, void (*accept_func)(void));
 void menu_listentry_val(menu_list_t *list, int key, const char *val);
 void menu_listentry_val_int(menu_list_t *list, int key, int ival);
 int menu_listentry_index(menu_list_t *list, int key);

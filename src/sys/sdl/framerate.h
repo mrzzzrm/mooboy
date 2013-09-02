@@ -7,11 +7,13 @@ typedef struct {
     int limit_framerate;
     int frameskip;
     int max_frameskip;
+    int cc_ahead;
 
-    unsigned int skipped;
-    unsigned int delay_threshold;
-    time_t first_frame;
+    int skipped;
+    int delay_threshold;
+    time_t first_frame_ticks;
     size_t framecount;
+    time_t last_curb_ticks;
 } framerate_t;
 
 extern framerate_t framerate;

@@ -20,6 +20,11 @@ typedef struct {
     u8 last_timer_step;
     u32 next_sample;
     u32 next_sample_cc;
+
+    int mix_threshold;
+    int cc;
+    int tick_cc;
+    int counter;
 } sound_t;
 
 typedef struct {
@@ -81,7 +86,7 @@ void sound_init();
 void sound_close();
 void sound_reset();
 
-void sound_step();
+void sound_step(int nfcs);
 
 void sound_lock();
 void sound_unlock();

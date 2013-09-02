@@ -1,8 +1,9 @@
 #include "rom.h"
 #include "sys/sys.h"
 #include "util/io.h"
-#include "core/emu.h"
+#include "core/moo.h"
 #include "menu.h"
+#include "sys/sdl/config.h"
 #include "util.h"
 #include <dirent.h>
 #include <stdlib.h>
@@ -20,9 +21,12 @@ static char cwd[256];
 static menu_list_t *list = NULL;
 static direntry_t **direntries = NULL;
 
+static void poll_dir();
+
+
 static void save_dir() {
     FILE *file = fopen("romdir.txt", "w");
-    fprintf(file, cwd);
+    fprintf(file, "%s", cwd);
     fclose(file);
 }
 
@@ -95,13 +99,64 @@ static void clear() {
 }
 
 
+static void error() {
+    printf("Error\n");
+    assert(0);
+}
+
+static void load_rom() {
+    u8 *romdata;
+    size_t romsize;
+    char *configpath;
+
+    if(sys.state & MOO_ROM_LOADED_BIT) {
+        sys_save_card();
+    }
+
+    sprintf(sys.rompath, "%s%s", cwd, direntries[list->selected]->name);
+    configpath = malloc(strlen(sys.rompath) + 6);
+    sprintf(configpath, "%s.conf", sys.rompath);
+
+    printf("Loading ROM: %s\n", sys.rompath);
+    if((romdata = io_load_binary(sys.rompath, &romsize)) == NULL) {
+        error();
+    }
+    printf("Firing emu with romdata (size=%i)\n", romsize);
+    moo_load_rom(romdata, romsize);
+    config_load(configpath);
+
+    free(romdata);
+    free(configpath);
+
+    sys.paused = 0;
+    sys.rom_loaded = 1;
+}
+
+static void change_dir() {
+    if(strcmp(direntries[list->selected]->name, "..") == 0) {
+        int c;
+        for(c = (int)strlen(cwd) - 2; c >=0 && cwd[c] != '/'; c--) {
+        }
+        if(c <= 0) {
+            sprintf(cwd, "/");
+        }
+        else {
+            cwd[c+1] = '\0';
+        }
+    }
+    else {
+        strcpy(&cwd[strlen(cwd)], direntries[list->selected]->name);
+    }
+    save_dir();
+    poll_dir();
+}
+
 static void poll_dir() {
     DIR *dir;
     struct dirent *ent;
     int e;
 
     clear();
-    printf("%s\n", cwd);
     dir = opendir(cwd);
     assert(dir);
     for(e = 0; (ent = readdir(dir)) != NULL; e++) {
@@ -116,12 +171,13 @@ static void poll_dir() {
 
         if(strcmp(ent->d_name, "..") == 0) {
             sprintf(direntry->name, "%s", ent->d_name);
+            menu_new_listentry(list, direntry->name, e, change_dir);
         }
         else {
             sprintf(direntry->name, "%s%s", ent->d_name, direntry->is_file ? "" : "/");
+            menu_new_listentry(list, direntry->name, e, load_rom);
         }
 
-        menu_new_listentry(list, direntry->name, e);
         direntries = realloc(direntries, sizeof(*direntries) * (list->num_entries));
         direntries[list->num_entries - 1] = direntry;
     }
@@ -129,66 +185,10 @@ static void poll_dir() {
     sort_entries();
 }
 
-static void change_dir(const char *name) {
-    if(strcmp(name, "..") == 0) {
-        int c;
-        for(c = (int)strlen(cwd) - 2; c >=0 && cwd[c] != '/'; c--) {
-        }
-        if(c <= 0) {
-            sprintf(cwd, "/");
-        }
-        else {
-            cwd[c+1] = '\0';
-        }
-    }
-    else {
-        strcpy(&cwd[strlen(cwd)], name);
-    }
-    save_dir();
-    poll_dir();
-}
-
-static void error() {
-    printf("Error\n");
-    assert(0);
-}
-
-static void load_rom(const char *name) {
-    u8 *romdata;
-    size_t romsize;
-
-    if(sys.rom_loaded) {
-        sys_save_card();
-    }
-
-    sprintf(sys.rompath, "%s%s", cwd, name);
-
-    printf("Loading ROM: %s\n", sys.rompath);
-    if((romdata = io_load_binary(sys.rompath, &romsize)) == NULL) {
-        error();
-    }
-    printf("Firing emu with romdata (size=%i)\n", romsize);
-    emu_load_rom(romdata, romsize);
-    free(romdata);
-
-    sys.in_menu = 0;
-    sys.rom_loaded = 1;
-}
-
 static void rom_input_event(int type, int key) {
     menu_list_input(list, type, key);
 
     if(type == SDL_KEYDOWN) {
-        switch(key) {
-            case SDLK_RETURN:
-                if(direntries[list->selected]->is_file) {
-                    load_rom(direntries[list->selected]->name);
-                }
-                else {
-                    change_dir(direntries[list->selected]->name);
-                }
-            break;
-        }
         if(key == KEY_BACK) {
             finished = 1;
         }
@@ -216,7 +216,7 @@ void menu_rom() {
 
     poll_dir();
 
-    while(sys.running && sys.in_menu && !finished) {
+    while(sys.running && sys.paused && !finished) {
         draw();
         sys_handle_events(rom_input_event);
         menu_list_update(list);

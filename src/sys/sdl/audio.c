@@ -33,7 +33,7 @@ static void handout_buf(void *_unused, Uint8 *stream, int length) {
     u16 available_samples;
     u16 served_samples;
 
-    if(!sys.sound_on || sys.in_menu) {
+    if(!sys.sound_on || sys.paused) {
         memset(stream, 0x00, length);
         return;
     }

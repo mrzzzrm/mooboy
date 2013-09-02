@@ -11,6 +11,6 @@ typedef struct {
 extern timers_t timers;
 
 void timers_reset();
-void timers_step();
+void timers_step(int nfcs, int mcs);
 
 #endif

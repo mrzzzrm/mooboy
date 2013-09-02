@@ -2,23 +2,26 @@
 #include "performance.h"
 #include "sys/sys.h"
 #include "core/cpu.h"
+#include "core/moo.h"
 
 framerate_t framerate;
-
 
 void framerate_init() {
     framerate.limit_framerate = 1;
     framerate.frameskip = -1;
     framerate.max_frameskip = 5;
     framerate.delay_threshold = 10;
-
+    framerate.cc_ahead = 0;
+    framerate.last_curb_ticks = 0;
     framerate.skipped = 0;
-    framerate.first_frame = 0;
+    framerate.first_frame_ticks = 0;
     framerate.framecount = 0;
 }
 
 void framerate_begin() {
-    framerate.first_frame = sys.ticks;
+    framerate.first_frame_ticks = sys.ticks;
+    framerate.cc_ahead = 0;
+    framerate.last_curb_ticks = 0;
 }
 
 int framerate_skip() {
@@ -38,7 +41,7 @@ int framerate_skip() {
     }
 
     framerate.framecount++;
-    should_framecount = ((sys.ticks - framerate.first_frame) * 60) / 1000;
+    should_framecount = ((sys.ticks - framerate.first_frame_ticks) * 60) / 1000;
 
     if(should_framecount > framerate.framecount || framerate.frameskip >= 0) {
         framerate.framecount = should_framecount;
@@ -51,15 +54,18 @@ int framerate_skip() {
 }
 
 void framerate_curb() {
-    long should_cc = ((long)sys.ticks - (long)framerate.first_frame)*(long)(cpu.freq/1000);
-    long is_cc = cpu.cc;
-    long cc_ahead = is_cc - should_cc;
-    long ms_ahead = cc_ahead / ((long)cpu.freq/1000);
+    int period = sys.ticks - (long)framerate.last_curb_ticks;
 
+    framerate.cc_ahead += sys.invoke_cc;
+    framerate.cc_ahead -= (period * cpu.freq)/1000;
 
-    if(ms_ahead >= (long)framerate.delay_threshold) {
+    int ms_ahead = framerate.cc_ahead / ((long)cpu.freq/1000);
+
+    if(ms_ahead >= framerate.delay_threshold) {
         SDL_Delay(framerate.delay_threshold);
         performance.slept += framerate.delay_threshold;
     }
+
+    framerate.last_curb_ticks = sys.ticks;
 }
 

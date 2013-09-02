@@ -21,8 +21,33 @@ static void set_sound(int on) {
     sys.sound_on = on;
 }
 
+static char *local_config_path() {
+    sprintf(_local_path, "%s.conf", sys.rompath);
+    return _local_path;
+}
+
 static void update_options() {
     set_sound(sys.sound_on);
+}
+
+static void save_local() {
+    config_save(local_config_path());
+    update_options();
+}
+
+static void load_local() {
+    config_load(local_config_path());
+    update_options();
+}
+
+static void save_global() {
+    config_load("mooboy.conf");
+    update_options();
+}
+
+static void load_global() {
+    config_load("mooboy.conf");
+    update_options();
 }
 
 static void draw() {
@@ -31,20 +56,15 @@ static void draw() {
     SDL_Flip(SDL_GetVideoSurface());
 }
 
-static char *local_config_path() {
-    sprintf(_local_path, "%s.conf", sys.rompath);
-    return _local_path;
-}
-
 void menu_options_init() {
     list = menu_new_list("Options");
 
-    menu_new_listentry(list, "Sound", LABEL_SOUND);
-    menu_new_listentry(list, "Save gameconfig", LABEL_SAVE_LOCAL);
-    menu_new_listentry(list, "Load gameconfig", LABEL_LOAD_LOCAL);
-    menu_new_listentry(list, "Save global config", LABEL_SAVE_GLOBAL);
-    menu_new_listentry(list, "Load global config", LABEL_LOAD_GLOBAL);
-    menu_new_listentry(list, "Reset to default", LABEL_RESET);
+    menu_new_listentry(list, "Sound", LABEL_SOUND, NULL);
+    menu_new_listentry(list, "Save gameconfig", LABEL_SAVE_LOCAL, save_local);
+    menu_new_listentry(list, "Load gameconfig", LABEL_LOAD_LOCAL, load_local);
+    menu_new_listentry(list, "Save global config", LABEL_SAVE_GLOBAL, save_global);
+    menu_new_listentry(list, "Load global config", LABEL_LOAD_GLOBAL, load_global);
+    menu_new_listentry(list, "Reset to default", LABEL_RESET, NULL);
     set_sound(sys.sound_on);
 }
 
@@ -62,14 +82,6 @@ static void options_input_event(int type, int key) {
                     set_sound(!sys.sound_on);
                 }
             break;
-        }
-        if(key == KEY_ACCEPT) {
-            switch(menu_list_selected_id(list)) {
-                case LABEL_SAVE_LOCAL: config_save(local_config_path()); update_options(); break;
-                case LABEL_LOAD_LOCAL: config_load(local_config_path()); update_options(); break;
-                case LABEL_SAVE_GLOBAL: config_load("mooboy.conf"); update_options(); break;
-                case LABEL_LOAD_GLOBAL: config_load("mooboy.conf"); update_options(); break;
-            }
         }
         if(key == KEY_BACK) {
             finished = 1;

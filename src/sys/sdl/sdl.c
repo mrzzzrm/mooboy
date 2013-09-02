@@ -1,5 +1,6 @@
 #include "sys/sys.h"
 #include "video.h"
+#include <stdarg.h>
 #include <SDL/SDL.h>
 #include <assert.h>
 #include "util/cmd.h"
@@ -7,7 +8,7 @@
 #include "core/rtc.h"
 #include "core/mbc.h"
 #include "core/lcd.h"
-#include "core/emu.h"
+#include "core/moo.h"
 #include "core/joy.h"
 #include "util/err.h"
 #include "core/sound.h"
@@ -22,25 +23,25 @@
 sys_t sys;
 
 void sys_init(int argc, const char** argv) {
+    memset(&sys, 0x00, sizeof(sys));
     sys.fb_ready = 0;
     sys.sound_on = 1;
-    sys.in_menu = 1;
+    sys.paused = 1;
     sys.running = 1;
     sys.rom_loaded = 0;
     sys.pause_start = 0;
     sys.quantum_length = 1000;
     sys.bits_per_pixel = 16;
-    sprintf(sys.rompath, "rom/gold.gbc");
+    sys.state = MOO_RUNNING_BIT;
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 #ifdef PANDORA
-    SDL_SetVideoMode(534, 480, sys.bits_per_pixel, SDL_FULLSCREEN);
+    SDL_SetVideoMode(800, 480, sys.bits_per_pixel, SDL_FULLSCREEN);
     SDL_ShowCursor(0);
 #else
-    SDL_SetVideoMode(480, 432, sys.bits_per_pixel, 0);
+    SDL_SetVideoMode(800, 480, sys.bits_per_pixel, 0);
 #endif
 
-    sys.ticks_diff = -(long long)SDL_GetTicks();
 
     cmd_init(argc, argv);
     audio_init();
@@ -50,6 +51,14 @@ void sys_init(int argc, const char** argv) {
     input_init();
 
     menu_init();
+}
+
+void sys_reset() {
+    sys.ticks = 0;
+    sys.invoke_cc = 0;
+    sys.ticks_diff = -(long long)SDL_GetTicks();
+    framerate_begin();
+    performance_begin();
 }
 
 void sys_close() {
@@ -64,6 +73,18 @@ void sys_pause() {
 
 void sys_run() {
     sys.ticks_diff -= SDL_GetTicks() - sys.pause_start;
+}
+
+void sys_errorf(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+
+    if(sys.error != NULL) {
+        free(sys.error);
+    }
+    sys.error = malloc(sizeof(*sys.error));
+    vsnprintf(sys.error->text, sizeof(sys.error->text), format, args);
+    sys.state = MOO_ERROR_BIT;
 }
 
 static void render() {
@@ -94,7 +115,6 @@ void sys_handle_events(void (*input_handle)(int, int)) {
 
 void sys_invoke() {
     sys.ticks = SDL_GetTicks() + sys.ticks_diff;
-
     if(sys.fb_ready) {
         if(!framerate_skip()) {
             render();
@@ -107,11 +127,7 @@ void sys_invoke() {
 
     sys_handle_events(input_event);
     performance_invoked();
-}
-
-void sys_begin() {
-    framerate_begin();
-    performance_begin();
+    //sys_serial_step();
 }
 
 void sys_fb_ready() {

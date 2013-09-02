@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "lcd.h"
-#include "emu.h"
+#include "moo.h"
 #include "ints.h"
 #include "rtc.h"
 #include "mbc.h"
@@ -12,12 +12,13 @@
 
 cpu_t cpu;
 
+
 void cpu_init() {
-    op_create_chunks();
+
 }
 
 void cpu_reset() {
-    if(emu.hw == CGB_HW) {
+    if(moo.hw == CGB_HW) {
         AF = 0x11B0;
     }
     else {
@@ -34,9 +35,6 @@ void cpu_reset() {
     cpu.irq = 0x00;
     cpu.ie = 0x00;
 
-    cpu.cc = 0;
-    cpu.dfcc = 0;
-    cpu.nfcc = 0;
     cpu.freq = NORMAL_CPU_FREQ;
 
     cpu.halted = 0;
@@ -45,20 +43,9 @@ void cpu_reset() {
 }
 
 u8 cpu_step() {
-    u8 op;
-    op_chunk_t *chunk;
-
     ints_handle();
-    op = FETCH_BYTE;
-    chunk = op_chunk_map[op];
-
-    assert(chunk->funcs[0] != NULL);
-
-    chunk->sp = 0;
-    chunk->xmcs = 0;
-    chunk->funcs[chunk->sp++](chunk);
-
-    return chunk->mcs + chunk->xmcs;
+    cpu.op = mem_read_byte(PC++);
+    return op_exec();
 }
 
 

@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "core/emu.h"
+#include "util/io.h"
+#include "core/moo.h"
 #include "sys/sys.h"
 
 static void close() {
@@ -10,21 +11,23 @@ static void close() {
         sys_save_card();
     }
 
-    emu_close();
+    moo_close();
     sys_close();
 }
 
 static void init(int argc, const char **argv) {
     atexit(&close);
-    emu_set_hw(CGB_HW);
-    emu_init();
+    moo_set_hw(CGB_HW);
+    moo_init();
     sys_init(argc, argv);
 }
 
 int main(int argc, const char **argv) {
     init(argc, argv);
-    emu_run();
+
+    moo_run();
     close();
+
 
     return EXIT_SUCCESS;
 }

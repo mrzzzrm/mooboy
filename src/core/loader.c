@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include "sys/sys.h"
 #include "mem.h"
-#include "emu.h"
+#include "moo.h"
 #include "mbc.h"
 
 static u16 rom_bankcount(u8 ref) {
@@ -22,7 +22,7 @@ static u16 rom_bankcount(u8 ref) {
 }
 
 static void init_mode(u8 ref) {
-    emu.mode = ref & 0x80 ? CGB_MODE : NON_CGB_MODE;
+    moo.mode = ref & 0x80 ? CGB_MODE : NON_CGB_MODE;
 }
 
 static void init_card(u8 ref) {

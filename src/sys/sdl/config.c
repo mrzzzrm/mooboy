@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 #include <ctype.h>
 
 typedef struct {
@@ -93,6 +94,7 @@ static void parse() {
 
 void config_save(const char *path) {
     file = fopen(path, "w");
+    assert(file != NULL);
 
     save_int("sound_on", sys.sound_on);
 
@@ -101,6 +103,10 @@ void config_save(const char *path) {
 
 void config_load(const char *path) {
     file = fopen(path, "r");
+    if(file == NULL) {
+        return;
+    }
+
     parse();
 
     sys.sound_on = load_int("sound_on");

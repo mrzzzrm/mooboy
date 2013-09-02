@@ -17,7 +17,11 @@
 #define LABEL_OPTIONS    3
 #define LABEL_LOAD_STATE 4
 #define LABEL_SAVE_STATE 5
-#define LABEL_QUIT       6
+#define LABEL_CONNECT    6
+#define LABEL_QUIT       7
+
+
+menu_t menu;
 
 static menu_list_t *list = NULL;
 static int load_slot = 0;
@@ -42,7 +46,7 @@ static void load_state() {
     char file[256];
     sprintf(file, "%s.sav%i", sys.rompath, load_slot);
     if(state_load(file) == 0) {
-        sys.in_menu = 0;
+        sys.paused = 0;
     }
 }
 
@@ -52,7 +56,21 @@ static void save_state() {
     state_save(file);
 }
 
+static void resume() {
+    menu.action = MENU_CONTINUE;
+}
+
+static void reset() {
+
+}
+
+static void quit() {
+
+}
+
 static void setup() {
+    menu.action = MENU_RUNNING;
+
     menu_listentry_visible(list, LABEL_RESUME, sys.rom_loaded);
     menu_listentry_visible(list, LABEL_RESET, sys.rom_loaded);
     menu_listentry_visible(list, LABEL_LOAD_STATE, sys.rom_loaded);
@@ -77,18 +95,6 @@ static void menu_input_event(int type, int key) {
     if(type == SDL_KEYDOWN) {
         int label = menu_list_selected_id(list);
 
-        switch(key) {
-            case KEY_ACCEPT:
-                switch(label) {
-                    case LABEL_RESUME: sys.in_menu = 0; break;
-                    case LABEL_LOAD_ROM: menu_rom(); break;
-                    case LABEL_LOAD_STATE: load_state(); break;
-                    case LABEL_SAVE_STATE: save_state(); break;
-                    case LABEL_OPTIONS: menu_options(); break;
-                    case LABEL_QUIT: sys.running = 0; break;
-                }
-            break;
-        }
         switch(label) {
             case LABEL_LOAD_STATE:
                 set_slot(label, key == SDLK_LEFT ? load_slot-1 : key == SDLK_RIGHT ? load_slot+1 : load_slot);
@@ -99,7 +105,7 @@ static void menu_input_event(int type, int key) {
         }
 
         if(key == KEY_BACK) {
-            sys.in_menu = 0;
+            sys.paused = 0;
         }
     }
 }
@@ -112,13 +118,14 @@ void menu_init() {
 
     list = menu_new_list("Main Menu");
 
-    menu_new_listentry(list, "Resume", LABEL_RESUME);
-    menu_new_listentry(list, "Load ROM", LABEL_LOAD_ROM);
-    menu_new_listentry(list, "Reset", LABEL_RESET);
-    menu_new_listentry(list, "Load state", LABEL_LOAD_STATE);
-    menu_new_listentry(list, "Save state", LABEL_SAVE_STATE);
-    menu_new_listentry(list, "Options", LABEL_OPTIONS);
-    menu_new_listentry(list, "Quit", LABEL_QUIT);
+    menu_new_listentry(list, "Resume", LABEL_RESUME, resume);
+    menu_new_listentry(list, "Load ROM", LABEL_LOAD_ROM, menu_rom);
+    menu_new_listentry(list, "Reset", LABEL_RESET, reset);
+    menu_new_listentry(list, "Load state", LABEL_LOAD_STATE, load_state);
+    menu_new_listentry(list, "Save state", LABEL_SAVE_STATE, save_state);
+    menu_new_listentry(list, "Options", LABEL_OPTIONS, menu_options);
+    //menu_new_listentry(list, "Connect to mooLounge", LABEL_CONNECT);
+    menu_new_listentry(list, "Quit", LABEL_QUIT, quit);
 
     set_slot(LABEL_LOAD_STATE, 0);
     set_slot(LABEL_SAVE_STATE, 0);
@@ -131,16 +138,16 @@ void menu_close() {
     menu_options_close();
 }
 
-void menu() {
-    sys_pause();
+int menu_run() {
     setup();
 
-    while(sys.running && sys.in_menu) {
+    while(menu.action == MENU_RUNNING) {
         draw();
         sys_handle_events(menu_input_event);
         menu_list_update(list);
     }
-    sys_run();
+
+    return menu.action;
 }
 
 

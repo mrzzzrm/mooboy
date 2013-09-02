@@ -46,14 +46,14 @@ void rtc_reset() {
     memset(&rtc, 0x00, sizeof(rtc));
 }
 
-void rtc_step() {
+void rtc_step(int nfcs) {
     if(mbc.type == 3) {
-        rtc.cc += cpu.step_sf_cycles;
-        if(rtc.ticking[DH] & 0x40 || rtc.cc < cpu.freq) { // Halt bit set or next tick not yet reached
+        rtc.cc += nfcs;//cpu.step_nf_cycles;
+        if(rtc.ticking[DH] & 0x40 || rtc.cc < NORMAL_CPU_FREQ) { // Halt bit set or next tick not yet reached
             return;
         }
         else {
-            rtc.cc -= cpu.freq;
+            rtc.cc -= NORMAL_CPU_FREQ;
             rtc_tick(0);
         }
     }

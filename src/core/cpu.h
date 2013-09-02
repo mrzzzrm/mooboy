@@ -7,27 +7,24 @@
 #define NORMAL_CPU_FREQ 1048576
 #define DOUBLE_CPU_FREQ 2097152
 
-typedef union reg_s {
+typedef union {
     u8 b[2];
     u16 w;
 } reg_t;
 
-typedef struct cpu_s {
+typedef struct {
     reg_t af, bc, de, hl;
     reg_t sp, pc;
 
+    u8 op, cb;
+
     u8 ime, irq, ie;
 
-    u32 cc, dfcc, nfcc;
     u32 freq;
-
     u8 freq_switch;
-
-    u8 step_sf_cycles;
-    u8 step_nf_cycles;
-
     u8 halted;
 } cpu_t;
+
 
 extern cpu_t cpu;
 

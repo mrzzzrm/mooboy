@@ -6,7 +6,7 @@
 
 #define FONT_SIZE 40
 #define SCROLL_THRESHOLD 500
-#define SCROLL_DELAY 60
+#define SCROLL_DELAY 20
 #define SCROLL_NOT_PRESSED 0
 #define SCROLL_TO_THRESHOLD 1
 #define SCROLL_ACTIVE 2
@@ -120,7 +120,7 @@ void menu_free_list(menu_list_t *list) {
 
 }
 
-void menu_new_listentry(menu_list_t *list, const char *name, int id) {
+void menu_new_listentry(menu_list_t *list, const char *name, int id, void (*accept_func)(void)) {
     menu_listentry_t *entry;
 
     entry = malloc(sizeof(*entry));
@@ -129,6 +129,7 @@ void menu_new_listentry(menu_list_t *list, const char *name, int id) {
     entry->val = NULL;
     entry->id = id;
     entry->is_visible = 1;
+    entry->accept_func = accept_func;
 
     list->entries = realloc(list->entries, sizeof(*list->entries) * (++list->num_entries));
     list->entries[list->num_entries-1] = entry;
@@ -156,7 +157,7 @@ void menu_listentry_val(menu_list_t *list, int key, const char *val) {
 
 void menu_listentry_val_int(menu_list_t *list, int key, int ival) {
     char val[64];
-    sprintf(val, "%i\n", ival);
+    sprintf(val, "%i", ival);
     menu_listentry_val(list, key, val);
 }
 
@@ -187,12 +188,11 @@ void menu_listentry_visible(menu_list_t *list, int id, int visible) {
 void menu_draw_list(menu_list_t *list) {
     int e, l;
     int last_visible;
-    int top_margin, bottom_margin, left_margin, right_margin;
+    int top_margin, left_margin, right_margin;
     int line_height;
     SDL_Surface *screen;
 
     top_margin = 60;
-    bottom_margin = 20;
     left_margin = 20;
     right_margin = 20;
     line_height = 45;
@@ -228,6 +228,11 @@ void menu_list_input(menu_list_t *list, int type, int key) {
             case SDLK_DOWN:
                 list_down(list);
                 list->scroll_state[1] = SCROLL_TO_THRESHOLD;
+            break;
+            case KEY_ACCEPT:
+                if(list->entries[list->selected]->accept_func != NULL) {
+                    list->entries[list->selected]->accept_func();
+                }
             break;
         }
     }

@@ -33,8 +33,8 @@ void input_event(int type, int key) {
 
     if(type == SDL_KEYUP) {
         if(key == input.keys.menu) {
-            sys.in_menu = !sys.in_menu;
-            if(sys.in_menu) {
+            sys.paused = !sys.paused;
+            if(sys.paused) {
                 sys_pause();
             }
             else {

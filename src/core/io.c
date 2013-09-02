@@ -18,8 +18,8 @@ u8 io_read(u16 adr) {
     switch(r) {
         case 0x00: return joy_read(); break;
 
-        case 0x01: printf("SB(%.2X) read\n", serial.sb); return serial.sb; break;
-        case 0x02: printf("SC(%.2X) read\n", serial.sb); return serial.sc; break;
+        case 0x01: /*printf("SB(%.2X) read\n", serial.sb); return serial.sb;*/ break;
+        case 0x02: /*printf("SC(%.2X) read\n", serial.sb); return serial.sc;*/ break;
 
         case 0x04: return timers.div; break;
         case 0x05: return timers.tima; break;
@@ -86,13 +86,8 @@ void io_write(u16 adr, u8 val) {
     switch(r) {
         case 0x00: joy_select_col(val); break;
 
-        case 0x01: serial.sb = val; printf("SB = %.2X\n", serial.sb); break;
-        case 0x02:
-            serial.sc = val & 0x83; printf("SC = %.2X\n", serial.sc);
-            if(serial.sc & 0x80) {
-                serial_start_transfer();
-            }
-        break;
+        case 0x01: /*serial.sb = val;*/ /*printf("SB = %.2X\n", serial.sb); */ break;
+        case 0x02: /*serial_sc_write(val);*/ break;
 
         case 0x04: timers.div = 0x00; break;
         case 0x05: timers.tima = val; break;

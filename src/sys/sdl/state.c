@@ -10,6 +10,7 @@
 #include "core/joy.h"
 #include "core/rtc.h"
 #include "core/mbc.h"
+#include "core/moo.h"
 #include "core/mem.h"
 #include "core/timers.h"
 #include "core/lcd.h"
@@ -87,7 +88,6 @@ void save_cpu() {
     S(A); S(F); S(B); S(C); S(D); S(E); S(HL);
     S(SP); S(PC);
     S(cpu.ime); S(cpu.irq); S(cpu.ie);
-    S(cpu.cc); S(cpu.dfcc); S(cpu.nfcc);
     S(cpu.freq);
     S(cpu.freq_switch);
     S(cpu.halted);
@@ -98,7 +98,6 @@ static void load_cpu() {
     R(A); R(F); R(B); R(C); R(D); R(E); R(HL);
     R(SP); R(PC);
     R(cpu.ime); R(cpu.irq); R(cpu.ie);
-    R(cpu.cc); R(cpu.dfcc); R(cpu.nfcc);
     R(cpu.freq);
     R(cpu.freq_switch);
     R(cpu.halted);

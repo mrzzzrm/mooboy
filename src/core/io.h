@@ -1,5 +1,5 @@
-#ifndef IO_H
-#define IO_H
+#ifndef CORE_IO_H
+#define CORE_IO_H
 
 #include "util/defines.h"
 

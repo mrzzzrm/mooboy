@@ -77,7 +77,7 @@ static void tick_envelopes() {
  }
 
 static void timer_step() {
-    u8 step = (cpu.nfcc >> 11) & 0x07;
+    u8 step = (sound.tick_cc >> 11) & 0x07;
     if(step != sound.last_timer_step) {
         switch(step) {
             case 0: tick_length_counters();               break;
@@ -106,7 +106,6 @@ static sample_t sqw_mix(sqw_t *ch) {
     }
     wavelen = sound.freq / (131072 / (2048 - ch->freq));
     if(wavelen == 0) {
-        printf("! %i\n", ch->freq);
         return r;
     }
     wavesam = sound.sample % wavelen;
@@ -200,6 +199,7 @@ static sample_t noise_mix() {
 
 // TDOD: sound.freq should be solved differently - at least being retrieved from sys_
 void sound_init() {
+    memset(&sound, 0x00, sizeof(sound));
     sound.freq = 44100;
     sound.sample = 0;
     sound.buf_size = 4096;
@@ -209,6 +209,7 @@ void sound_init() {
     sound.buf = malloc(sound.buf_size * sound.sample_size * 2);
     sound.last_timer_step = 0;
     sound.next_sample_cc = 0;
+    sound.counter = NORMAL_CPU_FREQ;
 }
 
 void sound_close() {
@@ -232,16 +233,27 @@ void sound_reset() {
     noise.lsfr = 0xFFFF;
 }
 
-void sound_step() {
+void sound_step(int nfcs) {
     timer_step();
-    if(cpu.nfcc >= sound.next_sample_cc) {
+
+    sound.cc += nfcs;//cpu.step_nf_cycles;
+    sound.tick_cc += nfcs;
+    sound.tick_cc &= 0x3FFF;
+    if(sound.cc >= sound.mix_threshold) {
         sound_mix();
+
+        sound.cc -= sound.mix_threshold;
+        sound.mix_threshold = sound.counter / sound.freq;
+        sound.counter = NORMAL_CPU_FREQ + (sound.counter % sound.freq);
         sound.next_sample++;
-        sound.next_sample_cc = (NORMAL_CPU_FREQ*(uint64_t)sound.next_sample)/(uint64_t)sound.freq;
     }
+//    if(cpu.nfcc >= sound.next_sample_cc) {
+//        sound_mix();
+//        sound.next_sample++;
+//        sound.next_sample_cc = (NORMAL_CPU_FREQ*(uint64_t)sound.next_sample)/(uint64_t)sound.freq;
+//    }
 }
 
-// TODO: Remove SDL, sys_ handled mutexes
 // TODO: Handle userdefined on/off elsewhere, sound-off shouldn't use resources
 void sound_mix() {
     sample_t samples[4];

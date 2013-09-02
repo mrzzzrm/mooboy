@@ -51,6 +51,9 @@ void sys_load_card() {
         printf("No SRAM-file found\n");
         return;
     }
+    else {
+        printf("Loaded card %s\n", sramfile);
+    }
 
     if(mbc.has_ram) {
         read = fread(card.srambanks, 1, card.sramsize * sizeof(*card.srambanks), file);

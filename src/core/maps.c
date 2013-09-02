@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include "mem.h"
-#include "emu.h"
+#include "moo.h"
 #include "lcd.h"
 
 
@@ -91,7 +91,7 @@ static inline void cgb_scan_line(u8 *map, u8 *attr_map, u8 *scan) {
 static inline void scan_bg(u8 *scan) {
     sx = 0;
     init_scan(lcd.scx, lcd.scy + lcd.ly);
-    if(emu.hw == CGB_HW) {
+    if(moo.hw == CGB_HW) {
         cgb_scan_line(lcd.bg_map, lcd.bg_attr_map, scan);
     }
     else {
@@ -115,7 +115,7 @@ static inline void scan_wnd(u8 *scan) {
     }
 
     init_scan(mx, lcd.ly - lcd.wy);
-    if(emu.hw == CGB_HW) {
+    if(moo.hw == CGB_HW) {
         cgb_scan_line(lcd.wnd_map, lcd.wnd_attr_map, scan);
     }
     else {
@@ -124,13 +124,13 @@ static inline void scan_wnd(u8 *scan) {
 }
 
 void lcd_scan_maps(u8 *scan) {
-    if(emu.hw == CGB_HW) {
+    if(moo.hw == CGB_HW) {
         bank = 0;
         priority = 0;
         palette = 0;
     }
 
-    if((lcd.c & LCDC_BG_ENABLE_BIT) || emu.hw == CGB_HW) {
+    if((lcd.c & LCDC_BG_ENABLE_BIT) || moo.hw == CGB_HW) {
         scan_bg(scan);
     }
     if(lcd.c & LCDC_WND_ENABLE_BIT) {

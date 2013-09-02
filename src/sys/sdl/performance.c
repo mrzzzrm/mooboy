@@ -1,5 +1,6 @@
 #include "performance.h"
 #include "core/cpu.h"
+#include "core/moo.h"
 #include "sys/sys.h"
 #include <SDL/SDL.h>
 #include <SDL/SDL_gfxPrimitives.h>
@@ -24,19 +25,20 @@ void performance_begin() {
     performance.frames = 0;
     performance.speed = 0;
     performance.last_update_ticks = 0;
-    performance.last_update_cc = 0;
+    performance.update_cc = 0;
     performance.update_period = 250;
 }
 
 void performance_invoked() {
     char statusline[STATUSLABEL_MAX_LENGTH + 1];
 
+    performance.update_cc += sys.invoke_cc;
+
     if(sys.ticks < performance.last_update_ticks + performance.update_period) {
         return;
     }
 
-    performance.speed = (double)((cpu.nfcc - performance.last_update_cc) * 1000.0 * 100.0) / (NORMAL_CPU_FREQ * performance.update_period);
-
+    performance.speed = (double)(performance.update_cc * 1000.0 * 100.0) / (cpu.freq * performance.update_period);
 
     snprintf(statusline, sizeof(statusline), "Skipped %i/%i Slept %6.2f %% frames, speed: %6.2f %%", performance.skipped, performance.frames, (float)performance.slept*100/performance.update_period, performance.speed);
 
@@ -46,7 +48,7 @@ void performance_invoked() {
     performance.slept = 0;
     performance.skipped = 0;
     performance.frames = 0;
+    performance.update_cc = 0;
 
     performance.last_update_ticks = sys.ticks;
-    performance.last_update_cc = cpu.nfcc;
 }

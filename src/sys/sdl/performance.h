@@ -14,7 +14,7 @@ typedef struct {
 
     time_t last_update_ticks;
     time_t update_period;
-    u32 last_update_cc;
+    int update_cc;
 
     SDL_Surface *statuslabel;
 } performance_t;

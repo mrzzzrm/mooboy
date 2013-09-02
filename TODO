@@ -10,11 +10,13 @@
     - Aladdin: Messed up graphics
     - Alfred's Adventure: Messed up graphics
     - Alice in Wonderland: Messed up graphics
+    - Donkeykong doesn't load
     
 [Menu]  
     - Implement reset game
-    - Back buttons in all submenu
+    - Back buttons in all submenus
     - Implement resolution independency
-    - 
+    - Error displaying
+    - only display .gbc/.gb
     
 

@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "cpu.h"
 #include "sys/sys.h"
-#include "emu.h"
+#include "moo.h"
 #include "mem.h"
 #include "defines.h"
 #include "util/defines.h"
@@ -146,11 +146,11 @@ static void draw_line() {
     }
     lcd_scan_maps(maps_scan);
 
-    if(emu.hw == DMG_HW) {
+    if(moo.hw == DMG_HW) {
         draw_line_dmg(maps_scan, obj_scan);
     }
     else {
-        if(emu.mode == CGB_MODE)
+        if(moo.mode == CGB_MODE)
             draw_line_cgb_mode(maps_scan, obj_scan);
         else
             draw_line_non_cgb_mode(maps_scan, obj_scan);
@@ -165,7 +165,7 @@ static inline void stat_irq(u8 flag) {
 
 inline void lcd_hdma() {
     u16 end;
-    emu_step_hw(8);
+    moo_step_hw(8);
     for(end = lcd.hdma_source + 0x10; lcd.hdma_source < end; lcd.hdma_source++, lcd.hdma_dest++) {
         mem_write_byte(lcd.hdma_dest, mem_read_byte(lcd.hdma_source));
     }
@@ -180,7 +180,7 @@ inline void lcd_hdma() {
 }
 
 static u8 step_mode(u8 m1) {
-    u16 fc = lcd.cc % DUR_FULL_REFRESH;
+    u16 fc = lcd.cc;
     lcd.ly = fc / DUR_SCANLINE;
     STAT_SET_CFLAG(lcd.ly == lcd.lyc ? 1 : 0);
 
@@ -236,7 +236,7 @@ void lcd_reset() {
     lcd_obp1_dirty();
 }
 
-void lcd_step() {
+void lcd_step(int nfcs) {
     u16 m1, m2;
     u8 old_ly;
 
@@ -244,7 +244,8 @@ void lcd_step() {
         return;
     }
 
-    lcd.cc += cpu.step_nf_cycles;
+    lcd.cc += nfcs;//cpu.step_nf_cycles;
+    lcd.cc %= DUR_FULL_REFRESH;
 
     old_ly = lcd.ly;
     m1 = lcd.stat & 0x03;
@@ -296,7 +297,7 @@ void lcd_dma(u8 v) {
 void lcd_gdma() {
     u16 length, source, dest, end;
 
-    emu_step_hw((lcd.hdma_length + 1) * 8);
+    moo_step_hw((lcd.hdma_length + 1) * 8);
 
     length = (lcd.hdma_length + 1) * 0x10;
     source = lcd.hdma_source;
