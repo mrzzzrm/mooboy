@@ -15,7 +15,6 @@
 #include "core/timers.h"
 #include "core/lcd.h"
 #include "core/defines.h"
-#include "util/defines.h"
 
 #define S(val) save((val), sizeof((val)))
 #define SV(a) {int i; for(i = 0; i < sizeof((a))/sizeof(*(a)); i++) {S((a)[i]);} }

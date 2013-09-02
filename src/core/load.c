@@ -1,12 +1,44 @@
-#include "loader.h"
+#include "load.h"
+#include "defines.h"
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include <errno.h>
 #include <stdlib.h>
 #include "sys/sys.h"
 #include "mem.h"
 #include "moo.h"
 #include "mbc.h"
+
+#define LOAD_BUFSIZE (1024)
+
+static u8 *load_binary(const char *path, size_t *size) {
+    FILE *file;
+    size_t r;
+    u8 *data;
+
+    *size = 0;
+
+    file = fopen(path, "rb");
+    if(file == NULL) {
+        printf("Failed to open rompath: %s", strerror(errno));
+        return NULL;
+    }
+
+    data = NULL;
+    do {
+        u8 loadbuf[LOAD_BUFSIZE];
+
+        r = fread(loadbuf, sizeof(u8), LOAD_BUFSIZE, file);
+        data = realloc(data, *size + r);
+        memcpy(data + *size, loadbuf, r);
+        *size += r;
+    } while(r == LOAD_BUFSIZE);
+
+    fclose(file);
+
+    return data;
+}
 
 static u16 rom_bankcount(u8 ref) {
     if(ref <= 8) {
@@ -105,7 +137,12 @@ static void init_sram(u8 ref) {
     fprintf(stderr, "Cardridge-RAM set to %d banks by ref %i \n", card.sramsize, ref);
 }
 
-void load_rom(u8 *rom, uint romsize) {
+void load_rom() {
+    size_t romsize;
+
+    moo.state &= ~MOO_ROM_LOADED_BIT;
+
+    u8 *rom = load_binary(sys.rompath, &romsize);
     assert(romsize > 0x014F);
 
     init_mode(rom[0x0143]);
@@ -117,6 +154,11 @@ void load_rom(u8 *rom, uint romsize) {
 
     mbc.rombank = card.rombanks[1];
     mbc.srambank = card.srambanks[0];
+
+    free(rom);
+
+    moo.state |= MOO_ROM_LOADED_BIT;
+    moo_begin();
 }
 
 

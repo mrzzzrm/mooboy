@@ -1,6 +1,6 @@
 #include <SDL/SDL.h>
 #include <assert.h>
-#include "util/defines.h"
+#include "defines.h"
 #include "sys/sys.h"
 #include "core/moo.h"
 #include "core/lcd.h"

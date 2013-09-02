@@ -1,7 +1,7 @@
-#ifndef IO_LCD_OBJ_H
-#define IO_LCD_OBJ_H
+#ifndef CORE_OBJ_H
+#define CORE_OBJ_H
 
-#include "util/defines.h"
+#include "defines.h"
 
 #define OBJ_PALETTE_MASK 0x07
 #define OBJ_PALETTE_SHIFT 2

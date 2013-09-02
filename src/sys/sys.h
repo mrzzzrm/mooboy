@@ -2,12 +2,8 @@
 #define SYS_H
 
 #include <time.h>
-#include "util/defines.h"
+#include "defines.h"
 
-#define MOO_ROM_LOADED_BIT  0x01
-#define MOO_ROM_RUNNING_BIT 0x02
-#define MOO_ERROR_BIT       0x04
-#define MOO_RUNNING_BIT     0x08
 
 typedef struct sys_error_s {
     char text[256];
@@ -51,6 +47,7 @@ void sys_fb_ready();
 void sys_save_card();
 void sys_load_card();
 
+void sys_play_audio(int on);
 void sys_lock_audiobuf();
 void sys_unlock_audiobuf();
 

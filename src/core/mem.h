@@ -1,7 +1,7 @@
 #ifndef CORE_MEM_H
 #define CORE_MEM_H
 
-#include "util/defines.h"
+#include "defines.h"
 
 typedef struct {
     u8 rambanks[8][0x1000]; // GB - 2 banks; CGB - 8 banks

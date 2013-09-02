@@ -2,7 +2,7 @@
 #define CORE_CPU_H
 
 #include "mem.h"
-#include "util/defines.h"
+#include "defines.h"
 
 #define NORMAL_CPU_FREQ 1048576
 #define DOUBLE_CPU_FREQ 2097152

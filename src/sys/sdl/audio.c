@@ -1,5 +1,6 @@
 #include "audio.h"
 #include "core/sound.h"
+#include "core/moo.h"
 #include "sys/sys.h"
 #include <SDL/SDL.h>
 
@@ -33,7 +34,7 @@ static void handout_buf(void *_unused, Uint8 *stream, int length) {
     u16 available_samples;
     u16 served_samples;
 
-    if(!sys.sound_on || (~sys.state & MOO_ROM_RUNNING_BIT)) {
+    if(!sys.sound_on || (~moo.state & MOO_ROM_RUNNING_BIT)) {
         memset(stream, 0x00, length);
         return;
     }
@@ -81,8 +82,6 @@ void audio_init() {
         fprintf(stderr, "Couldn't open audio device: %s\n", SDL_GetError());
         exit(1);
     }
-
-    SDL_PauseAudio(0);
 }
 
 

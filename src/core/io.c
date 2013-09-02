@@ -8,7 +8,7 @@
 #include "timers.h"
 #include "sound.h"
 #include "defines.h"
-#include "util/defines.h"
+#include "defines.h"
 #include "joy.h"
 #include "serial.h"
 

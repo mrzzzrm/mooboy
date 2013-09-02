@@ -1,6 +1,5 @@
 #include "rom.h"
 #include "sys/sys.h"
-#include "util/io.h"
 #include "core/moo.h"
 #include "menu.h"
 #include "sys/sdl/config.h"
@@ -98,38 +97,11 @@ static void clear() {
     direntries = NULL;
 }
 
-
-static void error() {
-    printf("Error\n");
-    assert(0);
-}
-
 static void load_rom() {
-    u8 *romdata;
-    size_t romsize;
-    char *configpath;
+    char new_rompath[sizeof(sys.rompath)];
 
-    if(sys.state & MOO_ROM_LOADED_BIT) {
-        sys_save_card();
-    }
-
-    sprintf(sys.rompath, "%s%s", cwd, direntries[list->selected]->name);
-    configpath = malloc(strlen(sys.rompath) + 6);
-    sprintf(configpath, "%s.conf", sys.rompath);
-
-    printf("Loading ROM: %s\n", sys.rompath);
-    if((romdata = io_load_binary(sys.rompath, &romsize)) == NULL) {
-        error();
-    }
-    printf("Firing emu with romdata (size=%i)\n", romsize);
-    moo_load_rom(romdata, romsize);
-    config_load(configpath);
-
-    free(romdata);
-    free(configpath);
-
-    sys.state |= MOO_ROM_LOADED_BIT;
-    menu.action = MENU_NEW_ROM;
+    snprintf(new_rompath, sizeof(new_rompath), "%s%s", cwd, direntries[list->selected]->name);
+    moo_load_rom(new_rompath);
     finished = 1;
 }
 
@@ -223,7 +195,7 @@ void menu_rom() {
 
     poll_dir();
 
-    while(!finished && (sys.state & MOO_RUNNING_BIT)) {
+    while(!finished && (moo.state & MOO_RUNNING_BIT)) {
         draw();
         sys_handle_events(rom_input_event);
         menu_list_update(list);
