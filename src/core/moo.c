@@ -15,22 +15,17 @@
 #include "sys/menu/menu.h"
 #include "sound.h"
 
-timingstats_t timing[2][256];
 
 moo_t moo;
-int core;
-int cc = 0;
-
 void moo_init() {
-    moo.hw = CGB_HW;
+    moo_set_hw(CGB_HW);
     moo.mode = CGB_MODE;
 
     mem_init();
     cpu_init();
     joy_init();
     sound_init();
-
-    memset(timing, 0x00, sizeof(timingstats_t));
+    //serial_init();
 }
 
 void moo_close() {
@@ -52,15 +47,15 @@ void moo_reset() {
 }
 
 void moo_begin() {
-
+    sys.state |= MOO_ROM_RUNNING_BIT;
 }
 
 void moo_continue() {
-
+    sys.state |= MOO_ROM_RUNNING_BIT;
 }
 
 void moo_pause() {
-
+    sys.state ^= MOO_ROM_RUNNING_BIT;
 }
 
 void moo_load_rom(u8 *data, size_t size) {
@@ -133,6 +128,9 @@ void moo_run() {
                 case MENU_NEW_ROM:
                 case MENU_STATE_LOADED:
                     moo_begin();
+                break;
+                case MENU_QUIT:
+                    sys.state &= ~MOO_RUNNING_BIT;
                 break;
             }
         }

@@ -19,8 +19,7 @@ typedef struct {
     time_t pause_start;
     int fb_ready;
     int sound_on;
-    int paused;
-    int rom_loaded;
+    int sound_freq;
     int invoke_cc;
 
     int running;

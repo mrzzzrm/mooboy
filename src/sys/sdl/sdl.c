@@ -3,14 +3,12 @@
 #include <stdarg.h>
 #include <SDL/SDL.h>
 #include <assert.h>
-#include "util/cmd.h"
 #include "core/cpu.h"
 #include "core/rtc.h"
 #include "core/mbc.h"
 #include "core/lcd.h"
 #include "core/moo.h"
 #include "core/joy.h"
-#include "util/err.h"
 #include "core/sound.h"
 #include "state.h"
 #include "input.h"
@@ -24,12 +22,9 @@ sys_t sys;
 
 void sys_init(int argc, const char** argv) {
     memset(&sys, 0x00, sizeof(sys));
-    sys.fb_ready = 0;
+
     sys.sound_on = 1;
-    sys.paused = 1;
-    sys.running = 1;
-    sys.rom_loaded = 0;
-    sys.pause_start = 0;
+    sys.sound_freq = 22050;
     sys.quantum_length = 1000;
     sys.bits_per_pixel = 16;
     sys.state = MOO_RUNNING_BIT;
@@ -43,7 +38,6 @@ void sys_init(int argc, const char** argv) {
 #endif
 
 
-    cmd_init(argc, argv);
     audio_init();
     video_init();
     framerate_init();

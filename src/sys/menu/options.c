@@ -92,10 +92,10 @@ static void options_input_event(int type, int key) {
 void menu_options() {
     finished = 0;
 
-    menu_listentry_visible(list, LABEL_SAVE_LOCAL, sys.rom_loaded);
-    menu_listentry_visible(list, LABEL_LOAD_LOCAL, sys.rom_loaded);
+    menu_listentry_visible(list, LABEL_SAVE_LOCAL, sys.state & MOO_ROM_LOADED_BIT);
+    menu_listentry_visible(list, LABEL_LOAD_LOCAL, sys.state & MOO_ROM_LOADED_BIT);
 
-    while(sys.running && !finished) {
+    while(!finished && (sys.state & MOO_RUNNING_BIT)) {
         draw();
         sys_handle_events(options_input_event);
         menu_list_update(list);

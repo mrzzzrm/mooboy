@@ -11,6 +11,7 @@ void input_init() {
     input.keys.down = SDLK_DOWN;
     input.keys.left = SDLK_LEFT;
     input.keys.right = SDLK_RIGHT;
+
 #ifdef PANDORA
     input.keys.a = SDLK_END;
     input.keys.b = SDLK_PAGEDOWN;
@@ -33,12 +34,9 @@ void input_event(int type, int key) {
 
     if(type == SDL_KEYUP) {
         if(key == input.keys.menu) {
-            sys.paused = !sys.paused;
-            if(sys.paused) {
+            sys.state ^= MOO_ROM_RUNNING_BIT;
+            if(~sys.state & MOO_ROM_RUNNING_BIT) {
                 sys_pause();
-            }
-            else {
-                sys_run();
             }
         }
     }

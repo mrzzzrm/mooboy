@@ -7,6 +7,7 @@
 #define MENU_NEW_ROM      1
 #define MENU_STATE_LOADED 2
 #define MENU_RUNNING      3
+#define MENU_QUIT         4
 
 
 typedef struct {

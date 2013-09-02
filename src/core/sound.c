@@ -197,10 +197,10 @@ static sample_t noise_mix() {
     return r;
 }
 
-// TDOD: sound.freq should be solved differently - at least being retrieved from sys_
 void sound_init() {
     memset(&sound, 0x00, sizeof(sound));
-    sound.freq = 44100;
+
+    sound.freq = sys.sound_freq;
     sound.sample = 0;
     sound.buf_size = 4096;
     sound.buf_start = 0;
@@ -236,7 +236,7 @@ void sound_reset() {
 void sound_step(int nfcs) {
     timer_step();
 
-    sound.cc += nfcs;//cpu.step_nf_cycles;
+    sound.cc += nfcs;
     sound.tick_cc += nfcs;
     sound.tick_cc &= 0x3FFF;
     if(sound.cc >= sound.mix_threshold) {

@@ -11,7 +11,6 @@ u8 *io_load_binary(const char *path, size_t *size) {
 
     file = fopen(path, "rb");
     if(file == NULL) {
-        err_set(ERR_ROM_NOT_FOUND);
         printf("Failed to open rompath: %s", strerror(errno));
         return NULL;
     }

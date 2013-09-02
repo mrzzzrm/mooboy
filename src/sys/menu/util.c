@@ -1,3 +1,4 @@
+
 #include "util.h"
 #include <SDL/SDL_ttf.h>
 #include <stdlib.h>

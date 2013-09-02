@@ -33,7 +33,7 @@ static void handout_buf(void *_unused, Uint8 *stream, int length) {
     u16 available_samples;
     u16 served_samples;
 
-    if(!sys.sound_on || sys.paused) {
+    if(!sys.sound_on || (~sys.state & MOO_ROM_RUNNING_BIT)) {
         memset(stream, 0x00, length);
         return;
     }
@@ -65,11 +65,10 @@ static void handout_buf(void *_unused, Uint8 *stream, int length) {
     sys_unlock_audiobuf();
 }
 
-
 void audio_init() {
     SDL_AudioSpec format;
 
-    format.freq = sound.freq;
+    format.freq = sys.sound_freq;
     format.format = AUDIO_S16;
     format.channels = 2;
     format.samples = 512;

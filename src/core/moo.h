@@ -19,12 +19,8 @@ typedef struct {
     char title[17];
 } moo_t;
 
-typedef struct  {
-    int read, write, normal, etc[7];
-} timingstats_t;
 
 extern moo_t moo;
-extern timingstats_t timing[2][256];
 
 void moo_init();
 void moo_reset();

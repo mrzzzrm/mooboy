@@ -46,7 +46,7 @@ static void load_state() {
     char file[256];
     sprintf(file, "%s.sav%i", sys.rompath, load_slot);
     if(state_load(file) == 0) {
-        sys.paused = 0;
+        menu.action = MENU_STATE_LOADED;
     }
 }
 
@@ -65,16 +65,17 @@ static void reset() {
 }
 
 static void quit() {
+    menu.action = MENU_QUIT;
 
 }
 
 static void setup() {
     menu.action = MENU_RUNNING;
 
-    menu_listentry_visible(list, LABEL_RESUME, sys.rom_loaded);
-    menu_listentry_visible(list, LABEL_RESET, sys.rom_loaded);
-    menu_listentry_visible(list, LABEL_LOAD_STATE, sys.rom_loaded);
-    menu_listentry_visible(list, LABEL_SAVE_STATE, sys.rom_loaded);
+    menu_listentry_visible(list, LABEL_RESUME, sys.state & MOO_ROM_LOADED_BIT);
+    menu_listentry_visible(list, LABEL_RESET, sys.state & MOO_ROM_LOADED_BIT);
+    menu_listentry_visible(list, LABEL_LOAD_STATE, sys.state & MOO_ROM_LOADED_BIT);
+    menu_listentry_visible(list, LABEL_SAVE_STATE, sys.state & MOO_ROM_LOADED_BIT);
     menu_list_select_first(list);
 }
 
@@ -83,9 +84,11 @@ static void draw() {
 
     SDL_FillRect(SDL_GetVideoSurface(), NULL, 0);
     menu_draw_list(list);
-    if(sys.rom_loaded) {
+
+    if(sys.state & MOO_ROM_LOADED_BIT) {
         video_render(SDL_GetVideoSurface(), prevr);
     }
+
     SDL_Flip(SDL_GetVideoSurface());
 }
 
@@ -102,10 +105,6 @@ static void menu_input_event(int type, int key) {
             case LABEL_SAVE_STATE:
                 set_slot(label, key == SDLK_LEFT ? save_slot-1 : key == SDLK_RIGHT ? save_slot+1 : save_slot);
             break;
-        }
-
-        if(key == KEY_BACK) {
-            sys.paused = 0;
         }
     }
 }

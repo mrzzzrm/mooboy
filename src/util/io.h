@@ -6,7 +6,6 @@
     #include <string.h>
     #include <stdlib.h>
     #include "util/defines.h"
-    #include "util/err.h"
 
     u8 *io_load_binary(const char *path, size_t *size);
 

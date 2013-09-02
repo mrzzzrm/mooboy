@@ -128,8 +128,9 @@ static void load_rom() {
     free(romdata);
     free(configpath);
 
-    sys.paused = 0;
-    sys.rom_loaded = 1;
+    sys.state |= MOO_ROM_LOADED_BIT;
+    menu.action = MENU_NEW_ROM;
+    finished = 1;
 }
 
 static void change_dir() {
@@ -174,8 +175,14 @@ static void poll_dir() {
             menu_new_listentry(list, direntry->name, e, change_dir);
         }
         else {
-            sprintf(direntry->name, "%s%s", ent->d_name, direntry->is_file ? "" : "/");
-            menu_new_listentry(list, direntry->name, e, load_rom);
+            if(direntry->is_file) {
+                sprintf(direntry->name, "%s", ent->d_name);
+                menu_new_listentry(list, direntry->name, e, load_rom);
+            }
+            else {
+                sprintf(direntry->name, "%s/", ent->d_name);
+                menu_new_listentry(list, direntry->name, e, change_dir);
+            }
         }
 
         direntries = realloc(direntries, sizeof(*direntries) * (list->num_entries));
@@ -216,7 +223,7 @@ void menu_rom() {
 
     poll_dir();
 
-    while(sys.running && sys.paused && !finished) {
+    while(!finished && (sys.state & MOO_RUNNING_BIT)) {
         draw();
         sys_handle_events(rom_input_event);
         menu_list_update(list);
