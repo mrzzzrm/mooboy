@@ -1,8 +1,8 @@
 [Emulator]
-    - Implement and handle (non-)cgb mode correctly
-    - Rethink the current system-clock mechanisms including chunk-timing. There HAS to be a cleaner solution
-    - Rearrange sys<->emu connection
     - Seperate SDL dependant and std-lib sys code
+    - SRAM saving shall not save gamecode
+    - Replace sound.counter with a different mechanism
+    - Check if all timing information is set correcly when games/states are loaded
     
 [Game Bugs]
     - MrDriller: Blocks not shown
@@ -12,11 +12,11 @@
     - Alice in Wonderland: Messed up graphics
     - Donkeykong doesn't load
     
+
 [Menu]  
     - Implement reset game
     - Back buttons in all submenus
     - Implement resolution independency
-    - Error displaying
-    - only display .gbc/.gb
+    
     
 

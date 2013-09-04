@@ -20,9 +20,11 @@ typedef struct {
 
     u8 ime, irq, ie;
 
-    u32 freq;
-    u8 freq_switch;
-    u8 halted;
+    int mcs_remainder;
+
+    int freq;
+    int freq_switch;
+    int halted;
 } cpu_t;
 
 

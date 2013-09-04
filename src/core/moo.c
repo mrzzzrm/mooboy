@@ -102,15 +102,16 @@ void moo_set_hw(int hw) {
 
 void moo_step_hw(int mcs) {
     int nfcs;
-    static int rest = 0;
 
     if(mcs == 0) {
         return;
     }
 
+    mcs += cpu.mcs_remainder;
+
     if(cpu.freq == DOUBLE_CPU_FREQ) {
-        nfcs = (mcs+rest)/2;
-        rest = (mcs+rest)%2;
+        nfcs = mcs / 2;
+        cpu.mcs_remainder = mcs % 2;
     }
     else {
         nfcs = mcs;
