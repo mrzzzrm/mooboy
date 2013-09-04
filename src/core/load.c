@@ -9,6 +9,7 @@
 #include "mem.h"
 #include "moo.h"
 #include "mbc.h"
+#include "util/card.h"
 
 #define LOAD_BUFSIZE (1024)
 
@@ -150,7 +151,7 @@ void load_rom() {
     init_rom(rom[0x0148], rom, romsize);
     init_sram(rom[0x0149]);
 
-    sys_load_card();
+    card_load();
 
     mbc.rombank = card.rombanks[1];
     mbc.srambank = card.srambanks[0];

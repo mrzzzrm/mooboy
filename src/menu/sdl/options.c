@@ -1,5 +1,5 @@
 #include "options.h"
-#include "sys/sdl/config.h"
+#include "util/config.h"
 #include "sys/sys.h"
 #include "util.h"
 #include "core/moo.h"

@@ -1,12 +1,13 @@
-#include "sys/sys.h"
+#include "card.h"
 #include <assert.h>
 #include <stdio.h>
+#include "sys/sys.h"
 #include "core/mbc.h"
 #include "core/mem.h"
 #include "core/rtc.h"
 
 
-void sys_save_card() {
+void card_save() {
     char sramfile[256];
     FILE *file;
     size_t written;
@@ -35,7 +36,7 @@ void sys_save_card() {
     fclose(file);
 }
 
-void sys_load_card() {
+void card_load() {
     char sramfile[256];
     FILE *file;
     size_t read;

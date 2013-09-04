@@ -32,6 +32,11 @@ void moo_init();
 void moo_reset();
 void moo_close();
 
+void moo_begin();
+void moo_pause();
+void moo_continue();
+void moo_quit();
+
 void moo_load_rom(const char *path);
 void moo_load_rom_config();
 void moo_run();

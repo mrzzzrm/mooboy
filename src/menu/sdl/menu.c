@@ -1,11 +1,11 @@
-#include "menu.h"
+#include "menu/menu.h"
 #include "rom.h"
 #include "options.h"
 #include "core/moo.h"
 #include "sys/sys.h"
 #include "sys/sdl/input.h"
 #include "sys/sdl/video.h"
-#include "sys/sdl/state.h"
+#include "util/state.h"
 #include <assert.h>
 #include "util.h"
 #include <SDL/SDL.h>

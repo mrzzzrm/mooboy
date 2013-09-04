@@ -2,7 +2,6 @@
 #define SYS_H
 
 #include <time.h>
-#include "defines.h"
 
 
 typedef struct sys_error_s {
@@ -39,6 +38,7 @@ void sys_close();
 void sys_pause();
 void sys_run();
 
+void sys_delay(int ticks);
 void sys_errorf(const char *format, ...);
 
 void sys_invoke();

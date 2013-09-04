@@ -2,6 +2,6 @@
 #define SYS_CONFIG_H
 
 void config_save(const char *path);
-void config_load(const char *path);
+int config_load(const char *path);
 
 #endif

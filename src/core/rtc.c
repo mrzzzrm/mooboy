@@ -3,6 +3,8 @@
 #include "cpu.h"
 #include "mbc.h"
 
+#undef H
+
 #define S 0x00
 #define M 0x01
 #define H 0x02

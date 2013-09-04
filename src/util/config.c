@@ -101,10 +101,10 @@ void config_save(const char *path) {
     fclose(file);
 }
 
-void config_load(const char *path) {
+int config_load(const char *path) {
     file = fopen(path, "r");
     if(file == NULL) {
-        return;
+        return 0;
     }
 
     parse();
@@ -113,5 +113,7 @@ void config_load(const char *path) {
 
     fclose(file);
     clear();
+
+    return 1;
 }
 

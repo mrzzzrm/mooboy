@@ -1,5 +1,5 @@
-#ifndef DEFINES_H
-#define DEFINES_H
+#ifndef CORE_DEFINES_H
+#define CORE_DEFINES_H
 
 #include <stdint.h>
 

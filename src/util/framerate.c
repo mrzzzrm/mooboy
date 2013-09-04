@@ -62,7 +62,7 @@ void framerate_curb() {
     int ms_ahead = framerate.cc_ahead / ((long)cpu.freq/1000);
 
     if(ms_ahead >= framerate.delay_threshold) {
-        SDL_Delay(framerate.delay_threshold);
+        sys_delay(framerate.delay_threshold);
         performance.slept += framerate.delay_threshold;
     }
 

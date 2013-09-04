@@ -10,12 +10,11 @@
 #include "core/moo.h"
 #include "core/joy.h"
 #include "core/sound.h"
-#include "state.h"
+#include "util/state.h"
 #include "input.h"
 #include "audio.h"
-#include "framerate.h"
-#include "performance.h"
-#include "sys/menu/menu.h"
+#include "util/framerate.h"
+#include "util/performance.h"
 
 
 sys_t sys;
@@ -43,8 +42,6 @@ void sys_init(int argc, const char** argv) {
     framerate_init();
     performance_init();
     input_init();
-
-    menu_init();
 }
 
 void sys_reset() {
@@ -56,7 +53,6 @@ void sys_reset() {
 }
 
 void sys_close() {
-    menu_close();
 
     SDL_Quit();
 }
@@ -92,6 +88,10 @@ static void render() {
     video_render(SDL_GetVideoSurface(), area);
     SDL_BlitSurface(performance.statuslabel, NULL, SDL_GetVideoSurface(), NULL);
     SDL_Flip(SDL_GetVideoSurface());
+}
+
+void sys_delay(int ticks) {
+    SDL_Delay(ticks);
 }
 
 void sys_handle_events(void (*input_handle)(int, int)) {

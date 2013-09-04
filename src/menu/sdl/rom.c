@@ -1,14 +1,14 @@
 #include "rom.h"
 #include "sys/sys.h"
 #include "core/moo.h"
-#include "menu.h"
-#include "sys/sdl/config.h"
+#include "util/config.h"
 #include "util.h"
 #include <dirent.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
+#include <ctype.h>
 
 typedef struct {
     int is_file;
@@ -22,6 +22,14 @@ static direntry_t **direntries = NULL;
 
 static void poll_dir();
 
+
+
+static int is_romfile(const char *path) {
+    const char *dot = strrchr(path, '.');
+    if(dot != NULL) {
+        return strcasecmp(dot + 1, "gb") == 0 || strcasecmp(dot + 1, "gbc") == 0;
+    }
+}
 
 static void save_dir() {
     FILE *file = fopen("romdir.txt", "w");
@@ -106,19 +114,20 @@ static void load_rom() {
 }
 
 static void change_dir() {
-    if(strcmp(direntries[list->selected]->name, "..") == 0) {
-        int c;
-        for(c = (int)strlen(cwd) - 2; c >=0 && cwd[c] != '/'; c--) {
-        }
-        if(c <= 0) {
-            sprintf(cwd, "/");
-        }
-        else {
-            cwd[c+1] = '\0';
-        }
+    strcpy(&cwd[strlen(cwd)], direntries[list->selected]->name);
+    save_dir();
+    poll_dir();
+}
+
+static void parent_dir() {
+    int c;
+    for(c = (int)strlen(cwd) - 2; c >=0 && cwd[c] != '/'; c--) {
+    }
+    if(c <= 0) {
+        sprintf(cwd, "/");
     }
     else {
-        strcpy(&cwd[strlen(cwd)], direntries[list->selected]->name);
+        cwd[c+1] = '\0';
     }
     save_dir();
     poll_dir();
@@ -129,10 +138,10 @@ static void poll_dir() {
     struct dirent *ent;
     int e;
 
-    clear();
+    clear(); printf("%s\n", cwd);
     dir = opendir(cwd);
     assert(dir);
-    for(e = 0; (ent = readdir(dir)) != NULL; e++) {
+    for(e = 0; (ent = readdir(dir)) != NULL;) {
         direntry_t *direntry;
 
         if(strcmp(ent->d_name, ".") == 0) {
@@ -144,21 +153,32 @@ static void poll_dir() {
 
         if(strcmp(ent->d_name, "..") == 0) {
             sprintf(direntry->name, "%s", ent->d_name);
-            menu_new_listentry(list, direntry->name, e, change_dir);
+            menu_new_listentry(list, direntry->name, e, parent_dir);
         }
         else {
             if(direntry->is_file) {
-                sprintf(direntry->name, "%s", ent->d_name);
-                menu_new_listentry(list, direntry->name, e, load_rom);
+                if(is_romfile(ent->d_name)) {
+                    sprintf(direntry->name, "%s", ent->d_name);
+                    menu_new_listentry(list, direntry->name, e, load_rom);
+                }
+                else {
+                    continue;
+                }
             }
             else {
-                sprintf(direntry->name, "%s/", ent->d_name);
-                menu_new_listentry(list, direntry->name, e, change_dir);
+                if(ent->d_name[0] != '.') {
+                    sprintf(direntry->name, "%s/", ent->d_name);
+                    menu_new_listentry(list, direntry->name, e, change_dir);
+                }
+                else {
+                    continue;
+                }
             }
         }
 
         direntries = realloc(direntries, sizeof(*direntries) * (list->num_entries));
         direntries[list->num_entries - 1] = direntry;
+        e++
     }
     closedir(dir);
     sort_entries();

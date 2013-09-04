@@ -1,5 +1,6 @@
 #include "moo.h"
 #include <stdio.h>
+#include <string.h>
 #include "defines.h"
 #include "lcd.h"
 #include "rtc.h"
@@ -12,7 +13,9 @@
 #include "load.h"
 #include "serial.h"
 #include "sys/sys.h"
-#include "sys/menu/menu.h"
+#include "menu/menu.h"
+#include "util/config.h"
+#include "util/card.h"
 #include "sound.h"
 
 
@@ -65,13 +68,13 @@ void moo_quit() {
     moo.state &= ~MOO_RUNNING_BIT;
 
     if(moo.state & MOO_ROM_LOADED_BIT) {
-        sys_save_card();
+        card_save();
     }
 }
 
 void moo_load_rom(const char *path) {
     if(moo.state & MOO_ROM_LOADED_BIT) {
-        sys_save_card();
+        card_save();
     }
     strcpy(sys.rompath, path);
 

@@ -5,7 +5,7 @@
 #include <time.h>
 #include <SDL/SDL.h>
 #include "sys/sys.h"
-#include "sys/sdl/framerate.h"
+#include "util/framerate.h"
 #include "core/cpu.h"
 #include "core/joy.h"
 #include "core/rtc.h"

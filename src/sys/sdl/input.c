@@ -1,5 +1,6 @@
 #include "input.h"
-#include "state.h"
+#include "util/state.h"
+#include "core/moo.h"
 #include "core/joy.h"
 #include "sys/sys.h"
 #include <SDL/SDL.h>
