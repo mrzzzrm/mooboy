@@ -5,3 +5,6 @@ build/
 src/*/*.cbTemp
 sdl_release/*
 rom/*
+codeblocks/
+romdir.txt
+
