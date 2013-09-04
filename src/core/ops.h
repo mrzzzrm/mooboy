@@ -1,8 +1,8 @@
-#ifndef CPU_OPS_H
-#define CPU_OPS_H
+#ifndef CORE_OPS_H
+#define CORE_OPS_H
 
-    #include "util/defines.h"
+#include "defines.h"
 
-    int op_exec();
+int op_exec();
 
-#endif // CPU_OPS_H
+#endif

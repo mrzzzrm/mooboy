@@ -9,7 +9,7 @@
 #include "timers.h"
 #include "joy.h"
 #include "ints.h"
-#include "loader.h"
+#include "load.h"
 #include "serial.h"
 #include "sys/sys.h"
 #include "sys/menu/menu.h"
@@ -17,6 +17,7 @@
 
 
 moo_t moo;
+
 void moo_init() {
     moo_set_hw(CGB_HW);
     moo.mode = CGB_MODE;
@@ -47,20 +48,48 @@ void moo_reset() {
 }
 
 void moo_begin() {
-    sys.state |= MOO_ROM_RUNNING_BIT;
+    moo.state |= MOO_ROM_RUNNING_BIT;
+    sys_play_audio(sys.sound_on);
 }
 
 void moo_continue() {
-    sys.state |= MOO_ROM_RUNNING_BIT;
+    moo.state |= MOO_ROM_RUNNING_BIT;
+    sys_play_audio(sys.sound_on);
 }
 
 void moo_pause() {
-    sys.state ^= MOO_ROM_RUNNING_BIT;
+    moo.state ^= MOO_ROM_RUNNING_BIT;
 }
 
-void moo_load_rom(u8 *data, size_t size) {
+void moo_quit() {
+    moo.state &= ~MOO_RUNNING_BIT;
+
+    if(moo.state & MOO_ROM_LOADED_BIT) {
+        sys_save_card();
+    }
+}
+
+void moo_load_rom(const char *path) {
+    if(moo.state & MOO_ROM_LOADED_BIT) {
+        sys_save_card();
+    }
+    strcpy(sys.rompath, path);
+
     moo_reset();
-    load_rom(data, size);
+    load_rom();
+
+    if(moo.state & MOO_ROM_LOADED_BIT) {
+        moo_load_rom_config();
+    }
+}
+
+void moo_load_rom_config() {
+    char configpath[sizeof(sys.rompath) + 5];
+    sprintf(configpath, "%s.conf", sys.rompath);
+
+    if(config_load(configpath)) {
+        config_load("global.conf");
+    }
 }
 
 void moo_set_hw(int hw) {
@@ -95,6 +124,9 @@ void moo_step_hw(int mcs) {
 
 static void moo_cycle(int num) {
     unsigned int t;
+
+    sys.invoke_cc = 0;
+
     for(t = 0; t < num; t++) {
         if(cpu.halted) {
             if(ints_handle_standby()) {
@@ -110,29 +142,13 @@ static void moo_cycle(int num) {
 }
 
 void moo_run() {
-    while(sys.state & MOO_RUNNING_BIT) {
-        if(sys.state & MOO_ROM_RUNNING_BIT) {
+    while(moo.state & MOO_RUNNING_BIT) {
+        if(moo.state & MOO_ROM_RUNNING_BIT) {
             moo_cycle(sys.quantum_length);
             sys_invoke();
-            sys.invoke_cc = 0;
         }
         else {
-            if(sys.state & MOO_ROM_LOADED_BIT) {
-                moo_pause();
-            }
-
-            switch(menu_run()) {
-                case MENU_CONTINUE:
-                    moo_continue();
-                break;
-                case MENU_NEW_ROM:
-                case MENU_STATE_LOADED:
-                    moo_begin();
-                break;
-                case MENU_QUIT:
-                    sys.state &= ~MOO_RUNNING_BIT;
-                break;
-            }
+            menu_run();
         }
     }
 }

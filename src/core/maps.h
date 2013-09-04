@@ -1,7 +1,7 @@
-#ifndef IO_LCD_MAPS_H
-#define IO_LCD_MAPS_H
+#ifndef CORE_MAPS_H
+#define CORE_MAPS_H
 
-    #include "util/defines.h"
+    #include "defines.h"
 
     #define MAPS_DATA_MASK 0x03
     #define MAPS_PALETTE_MASK 0x1C

@@ -1,7 +1,7 @@
 #ifndef RTC_H
 #define RTC_H
 
-#include <util/defines.h>
+#include <defines.h>
 
 typedef struct {
     u8 latched[5];

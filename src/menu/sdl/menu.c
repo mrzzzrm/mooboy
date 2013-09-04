@@ -1,6 +1,7 @@
 #include "menu.h"
 #include "rom.h"
 #include "options.h"
+#include "core/moo.h"
 #include "sys/sys.h"
 #include "sys/sdl/input.h"
 #include "sys/sdl/video.h"
@@ -9,7 +10,6 @@
 #include "util.h"
 #include <SDL/SDL.h>
 
-#define NUM_ENTRIES 3
 
 #define LABEL_RESUME     0
 #define LABEL_LOAD_ROM   1
@@ -21,11 +21,10 @@
 #define LABEL_QUIT       7
 
 
-menu_t menu;
-
 static menu_list_t *list = NULL;
 static int load_slot = 0;
 static int save_slot = 0;
+static int finished;
 
 static void set_slot(int label, int i) {
     if(i < 0 || i > 9) {
@@ -46,7 +45,7 @@ static void load_state() {
     char file[256];
     sprintf(file, "%s.sav%i", sys.rompath, load_slot);
     if(state_load(file) == 0) {
-        menu.action = MENU_STATE_LOADED;
+        moo_begin();
     }
 }
 
@@ -57,7 +56,7 @@ static void save_state() {
 }
 
 static void resume() {
-    menu.action = MENU_CONTINUE;
+    moo_continue();
 }
 
 static void reset() {
@@ -65,17 +64,17 @@ static void reset() {
 }
 
 static void quit() {
-    menu.action = MENU_QUIT;
-
+    finished = 1;
+    moo_quit();
 }
 
 static void setup() {
-    menu.action = MENU_RUNNING;
+    finished = 0;
 
-    menu_listentry_visible(list, LABEL_RESUME, sys.state & MOO_ROM_LOADED_BIT);
-    menu_listentry_visible(list, LABEL_RESET, sys.state & MOO_ROM_LOADED_BIT);
-    menu_listentry_visible(list, LABEL_LOAD_STATE, sys.state & MOO_ROM_LOADED_BIT);
-    menu_listentry_visible(list, LABEL_SAVE_STATE, sys.state & MOO_ROM_LOADED_BIT);
+    menu_listentry_visible(list, LABEL_RESUME, moo.state & MOO_ROM_LOADED_BIT);
+    menu_listentry_visible(list, LABEL_RESET, moo.state & MOO_ROM_LOADED_BIT);
+    menu_listentry_visible(list, LABEL_LOAD_STATE, moo.state & MOO_ROM_LOADED_BIT);
+    menu_listentry_visible(list, LABEL_SAVE_STATE, moo.state & MOO_ROM_LOADED_BIT);
     menu_list_select_first(list);
 }
 
@@ -85,7 +84,7 @@ static void draw() {
     SDL_FillRect(SDL_GetVideoSurface(), NULL, 0);
     menu_draw_list(list);
 
-    if(sys.state & MOO_ROM_LOADED_BIT) {
+    if(moo.state & MOO_ROM_LOADED_BIT) {
         video_render(SDL_GetVideoSurface(), prevr);
     }
 
@@ -137,16 +136,14 @@ void menu_close() {
     menu_options_close();
 }
 
-int menu_run() {
+void menu_run() {
     setup();
 
-    while(menu.action == MENU_RUNNING) {
+    while(!finished && (~moo.state & MOO_ROM_RUNNING_BIT) && (moo.state & MOO_RUNNING_BIT)) {
         draw();
         sys_handle_events(menu_input_event);
         menu_list_update(list);
     }
-
-    return menu.action;
 }
 
 

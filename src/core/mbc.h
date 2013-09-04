@@ -1,7 +1,7 @@
 #ifndef CORE_MBC_H
 #define CORE_MBC_H
 
-#include "util/defines.h"
+#include "defines.h"
 
 typedef struct mbc_s {
     u16 type;

@@ -2,7 +2,6 @@
 #define SYS_PERFORMANCE_H
 
 #include <SDL/SDL.h>
-#include "util/defines.h"
 
 typedef struct {
     unsigned int slept;

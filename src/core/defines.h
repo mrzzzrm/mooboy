@@ -1,6 +1,15 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
+#include <stdint.h>
+
+typedef int8_t s8;
+typedef int16_t s16;
+typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
+
 #define A (cpu.af.b[1])
 #define F (cpu.af.b[0])
 #define B (cpu.bc.b[1])
@@ -16,23 +25,20 @@
 #define HL (cpu.hl.w)
 #define SP (cpu.sp.w)
 #define PC (cpu.pc.w)
+//
+//#define BREG(r) bregv[(r)]
+//#define WREG_SP(r) wregv_sp[(r)]
+//#define WREG_AF(r) wregv_af[(r)]
+//
+//#define LN (c->op & 0x0F)
+//#define HN ((c->op & 0xF0) >> 4)
 
-#define FETCH_BYTE (mem_read_byte(PC++))
-#define FETCH_WORD (mem_read_word(PC++))
-
-#define BREG(r) bregv[(r)]
-#define WREG_SP(r) wregv_sp[(r)]
-#define WREG_AF(r) wregv_af[(r)]
-
-#define LN (c->op & 0x0F)
-#define HN ((c->op & 0xF0) >> 4)
-
-#define OPLD (c->opl.d)
-#define OPRD (c->opr.d)
-#define OPLB (*c->opl.b)
-#define OPLW (*c->opl.w)
-#define OPRB (*c->opr.b)
-#define OPRW (*c->opr.w)
+//#define OPLD (c->opl.d)
+//#define OPRD (c->opr.d)
+//#define OPLB (*c->opl.b)
+//#define OPLW (*c->opl.w)
+//#define OPRB (*c->opr.b)
+//#define OPRW (*c->opr.w)
 
 #define FZBIT 0x80
 #define FNBIT 0x40

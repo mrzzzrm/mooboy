@@ -1,7 +1,7 @@
 #ifndef IO_LCD_H
 #define IO_LCD_H
 
-#include "util/defines.h"
+#include "defines.h"
 
 #define TILE_WIDTH 8
 #define TILE_HEIGHT 8

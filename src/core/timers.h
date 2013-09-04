@@ -1,7 +1,7 @@
-#ifndef TIMERS_H
-#define TIMERS_H
+#ifndef CORE_TIMERS_H
+#define CORE_TIMERS_H
 
-#include "util/defines.h"
+#include "defines.h"
 
 typedef struct {
     u8 div, tima, tma, tac;

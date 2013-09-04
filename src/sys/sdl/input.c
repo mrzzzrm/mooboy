@@ -34,10 +34,7 @@ void input_event(int type, int key) {
 
     if(type == SDL_KEYUP) {
         if(key == input.keys.menu) {
-            sys.state ^= MOO_ROM_RUNNING_BIT;
-            if(~sys.state & MOO_ROM_RUNNING_BIT) {
-                sys_pause();
-            }
+            moo_pause();
         }
     }
 

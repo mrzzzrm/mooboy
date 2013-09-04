@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "cpu.h"
 #include "defines.h"
-#include "util/defines.h"
+#include "defines.h"
 
 static inline void exec_int(u8 i) {
     cpu.irq &= ~(1 << i);

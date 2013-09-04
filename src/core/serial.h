@@ -1,7 +1,7 @@
 #ifndef CORE_SERIAL_H
 #define CORE_SERIAL_H
 
-#include "util/defines.h"
+#include "defines.h"
 
 typedef struct {
     u8 sb;

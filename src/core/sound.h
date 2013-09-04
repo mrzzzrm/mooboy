@@ -1,7 +1,7 @@
 #ifndef CORE_SOUND_H
 #define CORE_SOUND_H
 
-#include "util/defines.h"
+#include "defines.h"
 
 typedef struct {
     u32 freq;

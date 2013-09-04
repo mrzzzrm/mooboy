@@ -6,7 +6,6 @@
 #include "moo.h"
 #include "mem.h"
 #include "defines.h"
-#include "util/defines.h"
 #include "obj.h"
 #include "maps.h"
 

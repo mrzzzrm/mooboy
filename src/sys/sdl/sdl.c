@@ -27,7 +27,7 @@ void sys_init(int argc, const char** argv) {
     sys.sound_freq = 22050;
     sys.quantum_length = 1000;
     sys.bits_per_pixel = 16;
-    sys.state = MOO_RUNNING_BIT;
+    moo.state = MOO_RUNNING_BIT;
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 #ifdef PANDORA
@@ -78,7 +78,7 @@ void sys_errorf(const char *format, ...) {
     }
     sys.error = malloc(sizeof(*sys.error));
     vsnprintf(sys.error->text, sizeof(sys.error->text), format, args);
-    sys.state = MOO_ERROR_BIT;
+    moo.state = MOO_ERROR_BIT;
 }
 
 static void render() {
@@ -102,7 +102,7 @@ void sys_handle_events(void (*input_handle)(int, int)) {
             input_handle(event.type, event.key.keysym.sym);
         }
         if(event.type == SDL_QUIT) {
-            sys.running = 0;
+            moo_quit();
         }
     }
 }
@@ -126,5 +126,9 @@ void sys_invoke() {
 
 void sys_fb_ready() {
     sys.fb_ready = 1;
+}
+
+void sys_play_audio(int on) {
+    SDL_PauseAudio(!on);
 }
 
