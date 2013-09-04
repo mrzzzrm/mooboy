@@ -1,6 +1,8 @@
 #include "moo.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdarg.h>
 #include "defines.h"
 #include "lcd.h"
 #include "rtc.h"
@@ -25,16 +27,13 @@ void moo_init() {
     moo_set_hw(CGB_HW);
     moo.mode = CGB_MODE;
 
-    mem_init();
-    cpu_init();
-    joy_init();
     sound_init();
     //serial_init();
 }
 
 void moo_close() {
-    mem_close();
     sound_close();
+    //serial_close();
 }
 
 void moo_reset() {
@@ -47,6 +46,7 @@ void moo_reset() {
     timers_reset();
     rtc_reset();
     sound_reset();
+    joy_reset();
     //serial_reset();
 }
 
@@ -150,9 +150,34 @@ void moo_run() {
             moo_cycle(sys.quantum_length);
             sys_invoke();
         }
+        else if(moo.state & MOO_ERROR_BIT){
+            menu_show_error();
+        }
         else {
             menu_run();
         }
     }
+}
+
+void moo_errorf(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+
+    if(moo.error != NULL) {
+        free(moo.error);
+    }
+
+    moo.error = malloc(sizeof(*moo.error));
+    vsnprintf(moo.error->text, sizeof(moo.error->text), format, args);
+    moo.state |= MOO_ERROR_BIT;
+    moo.state &= ~MOO_ROM_RUNNING_BIT;
+}
+
+void moo_error_clear() {
+    if(moo.error != NULL) {
+        free(moo.error);
+        moo.error = NULL;
+    }
+    moo.state &= ~MOO_ERROR_BIT;
 }
 

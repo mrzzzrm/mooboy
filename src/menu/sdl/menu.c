@@ -1,4 +1,5 @@
 #include "menu/menu.h"
+#include "error.h"
 #include "rom.h"
 #include "options.h"
 #include "core/moo.h"
@@ -113,6 +114,7 @@ void menu_init() {
     menu_util_init();
     menu_rom_init();
     menu_options_init();
+    menu_error_init();
 
     list = menu_new_list("Main Menu");
 
@@ -132,8 +134,11 @@ void menu_init() {
 
 void menu_close() {
     menu_free_list(list);
+
     menu_rom_close();
     menu_options_close();
+    menu_error_close();
+    menu_util_close();
 }
 
 void menu_run() {
@@ -146,4 +151,7 @@ void menu_run() {
     }
 }
 
+void menu_show_error() {
+    menu_error();
+}
 

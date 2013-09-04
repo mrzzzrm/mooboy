@@ -29,6 +29,7 @@ static int is_romfile(const char *path) {
     if(dot != NULL) {
         return strcasecmp(dot + 1, "gb") == 0 || strcasecmp(dot + 1, "gbc") == 0;
     }
+    return 0;
 }
 
 static void save_dir() {
@@ -138,7 +139,7 @@ static void poll_dir() {
     struct dirent *ent;
     int e;
 
-    clear(); printf("%s\n", cwd);
+    clear();
     dir = opendir(cwd);
     assert(dir);
     for(e = 0; (ent = readdir(dir)) != NULL;) {
@@ -178,8 +179,9 @@ static void poll_dir() {
 
         direntries = realloc(direntries, sizeof(*direntries) * (list->num_entries));
         direntries[list->num_entries - 1] = direntry;
-        e++
+        e++;
     }
+
     closedir(dir);
     sort_entries();
 }

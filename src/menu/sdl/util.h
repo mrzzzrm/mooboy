@@ -33,11 +33,24 @@ typedef struct {
     time_t last_scroll[2];
 } menu_list_t;
 
+typedef struct menu_word_string_s {
+    SDL_Surface *word;
+    struct menu_word_string_s *next;
+} menu_word_string_t;
+
 void menu_util_init();
 void menu_util_close();
+
+SDL_Surface *menu_text(const char *text);
+
 menu_label_t *menu_label(const char *text);
 void menu_free_label(menu_label_t *label);
+
+menu_word_string_t *menu_word_string(const char *text);
+void menu_free_word_string(menu_word_string_t *string);
+
 void menu_blit(SDL_Surface *s, int x, int y);
+void menu_blit_word_string(menu_word_string_t *string, int x, int y);
 
 menu_list_t *menu_new_list(const char *title);
 void menu_list_update(menu_list_t *list);

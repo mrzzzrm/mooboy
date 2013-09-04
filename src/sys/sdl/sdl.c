@@ -65,17 +65,6 @@ void sys_run() {
     sys.ticks_diff -= SDL_GetTicks() - sys.pause_start;
 }
 
-void sys_errorf(const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-
-    if(sys.error != NULL) {
-        free(sys.error);
-    }
-    sys.error = malloc(sizeof(*sys.error));
-    vsnprintf(sys.error->text, sizeof(sys.error->text), format, args);
-    moo.state = MOO_ERROR_BIT;
-}
 
 static void render() {
     SDL_Rect area;

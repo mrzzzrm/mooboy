@@ -201,19 +201,13 @@ void sound_init() {
     memset(&sound, 0x00, sizeof(sound));
 
     sound.freq = sys.sound_freq;
-    sound.sample = 0;
     sound.buf_size = 4096;
-    sound.buf_start = 0;
-    sound.buf_end = 0;
     sound.sample_size = 2;
     sound.buf = malloc(sound.buf_size * sound.sample_size * 2);
-    sound.last_timer_step = 0;
-    sound.next_sample_cc = 0;
-    sound.counter = NORMAL_CPU_FREQ;
 }
 
 void sound_close() {
-
+    free(sound.buf);
 }
 
 void sound_reset() {
@@ -223,6 +217,12 @@ void sound_reset() {
     sound.last_timer_step = 0;
     sound.next_sample = 0;
     sound.next_sample_cc = 0;
+    sound.sample = 0;
+    sound.buf_start = 0;
+    sound.buf_end = 0;
+    sound.last_timer_step = 0;
+    sound.next_sample_cc = 0;
+    sound.counter = NORMAL_CPU_FREQ;
 
     memset(&sqw, 0x00, sizeof(sqw));
     memset(&env, 0x00, sizeof(env));

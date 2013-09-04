@@ -7,12 +7,14 @@
 #include "menu/menu.h"
 
 static void close() {
+    printf("-- Closing MooBoy --\n");
     moo_close();
     menu_close();
     sys_close();
 }
 
 static void init(int argc, const char **argv) {
+    printf("-- Starting MooBoy --\n");
     atexit(&close);
 
     sys_init(argc, argv);
@@ -23,7 +25,6 @@ static void init(int argc, const char **argv) {
 int main(int argc, const char **argv) {
     init(argc, argv);
     moo_run();
-    close();
 
     return EXIT_SUCCESS;
 }

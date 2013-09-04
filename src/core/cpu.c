@@ -12,11 +12,6 @@
 
 cpu_t cpu;
 
-
-void cpu_init() {
-
-}
-
 void cpu_reset() {
     if(moo.hw == CGB_HW) {
         AF = 0x11B0;

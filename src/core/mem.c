@@ -11,14 +11,6 @@
 ram_t ram;
 card_t card;
 
-void mem_init() {
-
-}
-
-void mem_close() {
-
-}
-
 static u8 read_locked_mem(u16 adr) {
     printf("Denied read from locked memory location %.4X\n", adr);
     return 0xFF;

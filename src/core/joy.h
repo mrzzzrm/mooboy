@@ -25,7 +25,6 @@ typedef struct {
 extern joy_t joy;
 
 
-void joy_init();
 void joy_reset();
 
 void joy_set_button(u8 button, u8 state);

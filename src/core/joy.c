@@ -8,7 +8,7 @@
 
 joy_t joy;
 
-void joy_init() {
+void joy_reset() {
     joy.state = 0xFF;
     joy.col = 0;
 }

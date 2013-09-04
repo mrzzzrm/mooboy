@@ -69,9 +69,52 @@ menu_label_t *menu_label(const char *text) {
     return label;
 }
 
+SDL_Surface *menu_text(const char *text) {
+    SDL_Color color = {120, 120, 255};
+    return TTF_RenderText_Blended(font, text, color);
+}
+
 void menu_free_label(menu_label_t *label) {
     SDL_FreeSurface(label->surfaces[0]);
     SDL_FreeSurface(label->surfaces[1]);
+}
+
+static void mark_word_end(char *text, int *c) {
+    char *space = strchr(text, ' ');
+    if(space == NULL) {
+        *c = -1;
+        return;
+    }
+    *space = '\0';
+    *c += strlen(text) + 1;
+}
+
+menu_word_string_t *menu_word_string(const char *_text) {
+    SDL_Color color = {120, 120, 255};
+    menu_word_string_t *result = malloc(sizeof(*result)), *string;
+    char *text = strdup(_text);
+    int word = 0, next_word;
+
+    for(string = result; word >= 0; string = string->next) {
+        next_word = word;
+        mark_word_end(&text[word], &next_word);
+        string->word = TTF_RenderText_Blended(font, &text[word], color);
+
+        word = next_word;
+        string->next = word < 0 ? NULL : malloc(sizeof(*result));
+    }
+    free(text);
+
+    return result;
+}
+
+void menu_free_word_string(menu_word_string_t *string) {
+    for(; string != NULL;) {
+        menu_word_string_t *tmp = string;
+        SDL_FreeSurface(string->word);
+        string = string->next;
+        free(tmp);
+    }
 }
 
 void menu_blit(SDL_Surface *s, int x, int y) {
@@ -79,6 +122,29 @@ void menu_blit(SDL_Surface *s, int x, int y) {
     SDL_BlitSurface(s, NULL, SDL_GetVideoSurface(), &r);
 }
 
+void menu_blit_word_string(menu_word_string_t *string, int x, int y) {
+    int cx, cy, sw, lh;
+
+    cx = x;
+    cy = y;
+    TTF_GlyphMetrics(font, ' ', NULL, NULL, NULL, NULL, &sw);
+    lh = TTF_FontLineSkip(font);
+
+    for(; string != NULL;) {
+        menu_blit(string->word, cx, cy);
+        cx += string->word->w;
+        cx += sw;
+
+        if(string->next != NULL) {
+            if(cx + string->next->word->w > SDL_GetVideoSurface()->w) {
+                cx = x;
+                cy += lh;
+            }
+        }
+
+        string = string->next;
+    }
+}
 
 menu_list_t *menu_new_list(const char *title) {
     menu_list_t *list;

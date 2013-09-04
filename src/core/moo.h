@@ -15,14 +15,18 @@
 #define MOO_ERROR_BIT       0x04
 #define MOO_RUNNING_BIT     0x08
 
-extern int cc;
-extern int core;
+
+typedef struct moo_error_s {
+    char text[256];
+} moo_error_t;
+
 
 typedef struct {
     int hw;
     int mode;
     int state;
     char title[17];
+    moo_error_t *error;
 } moo_t;
 
 
@@ -39,17 +43,16 @@ void moo_quit();
 
 void moo_load_rom(const char *path);
 void moo_load_rom_config();
+
 void moo_run();
 
 void moo_step_hw(int mcs);
 
 void moo_set_joy_button(u8 button, u8 state);
+
 void moo_set_hw( int hw);
 
-u8 *moo_get_savestate(size_t *size);
-void moo_load_savestate(u8 *data, size_t size);
-
-u8 *moo_get_sram(size_t *size);
-void moo_load_sram(u8 *data, size_t *size);
+void moo_errorf(const char *format, ...);
+void moo_error_clear();
 
 #endif

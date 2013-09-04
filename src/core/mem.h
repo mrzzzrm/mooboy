@@ -26,10 +26,7 @@ typedef struct {
 extern ram_t ram;
 extern card_t card;
 
-
-void mem_init();
 void mem_reset();
-void mem_close();
 
 u8 mem_read_byte(u16 adr);
 u16 mem_read_word(u16 adr);

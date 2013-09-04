@@ -4,10 +4,6 @@
 #include <time.h>
 
 
-typedef struct sys_error_s {
-    char text[256];
-} sys_error_t;
-
 typedef struct {
     time_t ticks;
     long long ticks_diff;
@@ -22,7 +18,6 @@ typedef struct {
 
     char rompath[256];
 
-    sys_error_t *error;
 
     unsigned int bits_per_pixel;
     unsigned int quantum_length;
@@ -39,7 +34,6 @@ void sys_pause();
 void sys_run();
 
 void sys_delay(int ticks);
-void sys_errorf(const char *format, ...);
 
 void sys_invoke();
 void sys_fb_ready();
