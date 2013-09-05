@@ -1,4 +1,5 @@
 #include "rom.h"
+#include "menu/menu.h"
 #include "sys/sys.h"
 #include "core/moo.h"
 #include "util/config.h"
@@ -112,6 +113,7 @@ static void load_rom() {
     snprintf(new_rompath, sizeof(new_rompath), "%s%s", cwd, direntries[list->selected]->name);
     moo_load_rom(new_rompath);
     finished = 1;
+    menu_running = 0;
 }
 
 static void change_dir() {
@@ -154,13 +156,13 @@ static void poll_dir() {
 
         if(strcmp(ent->d_name, "..") == 0) {
             sprintf(direntry->name, "%s", ent->d_name);
-            menu_new_listentry(list, direntry->name, e, parent_dir);
+            menu_new_listentry_button(list, direntry->name, e, parent_dir);
         }
         else {
             if(direntry->is_file) {
                 if(is_romfile(ent->d_name)) {
                     sprintf(direntry->name, "%s", ent->d_name);
-                    menu_new_listentry(list, direntry->name, e, load_rom);
+                    menu_new_listentry_button(list, direntry->name, e, load_rom);
                 }
                 else {
                     continue;
@@ -169,7 +171,7 @@ static void poll_dir() {
             else {
                 if(ent->d_name[0] != '.') {
                     sprintf(direntry->name, "%s/", ent->d_name);
-                    menu_new_listentry(list, direntry->name, e, change_dir);
+                    menu_new_listentry_button(list, direntry->name, e, change_dir);
                 }
                 else {
                     continue;

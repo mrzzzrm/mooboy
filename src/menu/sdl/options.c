@@ -6,29 +6,43 @@
 #include <SDL/SDL.h>
 
 #define LABEL_SOUND 0
-#define LABEL_SAVE_LOCAL 1
-#define LABEL_LOAD_LOCAL 2
-#define LABEL_SAVE_GLOBAL 3
-#define LABEL_LOAD_GLOBAL 4
-#define LABEL_RESET 4
+#define LABEL_SCALING 1
+#define LABEL_SAVE_LOCAL 2
+#define LABEL_LOAD_LOCAL 3
+#define LABEL_SAVE_GLOBAL 4
+#define LABEL_LOAD_GLOBAL 5
+#define LABEL_RESET 6
 
 
 static menu_list_t *list;
 static int finished;
 static char _local_path[256];
 
-static void set_sound(int on) {
+
+static char *local_config_path() {
+    snprintf(_local_path, sizeof(_local_path), "%s.conf", sys.rompath);
+    return _local_path;
+}
+
+static void change_sound(int dir) {
+    int on = !sys.sound_on;
     menu_listentry_val(list, LABEL_SOUND, on ? "on" : "off");
     sys.sound_on = on;
 }
 
-static char *local_config_path() {
-    sprintf(_local_path, "%s.conf", sys.rompath);
-    return _local_path;
+static void change_scaling(int dir) {
+    sys.scalingmode = (sys.scalingmode + 1) % sys.num_scalingmodes;
+    menu_listentry_val(list, LABEL_SCALING,  sys.scalingmode_names[sys.scalingmode]);
 }
 
 static void update_options() {
-    set_sound(sys.sound_on);
+    change_sound(0);
+    change_scaling(0);
+}
+
+static void reset() {
+    sys.sound_on = 1;
+    update_options();
 }
 
 static void save_local() {
@@ -42,12 +56,14 @@ static void load_local() {
 }
 
 static void save_global() {
-    config_load("mooboy.conf");
+    config_save("mooboy.conf");
     update_options();
 }
 
 static void load_global() {
-    config_load("mooboy.conf");
+    if(!config_load("mooboy.conf")) {
+        reset();
+    }
     update_options();
 }
 
@@ -60,13 +76,18 @@ static void draw() {
 void menu_options_init() {
     list = menu_new_list("Options");
 
-    menu_new_listentry(list, "Sound", LABEL_SOUND, NULL);
-    menu_new_listentry(list, "Save gameconfig", LABEL_SAVE_LOCAL, save_local);
-    menu_new_listentry(list, "Load gameconfig", LABEL_LOAD_LOCAL, load_local);
-    menu_new_listentry(list, "Save global config", LABEL_SAVE_GLOBAL, save_global);
-    menu_new_listentry(list, "Load global config", LABEL_LOAD_GLOBAL, load_global);
-    menu_new_listentry(list, "Reset to default", LABEL_RESET, NULL);
-    set_sound(sys.sound_on);
+    menu_new_listentry_selection(list, "Sound", LABEL_SOUND, change_sound);
+    menu_new_listentry_selection(list, "Scaling", LABEL_SCALING, change_scaling);
+
+    menu_new_listentry_spacer(list);
+
+    menu_new_listentry_button(list, "Save gameconfig", LABEL_SAVE_LOCAL, save_local);
+    menu_new_listentry_button(list, "Load gameconfig", LABEL_LOAD_LOCAL, load_local);
+    menu_new_listentry_button(list, "Save global config", LABEL_SAVE_GLOBAL, save_global);
+    menu_new_listentry_button(list, "Load global config", LABEL_LOAD_GLOBAL, load_global);
+    menu_new_listentry_button(list, "Reset to default", LABEL_RESET, reset);
+
+    update_options();
 }
 
 void menu_options_close() {
@@ -77,13 +98,6 @@ static void options_input_event(int type, int key) {
     menu_list_input(list, type, key);
 
     if(type == SDL_KEYDOWN) {
-        switch(menu_list_selected_id(list)) {
-            case LABEL_SOUND:
-                if(key == SDLK_LEFT || key == SDLK_RIGHT) {
-                    set_sound(!sys.sound_on);
-                }
-            break;
-        }
         if(key == KEY_BACK) {
             finished = 1;
         }

@@ -45,7 +45,9 @@ static int load_int(const char *key) {
     int val;
     char *end;
     const char *sval = load(key);
-
+    if(sval == NULL) {
+        return 0;
+    }
 
     val = strtol(sval, &end, 10);
     if(*end != '\0') {
@@ -97,6 +99,7 @@ void config_save(const char *path) {
     assert(file != NULL);
 
     save_int("sound_on", sys.sound_on);
+    save_int("scalingmode", sys.scalingmode);
 
     fclose(file);
 }
@@ -110,6 +113,13 @@ int config_load(const char *path) {
     parse();
 
     sys.sound_on = load_int("sound_on");
+
+    sys.scalingmode = load_int("scalingmode");
+    if(sys.scalingmode < 0 || sys.scalingmode >= sys.num_scalingmodes) {
+        moo_errorf("No such scalingmode %i, please delete config or insert a valid value", sys.scalingmode);
+        sys.scalingmode = 0;
+        return 0;
+    }
 
     fclose(file);
     clear();

@@ -186,19 +186,37 @@ void menu_free_list(menu_list_t *list) {
 
 }
 
-void menu_new_listentry(menu_list_t *list, const char *name, int id, void (*accept_func)(void)) {
+static menu_listentry_t *new_listentry(menu_list_t *list, const char *text, int id, int type, void *func) {
     menu_listentry_t *entry;
 
     entry = malloc(sizeof(*entry));
 
-    entry->text = menu_label(name);
+    entry->text = text != NULL ? menu_label(text) : NULL;
     entry->val = NULL;
     entry->id = id;
     entry->is_visible = 1;
-    entry->accept_func = accept_func;
+    entry->type = type;
 
+    switch(type) {
+        case MENU_LISTENTRY_BUTTON: entry->func.accept = (void (*)(void))func; break;
+        case MENU_LISTENTRY_SELECTION: entry->func.change = (void (*)(int))func; break;
+    }
     list->entries = realloc(list->entries, sizeof(*list->entries) * (++list->num_entries));
     list->entries[list->num_entries-1] = entry;
+
+    return entry;
+}
+
+void menu_new_listentry_button(menu_list_t *list, const char *name, int id, void (*accept_func)(void)) {
+    new_listentry(list, name, id, MENU_LISTENTRY_BUTTON, accept_func);
+}
+
+void menu_new_listentry_selection(menu_list_t *list, const char *name, int id, void (*change_func)(int)) {
+    new_listentry(list, name, id, MENU_LISTENTRY_SELECTION, change_func);
+}
+
+void menu_new_listentry_spacer(menu_list_t *list) {
+    new_listentry(list, NULL, -1, MENU_LISTENTRY_SPACER, NULL);
 }
 
 int menu_listentry_index(menu_list_t *list, int key) {
@@ -219,7 +237,6 @@ void menu_listentry_val(menu_list_t *list, int key, const char *val) {
     }
     *label = menu_label(val);
 }
-
 
 void menu_listentry_val_int(menu_list_t *list, int key, int ival) {
     char val[64];
@@ -272,12 +289,14 @@ void menu_draw_list(menu_list_t *list) {
     last_visible = min(last_visible, list->num_entries - 1);
     for(e = list->first_visible, l = 0; e <= last_visible; e++) {
         if(list->entries[e]->is_visible) {
-            menu_blit(list->entries[e]->text->surfaces[list->selected == e ? 1 : 0],
-                      left_margin, top_margin + l * line_height);
+            if(list->entries[e]->type != MENU_LISTENTRY_SPACER) {
+                menu_blit(list->entries[e]->text->surfaces[list->selected == e ? 1 : 0],
+                          left_margin, top_margin + l * line_height);
 
-            if(list->entries[e]->val != NULL) {
-                SDL_Surface *val = list->entries[e]->val->surfaces[list->selected == e ? 1 : 0];
-                menu_blit(val, screen->w - right_margin - val->w, top_margin + l * line_height);
+                if(list->entries[e]->val != NULL) {
+                    SDL_Surface *val = list->entries[e]->val->surfaces[list->selected == e ? 1 : 0];
+                    menu_blit(val, screen->w - right_margin - val->w, top_margin + l * line_height);
+                }
             }
             l++;
         }
@@ -285,6 +304,7 @@ void menu_draw_list(menu_list_t *list) {
 }
 
 void menu_list_input(menu_list_t *list, int type, int key) {
+    int dir;
     if(type == SDL_KEYDOWN) {
         switch(key) {
             case SDLK_UP:
@@ -296,10 +316,17 @@ void menu_list_input(menu_list_t *list, int type, int key) {
                 list->scroll_state[1] = SCROLL_TO_THRESHOLD;
             break;
             case KEY_ACCEPT:
-                if(list->entries[list->selected]->accept_func != NULL) {
-                    list->entries[list->selected]->accept_func();
+                if(list->entries[list->selected]->func.accept != NULL) {
+                    list->entries[list->selected]->func.accept();
                 }
             break;
+            case SDLK_LEFT: dir = -1;
+            case SDLK_RIGHT: dir = 1;
+                if(list->entries[list->selected]->func.change != NULL) {
+                    list->entries[list->selected]->func.change(dir);
+                }
+            break;
+
         }
     }
     if(type == SDL_KEYUP) {

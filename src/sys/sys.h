@@ -18,6 +18,9 @@ typedef struct {
 
     char rompath[256];
 
+    int scalingmode;
+    int num_scalingmodes;
+    char **scalingmode_names;
 
     unsigned int bits_per_pixel;
     unsigned int quantum_length;

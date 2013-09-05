@@ -21,11 +21,11 @@
 #define LABEL_CONNECT    6
 #define LABEL_QUIT       7
 
+int menu_running;
 
 static menu_list_t *list = NULL;
 static int load_slot = 0;
 static int save_slot = 0;
-static int finished;
 
 static void set_slot(int label, int i) {
     if(i < 0 || i > 9) {
@@ -58,6 +58,7 @@ static void save_state() {
 
 static void resume() {
     moo_continue();
+    menu_running = 0;
 }
 
 static void reset() {
@@ -65,12 +66,12 @@ static void reset() {
 }
 
 static void quit() {
-    finished = 1;
+    menu_running = 1;
     moo_quit();
 }
 
 static void setup() {
-    finished = 0;
+    menu_running = 1;
 
     menu_listentry_visible(list, LABEL_RESUME, moo.state & MOO_ROM_LOADED_BIT);
     menu_listentry_visible(list, LABEL_RESET, moo.state & MOO_ROM_LOADED_BIT);
@@ -118,14 +119,14 @@ void menu_init() {
 
     list = menu_new_list("Main Menu");
 
-    menu_new_listentry(list, "Resume", LABEL_RESUME, resume);
-    menu_new_listentry(list, "Load ROM", LABEL_LOAD_ROM, menu_rom);
-    menu_new_listentry(list, "Reset", LABEL_RESET, reset);
-    menu_new_listentry(list, "Load state", LABEL_LOAD_STATE, load_state);
-    menu_new_listentry(list, "Save state", LABEL_SAVE_STATE, save_state);
-    menu_new_listentry(list, "Options", LABEL_OPTIONS, menu_options);
-    //menu_new_listentry(list, "Connect to mooLounge", LABEL_CONNECT);
-    menu_new_listentry(list, "Quit", LABEL_QUIT, quit);
+    menu_new_listentry_button(list, "Resume", LABEL_RESUME, resume);
+    menu_new_listentry_button(list, "Load ROM", LABEL_LOAD_ROM, menu_rom);
+    menu_new_listentry_button(list, "Reset", LABEL_RESET, reset);
+    menu_new_listentry_button(list, "Load state", LABEL_LOAD_STATE, load_state);
+    menu_new_listentry_button(list, "Save state", LABEL_SAVE_STATE, save_state);
+    menu_new_listentry_button(list, "Options", LABEL_OPTIONS, menu_options);
+    //menu_new_listentry_button(list, "Connect to mooLounge", LABEL_CONNECT);
+    menu_new_listentry_button(list, "Quit", LABEL_QUIT, quit);
 
     set_slot(LABEL_LOAD_STATE, 0);
     set_slot(LABEL_SAVE_STATE, 0);
@@ -144,7 +145,7 @@ void menu_close() {
 void menu_run() {
     setup();
 
-    while(!finished && (~moo.state & MOO_ROM_RUNNING_BIT) && (moo.state & MOO_RUNNING_BIT)) {
+    while(menu_running && (moo.state & MOO_RUNNING_BIT)) {
         draw();
         sys_handle_events(menu_input_event);
         menu_list_update(list);

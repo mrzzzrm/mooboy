@@ -16,6 +16,11 @@
 #include "util/framerate.h"
 #include "util/performance.h"
 
+#define SCALING_STRECHED 0
+#define SCALING_PROPORTIONAL 1
+#define SCALING_NONE 2
+
+#define min(a, b) ((a) < (b) ? (a) : (b))
 
 sys_t sys;
 
@@ -37,6 +42,13 @@ void sys_init(int argc, const char** argv) {
 #endif
 
 
+    sys.scalingmode = 0;
+    sys.num_scalingmodes = 3;
+    sys.scalingmode_names = malloc(sizeof(*sys.scalingmode_names) * sys.num_scalingmodes);
+    sys.scalingmode_names[SCALING_STRECHED] = strdup("Streched");
+    sys.scalingmode_names[SCALING_PROPORTIONAL] = strdup("Proportional");
+    sys.scalingmode_names[SCALING_NONE] = strdup("None");
+
     audio_init();
     video_init();
     framerate_init();
@@ -53,6 +65,11 @@ void sys_reset() {
 }
 
 void sys_close() {
+    int s;
+    for(s = 0; s < sys.num_scalingmodes; s++) {
+        free(sys.scalingmode_names[s]);
+    }
+    free(sys.scalingmode_names);
 
     SDL_Quit();
 }
@@ -65,14 +82,47 @@ void sys_run() {
     sys.ticks_diff -= SDL_GetTicks() - sys.pause_start;
 }
 
-
-static void render() {
+SDL_Rect none_scaling_area() {
     SDL_Rect area;
+    area.x = SDL_GetVideoSurface()->w/2 - 80;
+    area.y = SDL_GetVideoSurface()->h/2 - 72;
+    area.w = 160;
+    area.h = 144;
+    return area;
+}
 
+SDL_Rect proportional_scaling_area() {
+    SDL_Rect area;
+    int fw, fh, f;
+    fw = SDL_GetVideoSurface()->w / 160;
+    fh = SDL_GetVideoSurface()->h / 144;
+    f = min(fw, fh);
+    area.w = f * 160;
+    area.h = f * 144;
+    area.x = SDL_GetVideoSurface()->w/2 - area.w/2;
+    area.y = SDL_GetVideoSurface()->h/2 - area.h/2;
+    return area;
+}
+
+SDL_Rect streched_scaling_area() {
+    SDL_Rect area;
     area.x = 0;
     area.y = 0;
     area.w = SDL_GetVideoSurface()->w;
     area.h = SDL_GetVideoSurface()->h;
+    return area;
+}
+
+static void render() {
+    SDL_Rect area;
+
+    switch(sys.scalingmode) {
+        case SCALING_NONE: area = none_scaling_area(); break;
+        case SCALING_PROPORTIONAL: area = proportional_scaling_area(); break;
+        case SCALING_STRECHED: area = streched_scaling_area(); break;
+        default: moo_errorf("No valid scalingmode selected"); return;
+    }
+    area = proportional_scaling_area();
 
     video_render(SDL_GetVideoSurface(), area);
     SDL_BlitSurface(performance.statuslabel, NULL, SDL_GetVideoSurface(), NULL);

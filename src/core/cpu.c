@@ -30,7 +30,7 @@ void cpu_reset() {
     cpu.irq = 0x00;
     cpu.ie = 0x00;
 
-    cpu.mcs_remainder = 0
+    cpu.mcs_remainder = 0;
     cpu.freq = NORMAL_CPU_FREQ;
     cpu.halted = 0;
     cpu.freq_switch = 0x00;
