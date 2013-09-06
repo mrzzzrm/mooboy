@@ -18,7 +18,7 @@ static void list_up(menu_list_t *list) {
     int new_selected = list->selected;
     while(new_selected > 0) {
         new_selected--;
-        if(list->entries[new_selected]->is_visible) {
+        if(list->entries[new_selected]->is_visible && list->entries[new_selected]->type != MENU_LISTENTRY_SPACER) {
             list->selected = new_selected;
             break;
         }
@@ -34,7 +34,7 @@ static void list_down(menu_list_t *list) {
     int new_selected = list->selected;
     while(new_selected < list->num_entries - 1) {
         new_selected++;
-        if(list->entries[new_selected]->is_visible) {
+        if(list->entries[new_selected]->is_visible && list->entries[new_selected]->type != MENU_LISTENTRY_SPACER) {
             list->selected = new_selected;
             break;
         }
@@ -156,6 +156,7 @@ menu_list_t *menu_new_list(const char *title) {
     list->title = menu_label(title);
     list->selected = 0;
     list->num_visible = 1;
+    list->back_func = NULL;
     list->first_visible = 0;
     list->scroll_state[0] = SCROLL_NOT_PRESSED; list->scroll_state[1] = SCROLL_NOT_PRESSED;
     list->last_scroll[0] = 0; list->last_scroll[1] = 0;
@@ -184,6 +185,17 @@ void menu_list_update(menu_list_t *list) {
 
 void menu_free_list(menu_list_t *list) {
 
+}
+
+
+void menu_clear_list(menu_list_t *list) {
+    int e;
+    for(e = 0; e < list->num_entries; e++) {
+        free(list->entries[e]);
+    }
+    free(list->entries);
+    list->entries = NULL;
+    list->num_entries = 0;
 }
 
 static menu_listentry_t *new_listentry(menu_list_t *list, const char *text, int id, int type, void *func) {
@@ -318,6 +330,11 @@ void menu_list_input(menu_list_t *list, int type, int key) {
             case KEY_ACCEPT:
                 if(list->entries[list->selected]->func.accept != NULL) {
                     list->entries[list->selected]->func.accept();
+                }
+            break;
+            case KEY_BACK:
+                if(list->back_func != NULL) {
+                    list->back_func();
                 }
             break;
             case SDLK_LEFT: dir = -1;

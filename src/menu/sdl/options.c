@@ -18,6 +18,9 @@ static menu_list_t *list;
 static int finished;
 static char _local_path[256];
 
+static void back() {
+    finished = 1;
+}
 
 static char *local_config_path() {
     snprintf(_local_path, sizeof(_local_path), "%s.conf", sys.rompath);
@@ -25,13 +28,13 @@ static char *local_config_path() {
 }
 
 static void change_sound(int dir) {
-    int on = !sys.sound_on;
+    int on = dir? !sys.sound_on : sys.sound_on;
     menu_listentry_val(list, LABEL_SOUND, on ? "on" : "off");
     sys.sound_on = on;
 }
 
 static void change_scaling(int dir) {
-    sys.scalingmode = (sys.scalingmode + 1) % sys.num_scalingmodes;
+    sys.scalingmode = (sys.scalingmode + dir) % sys.num_scalingmodes;
     menu_listentry_val(list, LABEL_SCALING,  sys.scalingmode_names[sys.scalingmode]);
 }
 
@@ -75,6 +78,7 @@ static void draw() {
 
 void menu_options_init() {
     list = menu_new_list("Options");
+    list->back_func = back;
 
     menu_new_listentry_selection(list, "Sound", LABEL_SOUND, change_sound);
     menu_new_listentry_selection(list, "Scaling", LABEL_SCALING, change_scaling);
@@ -96,12 +100,6 @@ void menu_options_close() {
 
 static void options_input_event(int type, int key) {
     menu_list_input(list, type, key);
-
-    if(type == SDL_KEYDOWN) {
-        if(key == KEY_BACK) {
-            finished = 1;
-        }
-    }
 }
 
 void menu_options() {
@@ -109,6 +107,8 @@ void menu_options() {
 
     menu_listentry_visible(list, LABEL_SAVE_LOCAL, moo.state & MOO_ROM_LOADED_BIT);
     menu_listentry_visible(list, LABEL_LOAD_LOCAL, moo.state & MOO_ROM_LOADED_BIT);
+
+    update_options();
 
     while(!finished && (moo.state & MOO_RUNNING_BIT)) {
         draw();

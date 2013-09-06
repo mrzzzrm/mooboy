@@ -6,6 +6,6 @@ extern int menu_running;
 void menu_init();
 void menu_close();
 void menu_run();
-void menu_show_error();
+void menu_error();
 
 #endif

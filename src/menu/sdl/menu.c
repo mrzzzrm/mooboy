@@ -27,6 +27,12 @@ static menu_list_t *list = NULL;
 static int load_slot = 0;
 static int save_slot = 0;
 
+static void back() {
+    if(moo.state & MOO_ROM_LOADED_BIT) {
+        moo_continue();
+    }
+}
+
 static void set_slot(int label, int i) {
     if(i < 0 || i > 9) {
         return;
@@ -118,6 +124,7 @@ void menu_init() {
     menu_error_init();
 
     list = menu_new_list("Main Menu");
+    list->back_func = back;
 
     menu_new_listentry_button(list, "Resume", LABEL_RESUME, resume);
     menu_new_listentry_button(list, "Load ROM", LABEL_LOAD_ROM, menu_rom);
@@ -145,14 +152,10 @@ void menu_close() {
 void menu_run() {
     setup();
 
-    while(menu_running && (moo.state & MOO_RUNNING_BIT)) {
+    while((~moo.state & MOO_ROM_RUNNING_BIT) && (moo.state & MOO_RUNNING_BIT)) {
         draw();
         sys_handle_events(menu_input_event);
         menu_list_update(list);
     }
-}
-
-void menu_show_error() {
-    menu_error();
 }
 

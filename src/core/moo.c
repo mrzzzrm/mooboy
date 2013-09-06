@@ -147,12 +147,12 @@ static void moo_cycle(int num) {
 
 void moo_run() {
     while(moo.state & MOO_RUNNING_BIT) {
-        if(moo.state & MOO_ROM_RUNNING_BIT) {
+        if(moo.state & MOO_ERROR_BIT){
+            menu_error();
+        }
+        else if(moo.state & MOO_ROM_RUNNING_BIT) {
             moo_cycle(sys.quantum_length);
             sys_invoke();
-        }
-        else if(moo.state & MOO_ERROR_BIT){
-            menu_show_error();
         }
         else {
             menu_run();

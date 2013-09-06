@@ -6,8 +6,13 @@
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #define max(a, b) ((a) > (b) ? (a) : (b))
 
-#define KEY_ACCEPT SDLK_RETURN
-#define KEY_BACK SDLK_BACKSPACE
+#ifdef PANDORA
+    #define KEY_ACCEPT SDLK_RETURN
+    #define KEY_BACK SDLK_BACKSPACE
+#else
+    #define KEY_ACCEPT SDLK_RETURN
+    #define KEY_BACK SDLK_BACKSPACE
+#endif
 
 #define MENU_LISTENTRY_BUTTON 0
 #define MENU_LISTENTRY_SELECTION 1
@@ -36,6 +41,7 @@ typedef struct {
     int selected;
     int num_visible;
     int first_visible;
+    void (*back_func)(void);
 
     int scroll_state[2];
     time_t last_scroll[2];
@@ -63,6 +69,7 @@ void menu_blit_word_string(menu_word_string_t *string, int x, int y);
 menu_list_t *menu_new_list(const char *title);
 void menu_list_update(menu_list_t *list);
 void menu_free_list(menu_list_t *list);
+void menu_clear_list(menu_list_t *list);
 void menu_new_listentry_spacer(menu_list_t *list);
 void menu_new_listentry_button(menu_list_t *list, const char *name, int id, void (*accept_func)(void));
 void menu_new_listentry_selection(menu_list_t *list, const char *name, int id, void (*change_func)(int));
@@ -75,5 +82,6 @@ void menu_list_select_first(menu_list_t *list);
 void menu_listentry_visible(menu_list_t *list, int id, int visible);
 void menu_draw_list(menu_list_t *list);
 void menu_list_input(menu_list_t *list, int type, int key);
+
 
 #endif

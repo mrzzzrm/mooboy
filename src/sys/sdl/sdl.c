@@ -116,13 +116,14 @@ SDL_Rect streched_scaling_area() {
 static void render() {
     SDL_Rect area;
 
+    SDL_FillRect(SDL_GetVideoSurface(), NULL, 0);
+
     switch(sys.scalingmode) {
         case SCALING_NONE: area = none_scaling_area(); break;
         case SCALING_PROPORTIONAL: area = proportional_scaling_area(); break;
         case SCALING_STRECHED: area = streched_scaling_area(); break;
         default: moo_errorf("No valid scalingmode selected"); return;
     }
-    area = proportional_scaling_area();
 
     video_render(SDL_GetVideoSurface(), area);
     SDL_BlitSurface(performance.statuslabel, NULL, SDL_GetVideoSurface(), NULL);

@@ -17,6 +17,6 @@
     - Implement reset game
     - Back buttons in all submenus
     - Implement resolution independency
-    
+    - implement menu_free_list()
     
 

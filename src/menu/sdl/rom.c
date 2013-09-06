@@ -33,6 +33,10 @@ static int is_romfile(const char *path) {
     return 0;
 }
 
+static void back() {
+    finished = 1;
+}
+
 static void save_dir() {
     FILE *file = fopen("romdir.txt", "w");
     fprintf(file, "%s", cwd);
@@ -97,10 +101,7 @@ static void sort_entries() {
 }
 
 static void clear() {
-    if(list != NULL) {
-        menu_free_list(list);
-    }
-    list = menu_new_list("Choose ROM");
+    menu_clear_list(list);
     if(direntries != NULL) {
         free(direntries);
     }
@@ -112,8 +113,8 @@ static void load_rom() {
 
     snprintf(new_rompath, sizeof(new_rompath), "%s%s", cwd, direntries[list->selected]->name);
     moo_load_rom(new_rompath);
+    moo_begin();
     finished = 1;
-    menu_running = 0;
 }
 
 static void change_dir() {
@@ -190,12 +191,6 @@ static void poll_dir() {
 
 static void rom_input_event(int type, int key) {
     menu_list_input(list, type, key);
-
-    if(type == SDL_KEYDOWN) {
-        if(key == KEY_BACK) {
-            finished = 1;
-        }
-    }
 }
 
 void menu_rom_init() {
@@ -208,6 +203,10 @@ void menu_rom_init() {
             cwd[l + 1] = '\0';
         }
     }
+
+
+    list = menu_new_list("Choose ROM");
+    list->back_func = back;
 }
 
 void menu_rom_close() {
