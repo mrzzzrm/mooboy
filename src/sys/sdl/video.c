@@ -9,6 +9,7 @@
 static u8 buf[32768];
 static u16 fb_color[160][144];
 static int line_length;
+static int line_byte_offset;
 static int bytes_per_pixel;
 static int bytes_per_line;
 static SDL_Rect area;
@@ -56,7 +57,7 @@ static void cgb_fw_render_fbline(int line) {
     u16 s_color;
     int pixels_to_set;
 
-    buf_pos = 0;
+    buf_pos = line_byte_offset;
     fb_pixel = line * 160;
     fbx = 0;
 
@@ -76,7 +77,7 @@ static void dmg_fw_render_fbline(int line) {
     u16 s_color;
     int pixels_to_set;
 
-    buf_pos = 0;
+    buf_pos = line_byte_offset;
     fb_pixel = line * 160;
     fbx = 0;
 
@@ -107,6 +108,7 @@ static void fullwidth_render(SDL_Surface *surface, SDL_Rect _area) {
     buflines = 0;
     fbline = 0;
     line_length = surface->w;
+    line_byte_offset = 0;
     bytes_per_line = surface->pitch;
     bytes_per_pixel = surface->format->BytesPerPixel;
 
@@ -129,7 +131,34 @@ static void fullwidth_render(SDL_Surface *surface, SDL_Rect _area) {
 }
 
 
-static void area_render(SDL_Surface *surface, SDL_Rect area) {
+static void area_render(SDL_Surface *surface, SDL_Rect _area) {
+    int aline, buflines, fbline, alines_to_fill;
+
+    area = _area;
+    buflines = 0;
+    fbline = 0;
+    bytes_per_line = surface->pitch;
+    bytes_per_pixel = surface->format->BytesPerPixel;
+    line_length = area.w;
+    line_byte_offset = area.x * bytes_per_pixel;
+
+    for(aline = 0; aline < area.h; fbline++) {
+        alines_to_fill = alines_in_fbline(aline, area.h, fbline);
+        if(alines_to_fill > 0) {
+            fw_render_fbline(fbline);
+
+            for(buflines = 1; alines_to_fill >= buflines * 2; buflines *= 2) {
+                memcpy(&buf[buflines * bytes_per_line], buf, buflines * bytes_per_line);
+            }
+            fw_render_buffer(surface, buf, buflines, aline + area.y);
+            aline += buflines;
+            if(alines_to_fill > buflines) {
+                fw_render_buffer(surface, buf, alines_to_fill - buflines, aline + area.y);
+            }
+            aline += alines_to_fill - buflines;
+        }
+    }
+/*
     int x, y;
     int fbx = 0, fby = 0;
 
@@ -158,6 +187,7 @@ static void area_render(SDL_Surface *surface, SDL_Rect area) {
             line[x+area.x] = fb_color[fbx][fby];
         }
     }
+*/
 }
 
 void video_init() {
