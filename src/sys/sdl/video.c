@@ -158,36 +158,6 @@ static void area_render(SDL_Surface *surface, SDL_Rect _area) {
             aline += alines_to_fill - buflines;
         }
     }
-/*
-    int x, y;
-    int fbx = 0, fby = 0;
-
-
-    if(moo.hw == CGB_HW) {
-        for(x = 0; x < 160; x++) {
-            for(y = 0; y < 144; y++) {
-                fb_color[x][y] = cgb_to_rgb(lcd.clean_fb[y * 160 + x]);
-            }
-        }
-    }
-    else {
-        for(x = 0; x < 160; x++) {
-            for(y = 0; y < 144; y++) {
-                fb_color[x][y] = dmg_to_rgb(lcd.clean_fb[y * 160 + x]);
-            }
-        }
-    }
-
-    for(y = 0; y < area.h; y++) {
-        u16 *line = (u16*)&((u8*)surface->pixels)[(y+area.y) * surface->pitch];
-        fby = (y * 144) / area.h;
-
-        for(x = 0; x < area.w; x++, fbx++) {
-            fbx = (x * 160) / area.w;
-            line[x+area.x] = fb_color[fbx][fby];
-        }
-    }
-*/
 }
 
 void video_init() {
