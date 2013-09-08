@@ -142,6 +142,7 @@ static void area_render(SDL_Surface *surface, SDL_Rect _area) {
     line_length = area.w;
     line_byte_offset = area.x * bytes_per_pixel;
 
+    memset(buf, 0x00, sizeof(buf));
     for(aline = 0; aline < area.h; fbline++) {
         alines_to_fill = alines_in_fbline(aline, area.h, fbline);
         if(alines_to_fill > 0) {

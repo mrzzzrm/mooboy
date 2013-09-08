@@ -127,3 +127,8 @@ int config_load(const char *path) {
     return 1;
 }
 
+
+void config_default() {
+    sys.sound_on = 1;
+    sys.scalingmode = 0;
+}

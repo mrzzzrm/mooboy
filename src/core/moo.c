@@ -29,6 +29,8 @@ void moo_init() {
 
     sound_init();
     //serial_init();
+
+    config_default();
 }
 
 void moo_close() {

@@ -44,7 +44,7 @@ static void update_options() {
 }
 
 static void reset() {
-    sys.sound_on = 1;
+    config_default();
     update_options();
 }
 

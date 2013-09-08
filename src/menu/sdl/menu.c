@@ -88,13 +88,14 @@ static void setup() {
 
 static void draw() {
     SDL_Rect prevr = {250, 10, 200, 180};
-
     SDL_FillRect(SDL_GetVideoSurface(), NULL, 0);
-    menu_draw_list(list);
 
     if(moo.state & MOO_ROM_LOADED_BIT) {
         video_render(SDL_GetVideoSurface(), prevr);
     }
+
+    menu_draw_list(list);
+
 
     SDL_Flip(SDL_GetVideoSurface());
 }
