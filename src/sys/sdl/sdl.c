@@ -62,7 +62,6 @@ void sys_init(int argc, const char** argv) {
 void sys_reset() {
     sys.ticks = 0;
     sys.invoke_cc = 0;
-    sys.ticks_diff = -(long long)SDL_GetTicks();
     framerate_begin();
     performance_begin();
 }
@@ -81,8 +80,14 @@ void sys_pause() {
     sys.pause_start = SDL_GetTicks();
 }
 
-void sys_run() {
-    sys.ticks_diff -= SDL_GetTicks() - sys.pause_start;
+void sys_begin() {
+    sys.ticks_diff = -(long long)SDL_GetTicks();
+    sys_play_audio(sys.sound_on);
+}
+
+void sys_continue() {
+    sys.ticks_diff -= (long long)SDL_GetTicks() - sys.pause_start;
+    sys_play_audio(sys.sound_on);
 }
 
 SDL_Rect none_scaling_area() {

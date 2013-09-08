@@ -159,7 +159,6 @@ void load_rom() {
     free(rom);
 
     moo.state |= MOO_ROM_LOADED_BIT;
-    moo_begin();
 }
 
 

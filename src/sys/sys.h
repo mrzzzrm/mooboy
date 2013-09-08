@@ -34,7 +34,8 @@ void sys_reset();
 void sys_close();
 
 void sys_pause();
-void sys_run();
+void sys_continue();
+void sys_begin();
 
 void sys_delay(int ticks);
 

@@ -39,8 +39,7 @@ void moo_close() {
 }
 
 void moo_reset() {
-    sys.ticks = 0;
-
+    printf("Reset\n");
     sys_reset();
     mem_reset();
     cpu_reset();
@@ -53,17 +52,21 @@ void moo_reset() {
 }
 
 void moo_begin() {
+    printf("Begin\n");
     moo.state |= MOO_ROM_RUNNING_BIT;
-    sys_play_audio(sys.sound_on);
+    sys_begin();
 }
 
 void moo_continue() {
+    printf("Continue\n");
     moo.state |= MOO_ROM_RUNNING_BIT;
-    sys_play_audio(sys.sound_on);
+    sys_continue();
 }
 
 void moo_pause() {
+    printf("Pause\n");
     moo.state ^= MOO_ROM_RUNNING_BIT;
+    sys_pause();
 }
 
 void moo_quit() {

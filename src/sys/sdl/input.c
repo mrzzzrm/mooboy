@@ -25,9 +25,16 @@ void input_init() {
     input.keys.select = SDLK_d;
 #endif
 
-    input.keys.save = SDLK_n;
-    input.keys.load = SDLK_m;
+
+#ifdef PANDORA
     input.keys.menu = SDLK_SPACE;
+    input.keys.accept = SDLK_END;
+    input.keys.back = SDLK_PAGEDOWN;
+#else
+    input.keys.menu = SDLK_SPACE;
+    input.keys.accept = SDLK_RETURN;
+    input.keys.back = SDLK_ESCAPE;
+#endif
 }
 
 void input_event(int type, int key) {

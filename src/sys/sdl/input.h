@@ -6,8 +6,7 @@ typedef struct {
         int up, down, left, right;
         int a, b, start, select;
 
-        int save, load;
-        int menu;
+        int menu, accept, back;
     } keys;
 } input_t;
 

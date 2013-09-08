@@ -1,5 +1,6 @@
 #include "util.h"
 #include <SDL/SDL_ttf.h>
+#include "sys/sdl/input.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -376,20 +377,6 @@ void menu_list_input(menu_list_t *list, int type, int key) {
                 list_down(list);
                 list->scroll_state[1] = SCROLL_TO_THRESHOLD;
             break;
-            case KEY_ACCEPT:
-                if(list->selected >= 0) {
-                    if(list->entries[list->selected]->func.accept != NULL) {
-                        list->entries[list->selected]->func.accept();
-                    }
-                }
-            break;
-            case KEY_BACK:
-                if(list->selected >= 0) {
-                    if(list->back_func != NULL) {
-                        list->back_func();
-                    }
-                }
-            break;
             case SDLK_LEFT: dir = -1;
             case SDLK_RIGHT: dir = 1;
                 if(list->selected >= 0) {
@@ -398,7 +385,21 @@ void menu_list_input(menu_list_t *list, int type, int key) {
                     }
                 }
             break;
+        }
 
+        if(key == input.keys.accept) {
+            if(list->selected >= 0) {
+                if(list->entries[list->selected]->func.accept != NULL) {
+                    list->entries[list->selected]->func.accept();
+                }
+            }
+        }
+        if(key == input.keys.back) {
+            if(list->selected >= 0) {
+                if(list->back_func != NULL) {
+                    list->back_func();
+                }
+            }
         }
     }
     if(type == SDL_KEYUP) {
