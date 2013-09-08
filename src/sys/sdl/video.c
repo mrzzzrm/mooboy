@@ -7,7 +7,7 @@
 
 
 static u8 buf[32768];
-static u16 fb_color[160][144];
+//static u16 fb_color[160][144];
 static int line_length;
 static int line_byte_offset;
 static int bytes_per_pixel;

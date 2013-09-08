@@ -15,6 +15,10 @@
 static TTF_Font *font;
 
 static void list_up(menu_list_t *list) {
+    if(list->selected < 0) {
+        return;
+    }
+
     int new_selected = list->selected;
     while(new_selected > 0) {
         new_selected--;
@@ -31,6 +35,10 @@ static void list_up(menu_list_t *list) {
 }
 
 static void list_down(menu_list_t *list) {
+    if(list->selected < 0) {
+        return;
+    }
+
     int new_selected = list->selected;
     while(new_selected < list->num_entries - 1) {
         new_selected++;
@@ -49,7 +57,9 @@ static void list_down(menu_list_t *list) {
 void menu_util_init() {
     if(!TTF_WasInit()) {
         assert(!TTF_Init());
-        font = TTF_OpenFont("data/Xolonium.ttf", FONT_SIZE);
+
+        int font_size = SDL_GetVideoSurface()->h / 15;
+        font = TTF_OpenFont("data/Xolonium.ttf", font_size);
         assert(font != NULL);
     }
 }
@@ -154,7 +164,7 @@ menu_list_t *menu_new_list(const char *title) {
     list->entries = NULL;
     list->num_entries = 0;
     list->title = menu_label(title);
-    list->selected = 0;
+    list->selected = -1;
     list->num_visible = 1;
     list->back_func = NULL;
     list->first_visible = 0;
@@ -184,9 +194,9 @@ void menu_list_update(menu_list_t *list) {
 }
 
 void menu_free_list(menu_list_t *list) {
-
+    menu_clear_list(list);
+    free(list);
 }
-
 
 void menu_clear_list(menu_list_t *list) {
     int e;
@@ -196,6 +206,8 @@ void menu_clear_list(menu_list_t *list) {
     free(list->entries);
     list->entries = NULL;
     list->num_entries = 0;
+    list->first_visible = 0;
+    list->selected = -1;
 }
 
 static menu_listentry_t *new_listentry(menu_list_t *list, const char *text, int id, int type, void *func) {
@@ -215,6 +227,10 @@ static menu_listentry_t *new_listentry(menu_list_t *list, const char *text, int 
     }
     list->entries = realloc(list->entries, sizeof(*list->entries) * (++list->num_entries));
     list->entries[list->num_entries-1] = entry;
+
+    if(list->selected < 0) {
+        list->selected = 0;
+    }
 
     return entry;
 }
@@ -252,12 +268,17 @@ void menu_listentry_val(menu_list_t *list, int key, const char *val) {
 
 void menu_listentry_val_int(menu_list_t *list, int key, int ival) {
     char val[64];
-    sprintf(val, "%i", ival);
+    snprintf(val, sizeof(val), "%i", ival);
     menu_listentry_val(list, key, val);
 }
 
 int menu_list_selected_id(menu_list_t *list) {
-    return list->entries[list->selected]->id;
+    if(list->selected < 0) {
+        return -1;
+    }
+    else {
+        return list->entries[list->selected]->id;
+    }
 }
 
 void menu_list_select_first(menu_list_t *list) {
@@ -270,11 +291,38 @@ void menu_list_select_first(menu_list_t *list) {
     }
 }
 
+static void hide_entry(menu_list_t *list, int idx) {
+    int e;
+    list->entries[idx]->is_visible = 0;
+    if(list->selected != idx) {
+        return;
+    }
+
+    for(e = idx - 1; e >= 0; e--) {
+        if(list->entries[e]->is_visible) {
+            list->selected = e;
+            return;
+        }
+    }
+    for(e = idx + 1; e < list->num_entries; e++) {
+        if(list->entries[e]->is_visible) {
+            list->selected = e;
+            return;
+        }
+    }
+    return;
+}
+
 void menu_listentry_visible(menu_list_t *list, int id, int visible) {
     int e;
     for(e = 0; e < list->num_entries; e++) {
         if(list->entries[e]->id == id) {
-            list->entries[e]->is_visible = visible;
+            if(visible) {
+                list->entries[e]->is_visible = 1;
+            }
+            else {
+                hide_entry(list, e);
+            }
             return;
         }
     }
@@ -283,17 +331,18 @@ void menu_listentry_visible(menu_list_t *list, int id, int visible) {
 void menu_draw_list(menu_list_t *list) {
     int e, l;
     int last_visible;
-    int top_margin, left_margin, right_margin;
+    int top_margin, left_margin, right_margin, bottom_margin;
     int line_height;
     SDL_Surface *screen;
 
-    top_margin = 60;
-    left_margin = 20;
-    right_margin = 20;
-    line_height = 45;
+    top_margin = TTF_FontHeight(font) * 1.5;
+    left_margin = SDL_GetVideoSurface()->w / 40;
+    right_margin = SDL_GetVideoSurface()->w / 40;
+    bottom_margin = TTF_FontHeight(font) * 1.5;
+    line_height = TTF_FontHeight(font);
     screen = SDL_GetVideoSurface();
 
-    list->num_visible = 8;
+    list->num_visible = (SDL_GetVideoSurface()->h - top_margin - bottom_margin) / line_height;
 
     menu_blit(list->title->surfaces[0], 0, 0);
 
@@ -328,19 +377,25 @@ void menu_list_input(menu_list_t *list, int type, int key) {
                 list->scroll_state[1] = SCROLL_TO_THRESHOLD;
             break;
             case KEY_ACCEPT:
-                if(list->entries[list->selected]->func.accept != NULL) {
-                    list->entries[list->selected]->func.accept();
+                if(list->selected >= 0) {
+                    if(list->entries[list->selected]->func.accept != NULL) {
+                        list->entries[list->selected]->func.accept();
+                    }
                 }
             break;
             case KEY_BACK:
-                if(list->back_func != NULL) {
-                    list->back_func();
+                if(list->selected >= 0) {
+                    if(list->back_func != NULL) {
+                        list->back_func();
+                    }
                 }
             break;
             case SDLK_LEFT: dir = -1;
             case SDLK_RIGHT: dir = 1;
-                if(list->entries[list->selected]->func.change != NULL) {
-                    list->entries[list->selected]->func.change(dir);
+                if(list->selected >= 0) {
+                    if(list->entries[list->selected]->func.change != NULL) {
+                        list->entries[list->selected]->func.change(dir);
+                    }
                 }
             break;
 

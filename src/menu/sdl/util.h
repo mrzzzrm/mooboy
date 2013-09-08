@@ -70,7 +70,6 @@ menu_list_t *menu_new_list(const char *title);
 void menu_list_update(menu_list_t *list);
 void menu_free_list(menu_list_t *list);
 void menu_clear_list(menu_list_t *list);
-void menu_new_listentry_spacer(menu_list_t *list);
 void menu_new_listentry_button(menu_list_t *list, const char *name, int id, void (*accept_func)(void));
 void menu_new_listentry_selection(menu_list_t *list, const char *name, int id, void (*change_func)(int));
 void menu_new_listentry_spacer(menu_list_t *list);

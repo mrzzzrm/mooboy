@@ -1,5 +1,6 @@
 #include "config.h"
 #include "sys/sys.h"
+#include "core/moo.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>

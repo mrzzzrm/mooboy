@@ -3,6 +3,8 @@
     - SRAM saving shall not save gamecode
     - Replace sound.counter with a different mechanism
     - Check if all timing information is set correcly when games/states are loaded
+    - Remove unnecessary calls to memset and SDL_FillRect 
+    - Disable unneccesary printfs in release-mode
     
 [Game Bugs]
     - MrDriller: Blocks not shown
@@ -15,8 +17,6 @@
 
 [Menu]  
     - Implement reset game
-    - Back buttons in all submenus
-    - Implement resolution independency
-    - implement menu_free_list()
+    - Implement nicer display of gb-display in mainmenu
     
 

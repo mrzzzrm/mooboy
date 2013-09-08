@@ -101,11 +101,15 @@ static void sort_entries() {
 }
 
 static void clear() {
-    menu_clear_list(list);
     if(direntries != NULL) {
+        int e;
+        for(e = 0; e < list->num_entries; e++) {
+            free(direntries[e]);
+        }
         free(direntries);
     }
     direntries = NULL;
+    menu_clear_list(list);
 }
 
 static void load_rom() {
@@ -147,7 +151,6 @@ static void poll_dir() {
     assert(dir);
     for(e = 0; (ent = readdir(dir)) != NULL;) {
         direntry_t *direntry;
-
         if(strcmp(ent->d_name, ".") == 0) {
             continue;
         }
@@ -179,7 +182,6 @@ static void poll_dir() {
                 }
             }
         }
-
         direntries = realloc(direntries, sizeof(*direntries) * (list->num_entries));
         direntries[list->num_entries - 1] = direntry;
         e++;

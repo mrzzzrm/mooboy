@@ -35,13 +35,14 @@ void sys_init(int argc, const char** argv) {
     moo.state = MOO_RUNNING_BIT;
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+
 #ifdef PANDORA
     SDL_SetVideoMode(800, 480, sys.bits_per_pixel, SDL_FULLSCREEN);
     SDL_ShowCursor(0);
 #else
-    SDL_SetVideoMode(800, 480, sys.bits_per_pixel, 0);
+    //SDL_SetVideoMode(1680, 1050, sys.bits_per_pixel, SDL_FULLSCREEN);
+    SDL_SetVideoMode(680, 300, sys.bits_per_pixel, 0);
 #endif
-
 
     sys.scalingmode = 0;
     sys.num_scalingmodes = 4;
