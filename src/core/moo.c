@@ -81,7 +81,9 @@ void moo_load_rom(const char *path) {
     if(moo.state & MOO_ROM_LOADED_BIT) {
         card_save();
     }
-    strcpy(sys.rompath, path);
+    if(path != sys.rompath) {
+        strcpy(sys.rompath, path);
+    }
 
     moo_reset();
     load_rom();

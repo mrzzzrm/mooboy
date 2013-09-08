@@ -21,7 +21,6 @@
 #define LABEL_CONNECT    6
 #define LABEL_QUIT       7
 
-int menu_running;
 
 static menu_list_t *list = NULL;
 static int load_slot = 0;
@@ -50,7 +49,7 @@ static void set_slot(int label, int i) {
 
 static void load_state() {
     char file[256];
-    sprintf(file, "%s.sav%i", sys.rompath, load_slot);
+    snprintf(file, sizeof(file), "%s.sav%i", sys.rompath, load_slot);
     if(state_load(file) == 0) {
         moo_begin();
     }
@@ -58,27 +57,24 @@ static void load_state() {
 
 static void save_state() {
     char file[256];
-    sprintf(file, "%s.sav%i", sys.rompath, save_slot);
+    snprintf(file, sizeof(file), "%s.sav%i", sys.rompath, save_slot);
     state_save(file);
 }
 
 static void resume() {
     moo_continue();
-    menu_running = 0;
 }
 
 static void reset() {
-
+    moo_load_rom(sys.rompath);
+    moo_begin();
 }
 
 static void quit() {
-    menu_running = 1;
     moo_quit();
 }
 
 static void setup() {
-    menu_running = 1;
-
     menu_listentry_visible(list, LABEL_RESUME, moo.state & MOO_ROM_LOADED_BIT);
     menu_listentry_visible(list, LABEL_RESET, moo.state & MOO_ROM_LOADED_BIT);
     menu_listentry_visible(list, LABEL_LOAD_STATE, moo.state & MOO_ROM_LOADED_BIT);

@@ -53,7 +53,7 @@ void card_load() {
         return;
     }
     else {
-        printf("Loaded card %s\n", sramfile);
+        printf("Loading card %s\n", sramfile);
     }
 
     if(mbc.has_ram) {
@@ -74,6 +74,5 @@ void card_load() {
 
 
     fclose(file);
-
-    printf("Card loaded\n");
 }
+

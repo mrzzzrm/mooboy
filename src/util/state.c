@@ -369,7 +369,7 @@ static void load_checkpoints() {
 }
 
 void state_save(const char *filename) {
-    printf("Saving %s\n", filename);
+    printf("Saving savestate '%s'\n", filename);
     f = fopen(filename, "wb");
     assert(f);
 
@@ -389,7 +389,7 @@ void state_save(const char *filename) {
 }
 
 int state_load(const char *filename) {
-    printf("Loading %s\n", filename);
+    printf("Loading savestate '%s'\n", filename);
     f = fopen(filename, "rb");
     assert(f);
 

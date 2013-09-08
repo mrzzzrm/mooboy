@@ -5,6 +5,7 @@
     - Check if all timing information is set correcly when games/states are loaded
     - Remove unnecessary calls to memset and SDL_FillRect 
     - Disable unneccesary printfs in release-mode
+    - Reimplement savestates with all new structure members
     
 [Game Bugs]
     - MrDriller: Blocks not shown
@@ -13,7 +14,8 @@
     - Alfred's Adventure: Messed up graphics
     - Alice in Wonderland: Messed up graphics
     - Donkeykong doesn't load
-    
+    - Zelda: Link's awakening: Inverted sprite -graphics (probably introduced by new cpu core)    
+
 
 [Menu]  
     - Implement reset game
