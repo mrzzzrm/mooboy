@@ -18,7 +18,8 @@
 
 #define SCALING_STRECHED 0
 #define SCALING_PROPORTIONAL 1
-#define SCALING_NONE 2
+#define SCALING_PROPORTIONAL_FULL 2
+#define SCALING_NONE 3
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
@@ -43,10 +44,11 @@ void sys_init(int argc, const char** argv) {
 
 
     sys.scalingmode = 0;
-    sys.num_scalingmodes = 3;
+    sys.num_scalingmodes = 4;
     sys.scalingmode_names = malloc(sizeof(*sys.scalingmode_names) * sys.num_scalingmodes);
     sys.scalingmode_names[SCALING_STRECHED] = strdup("Streched");
     sys.scalingmode_names[SCALING_PROPORTIONAL] = strdup("Proportional");
+    sys.scalingmode_names[SCALING_PROPORTIONAL_FULL] = strdup("Full Proportional");
     sys.scalingmode_names[SCALING_NONE] = strdup("None");
 
     audio_init();
@@ -104,6 +106,19 @@ SDL_Rect proportional_scaling_area() {
     return area;
 }
 
+SDL_Rect proportional_full_scaling_area() {
+    SDL_Rect area;
+    float fw, fh, f;
+    fw = SDL_GetVideoSurface()->w / 160.0f;
+    fh = SDL_GetVideoSurface()->h / 144.0f;
+    f = min(fw, fh);
+    area.w = f * 160;
+    area.h = f * 144;
+    area.x = SDL_GetVideoSurface()->w/2 - area.w/2;
+    area.y = SDL_GetVideoSurface()->h/2 - area.h/2;
+    return area;
+}
+
 SDL_Rect streched_scaling_area() {
     SDL_Rect area;
     area.x = 0;
@@ -121,6 +136,7 @@ static void render() {
     switch(sys.scalingmode) {
         case SCALING_NONE: area = none_scaling_area(); break;
         case SCALING_PROPORTIONAL: area = proportional_scaling_area(); break;
+        case SCALING_PROPORTIONAL_FULL: area = proportional_full_scaling_area(); break;
         case SCALING_STRECHED: area = streched_scaling_area(); break;
         default: moo_errorf("No valid scalingmode selected"); return;
     }
