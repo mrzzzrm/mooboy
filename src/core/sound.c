@@ -215,14 +215,10 @@ void sound_reset() {
     sound.so1_volume = 7;
     sound.so2_volume = 7;
     sound.last_timer_step = 0;
-    sound.next_sample = 0;
-    sound.next_sample_cc = 0;
     sound.sample = 0;
     sound.buf_start = 0;
     sound.buf_end = 0;
-    sound.last_timer_step = 0;
-    sound.next_sample_cc = 0;
-    sound.counter = NORMAL_CPU_FREQ;
+    sound.remainder = 0;
 
     memset(&sqw, 0x00, sizeof(sqw));
     memset(&env, 0x00, sizeof(env));
@@ -239,19 +235,14 @@ void sound_step(int nfcs) {
     sound.cc += nfcs;
     sound.tick_cc += nfcs;
     sound.tick_cc &= 0x3FFF;
+
     if(sound.cc >= sound.mix_threshold) {
         sound_mix();
 
         sound.cc -= sound.mix_threshold;
-        sound.mix_threshold = sound.counter / sound.freq;
-        sound.counter = NORMAL_CPU_FREQ + (sound.counter % sound.freq);
-        sound.next_sample++;
+        sound.mix_threshold = (NORMAL_CPU_FREQ + sound.remainder) / sound.freq;
+        sound.remainder += NORMAL_CPU_FREQ % sound.freq;
     }
-//    if(cpu.nfcc >= sound.next_sample_cc) {
-//        sound_mix();
-//        sound.next_sample++;
-//        sound.next_sample_cc = (NORMAL_CPU_FREQ*(uint64_t)sound.next_sample)/(uint64_t)sound.freq;
-//    }
 }
 
 // TODO: Handle userdefined on/off elsewhere, sound-off shouldn't use resources
@@ -278,9 +269,6 @@ void sound_mix() {
         samples[3] = noise_mix();
         buf[sound.buf_end*2 + 0] = (samples[0].l + samples[1].l + samples[2].l + samples[3].l)*sound.so1_volume*0x40;
         buf[sound.buf_end*2 + 1] = (samples[0].r + samples[1].r + samples[2].r + samples[3].r)*sound.so2_volume*0x40;
-//
-//        buf[sound.buf_end*2 + 0] = (samples[0].l)*sound.so1_volume*0x40;
-//        buf[sound.buf_end*2 + 1] = (samples[0].r)*sound.so2_volume*0x40;
     }
     sound.buf_end++;
     sound.buf_end %= sound.buf_size;

@@ -40,7 +40,6 @@ static void save(u32 val, u8 size) {
     for(b = 0; b < size; b++) {
         u8 byte = val & 0xFF;
         fwrite(&byte, 1, 1, f);
-        //printf(".");
         val >>= 8;
         bytes_handled++;
     }
@@ -51,7 +50,6 @@ static u32 load(u8 size) {
     int b;
     for(b = 0; b < size; b++) {
         assert(fread(&byte, 1, 1, f) == 1);
-       // printf(".", byte);
         re |= byte << (8*b);
         bytes_handled++;
     }
@@ -61,22 +59,19 @@ static u32 load(u8 size) {
 
 static void _set_checkpoint(int line) {
     assert(current_checkpoint < CHECKPOINTS);
-    //fprintf(stderr, "SET CHCEKPOINT %i@%i - %i bytes written", current_checkpoint, line, bytes_handled);
     S(checkpoints[current_checkpoint]);
-    //printf("\n");
     current_checkpoint++;
 }
 
 static void _assert_checkpoint(int line) {
-    //fprintf(stderr, "ASSERT CHCEKPOINT %i@%i - %i bytes read\n", current_checkpoint, line, bytes_handled);
     if(current_checkpoint >= CHECKPOINTS) {
-        fprintf(stderr,  "\nSavestate corrupt in line %i: too many checkpoints\n", line);
+        fprintf(stderr, "Savestate corrupt in line %i: too many checkpoints\n", line);
         fclose(f);
         assert(0);
     }
     R(byte);
     if(byte != checkpoints[current_checkpoint]) {
-        fprintf(stderr,  "\nSavestate corrupt in line %i: wrong byte\n", line);
+        fprintf(stderr, "Savestate corrupt in line %i: wrong byte\n", line);
         fclose(f);
         assert(0);
     }
@@ -370,6 +365,7 @@ static void load_checkpoints() {
 
 void state_save(const char *filename) {
     printf("Saving savestate '%s'\n", filename);
+
     f = fopen(filename, "wb");
     assert(f);
 
@@ -390,6 +386,7 @@ void state_save(const char *filename) {
 
 int state_load(const char *filename) {
     printf("Loading savestate '%s'\n", filename);
+
     f = fopen(filename, "rb");
     assert(f);
 

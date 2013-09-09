@@ -18,13 +18,11 @@ typedef struct {
     u8 so2_volume;
 
     u8 last_timer_step;
-    u32 next_sample;
-    u32 next_sample_cc;
 
     int mix_threshold;
     int cc;
     int tick_cc;
-    int counter;
+    int remainder;
 } sound_t;
 
 typedef struct {

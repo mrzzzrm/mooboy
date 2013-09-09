@@ -17,7 +17,7 @@ void card_save() {
     }
 
     sprintf(sramfile, "%s.card",  sys.rompath);
-    file = fopen(sramfile, "w");
+    file = fopen(sramfile, "wb");
     assert(file);
 
     if(mbc.has_ram) {
@@ -47,14 +47,14 @@ void card_load() {
     }
 
     sprintf(sramfile, "%s.card",  sys.rompath);
-    file = fopen(sramfile, "r");
+    file = fopen(sramfile, "rb");
+
     if(file == NULL) {
-        printf("No SRAM-file found\n");
+        printf("No .card-file found\n");
         return;
     }
-    else {
-        printf("Loading card %s\n", sramfile);
-    }
+
+    printf("Loading card %s\n", sramfile);
 
     if(mbc.has_ram) {
         read = fread(card.srambanks, 1, card.sramsize * sizeof(*card.srambanks), file);
@@ -71,7 +71,6 @@ void card_load() {
 
     assert(fread(&dummy, 1, 1, file) == 0);
     assert(feof(file));
-
 
     fclose(file);
 }
