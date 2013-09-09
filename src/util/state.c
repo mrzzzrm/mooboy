@@ -81,20 +81,26 @@ static void _assert_checkpoint(int line) {
 void save_cpu() {
     S(A); S(F); S(B); S(C); S(D); S(E); S(HL);
     S(SP); S(PC);
+    S(cpu.op); S(cpu.cb);
     S(cpu.ime); S(cpu.irq); S(cpu.ie);
+    S(cpu.remainder);
     S(cpu.freq);
     S(cpu.freq_switch);
     S(cpu.halted);
+
     set_checkpoint();
 }
 
 static void load_cpu() {
     R(A); R(F); R(B); R(C); R(D); R(E); R(HL);
     R(SP); R(PC);
+    R(cpu.op); R(cpu.cb);
     R(cpu.ime); R(cpu.irq); R(cpu.ie);
+    R(cpu.remainder);
     R(cpu.freq);
     R(cpu.freq_switch);
     R(cpu.halted);
+
     assert_checkpoint();
 }
 
@@ -229,12 +235,9 @@ static void save_mem() {
     set_checkpoint();
     S(card.sramsize);
     set_checkpoint();
+
     for(b = 0; b < card.sramsize; b++) {
         SV(card.srambanks[b]);
-    }
-    set_checkpoint();
-    for(b = 0; b < card.romsize; b++) {
-        SV(card.rombanks[b]);
     }
     set_checkpoint();
 
@@ -266,11 +269,6 @@ static void load_mem() {
         RV(card.srambanks[b]);
     }
     assert_checkpoint();
-    for(b = 0; b < card.romsize; b++) {
-        RV(card.rombanks[b]);
-    }
-    assert_checkpoint();
-
 
     for(b = 0; b < 8; b++) {
         RV(ram.rambanks[b]);
@@ -334,8 +332,6 @@ static void save_sys() {
 
 static void load_sys() {
     R(sys.ticks);
-    sys.ticks_diff = sys.ticks - SDL_GetTicks();
-    sys_pause();
     assert_checkpoint();
 }
 

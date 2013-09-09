@@ -101,7 +101,6 @@ static sample_t sqw_mix(sqw_t *ch) {
     }
 
     if(ch->freq == 2048) {
-   //     printf("?");
         return r;
     }
     wavelen = sound.freq / (131072 / (2048 - ch->freq));

@@ -81,7 +81,7 @@ void sys_pause() {
 }
 
 void sys_begin() {
-    sys.ticks_diff = -(long long)SDL_GetTicks();
+    sys.ticks_diff = sys.ticks - (long long)SDL_GetTicks();
     sys_play_audio(sys.sound_on);
 }
 

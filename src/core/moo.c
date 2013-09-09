@@ -114,11 +114,11 @@ void moo_step_hw(int mcs) {
         return;
     }
 
-    mcs += cpu.mcs_remainder;
+    mcs += cpu.remainder;
 
     if(cpu.freq == DOUBLE_CPU_FREQ) {
         nfcs = mcs / 2;
-        cpu.mcs_remainder = mcs % 2;
+        cpu.remainder = mcs % 2;
     }
     else {
         nfcs = mcs;

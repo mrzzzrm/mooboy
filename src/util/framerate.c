@@ -43,7 +43,8 @@ int framerate_skip() {
     framerate.framecount++;
     should_framecount = ((sys.ticks - framerate.first_frame_ticks) * 60) / 1000;
 
-    if(should_framecount > framerate.framecount || framerate.frameskip >= 0) {
+
+    if(should_framecount > framerate.framecount+1 || framerate.frameskip >= 0) {
         framerate.framecount = should_framecount;
         framerate.skipped++;
         performance.skipped++;

@@ -20,7 +20,7 @@ typedef struct {
 
     u8 ime, irq, ie;
 
-    int mcs_remainder;
+    int remainder;
 
     int freq;
     int freq_switch;
