@@ -243,7 +243,7 @@ void lcd_step(int nfcs) {
         return;
     }
 
-    lcd.cc += nfcs;//cpu.step_nf_cycles;
+    lcd.cc += nfcs;
     lcd.cc %= DUR_FULL_REFRESH;
 
     old_ly = lcd.ly;

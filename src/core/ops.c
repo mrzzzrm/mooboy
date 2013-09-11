@@ -519,6 +519,7 @@ static inline int cb() {
 }
 
 int op_exec() {
+
     switch(cpu.op) {
         case 0x00: break;
         case 0x01: BC = fetch_word(); break;

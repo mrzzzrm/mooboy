@@ -24,8 +24,8 @@
 moo_t moo;
 
 void moo_init() {
-    moo_set_hw(CGB_HW);
-    moo.mode = CGB_MODE;
+    moo_set_hw(DMG_HW);
+    moo.mode = NON_CGB_MODE;
 
     sound_init();
     //serial_init();
@@ -39,7 +39,6 @@ void moo_close() {
 }
 
 void moo_reset() {
-    printf("Reset\n");
     sys_reset();
     mem_reset();
     cpu_reset();
@@ -52,19 +51,16 @@ void moo_reset() {
 }
 
 void moo_begin() {
-    printf("Begin\n");
     moo.state |= MOO_ROM_RUNNING_BIT;
     sys_begin();
 }
 
 void moo_continue() {
-    printf("Continue\n");
     moo.state |= MOO_ROM_RUNNING_BIT;
     sys_continue();
 }
 
 void moo_pause() {
-    printf("Pause\n");
     moo.state ^= MOO_ROM_RUNNING_BIT;
     sys_pause();
 }
