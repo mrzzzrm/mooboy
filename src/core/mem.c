@@ -17,7 +17,7 @@ static u8 read_locked_mem(u16 adr) {
 }
 
 static void write_locked_mem(u16 adr, u8 val) {
-    printf("%.4X %.2X %.2X | Denied write of %.2X to locked memory location %.4X\n", PC, cpu.op, cpu.cb, val, adr);
+//    printf("%.4X %.2X %.2X | Denied write of %.2X to locked memory location %.4X\n", PC, cpu.op, cpu.cb, val, adr);
 }
 
 void mem_reset() {
@@ -103,10 +103,10 @@ void mem_write_byte(u16 adr, u8 val) {
             mbc_lower_write(adr, val);
         return;
         case 0x8: case 0x9:
-            //if((lcd.stat & 0x03) != 0x03 || !(lcd.c & 0x80))
+            if((lcd.stat & 0x03) != 0x03 || !(lcd.c & 0x80))
                 ram.vrambank[adr - 0x8000] = val;
-//            else
-//                write_locked_mem(adr, val);
+            else
+                write_locked_mem(adr, val);
         return;
         case 0xA: case 0xB:
             mbc_upper_write(adr, val);
@@ -142,7 +142,6 @@ void mem_write_byte(u16 adr, u8 val) {
             }
             else {
                 cpu.ie = val & 0x1F;
-//                printf("IE %.2X\n", cpu.ie);
             }
         return;
     }

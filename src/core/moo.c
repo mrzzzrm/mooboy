@@ -23,6 +23,12 @@
 
 moo_t moo;
 
+static void store_rompath() {
+    FILE *f = fopen("lastrom.txt", "w");
+    fwrite(sys.rompath, 1, strlen(sys.rompath), f);
+    fclose(f);
+}
+
 void moo_init() {
     moo_set_hw(CGB_HW);
     moo.mode = NON_CGB_MODE;
@@ -86,6 +92,7 @@ void moo_load_rom(const char *path) {
 
     if(moo.state & MOO_ROM_LOADED_BIT) {
         moo_load_rom_config();
+        store_rompath();
     }
 }
 

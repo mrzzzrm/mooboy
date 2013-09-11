@@ -42,6 +42,7 @@ typedef struct {
     u16 freq;
     u8 duty;
     u8 volume;
+    int cc;
     counter_t counter;
 } sqw_t;
 
@@ -54,6 +55,7 @@ typedef struct {
 
 typedef struct {
     u8 on;
+    int cc;
     u8 l, r;
     u16 freq;
     u8 shift;
@@ -63,6 +65,7 @@ typedef struct {
 
 typedef struct {
     u8 on;
+    int cc;
     u8 l, r;
     u8 volume;
     u8 shift;

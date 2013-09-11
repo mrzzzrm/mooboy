@@ -39,11 +39,12 @@ static void handout_buf(void *_unused, Uint8 *stream, int length) {
         return;
     }
 
-    sys_lock_audiobuf();
-
     while((available_samples = get_available_samples()) < requested_samples) {
+        printf("Filling up %i\n",  get_available_samples());
         sound_mix();
     }
+
+    sys_lock_audiobuf();
 
     if(sound.buf_start > sound.buf_end) {
         served_samples = sound.buf_size - sound.buf_start;

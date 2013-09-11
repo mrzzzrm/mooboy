@@ -90,8 +90,10 @@ static void timer_step() {
     }
 }
 
+
 static sample_t sqw_mix(sqw_t *ch) {
     sample_t r = {0,0};
+    int wavefreq;
     int wavelen;
     int wavesam;
     u16 amp = 0;
@@ -100,26 +102,25 @@ static sample_t sqw_mix(sqw_t *ch) {
         return r;
     }
 
-    if(ch->freq == 2048) {
-        return r;
-    }
-    wavelen = sound.freq / (131072 / (2048 - ch->freq));
-    if(wavelen == 0) {
-        return r;
-    }
-    wavesam = sound.sample % wavelen;
+    wavefreq = 131072 / (2048 - ch->freq);
+    wavelen = NORMAL_CPU_FREQ / wavefreq;
 
     switch(ch->duty) {
-        case 0x00: amp = wavesam <= wavelen>>3 ? 0x0 : 0x1; break;
-        case 0x01: amp = wavesam <= wavelen>>2 ? 0x0 : 0x1; break;
-        case 0x02: amp = wavesam <= wavelen>>1 ? 0x0 : 0x1; break;
-        case 0x03: amp = wavesam <= (wavelen>>2)*3 ? 0x0 : 0x1; break;
+        case 0x00: amp = ch->cc <= wavelen>>3 ? 0x0 : 0x1; break;
+        case 0x01: amp = ch->cc <= wavelen>>2 ? 0x0 : 0x1; break;
+        case 0x02: amp = ch->cc <= wavelen>>1 ? 0x0 : 0x1; break;
+        case 0x03: amp = ch->cc <= (wavelen>>2)*3 ? 0x0 : 0x1; break;
     }
 
     amp *= ch->volume;
 
     r.l = ch->l ? amp : 0;
     r.r = ch->r ? amp : 0;
+
+    if(ch->cc >= wavelen) {
+        ch->cc -= wavelen;
+    }
+
     return r;
 }
 
@@ -134,16 +135,9 @@ static sample_t wave_mix() {
         return r;
     }
 
-    assert(wave.freq != 2048);
-    wavelen = sound.freq / (65536/(2048 - wave.freq));
-    if(wavelen == 0) {
-        return r;
-    }
-    else {
-        wavesam = (sound.sample % wavelen);
-        realsam = (wavesam*0x20)/wavelen;
-    }
-
+    wavelen = (NORMAL_CPU_FREQ * (2048 - wave.freq))/ 65536;
+    wavesam = wave.cc % wavelen;
+    realsam = (wavesam*0x20)/wavelen;
 
     if(realsam%2 == 0) {
         amp = wave.data[realsam>>1] >> 4;
@@ -155,6 +149,9 @@ static sample_t wave_mix() {
 
     r.l = wave.l ? amp : 0;
     r.r = wave.r ? amp : 0;
+
+    wave.cc %= wavelen;
+
     return r;
 }
 
@@ -235,12 +232,18 @@ void sound_step(int nfcs) {
     sound.tick_cc += nfcs;
     sound.tick_cc &= 0x3FFF;
 
+    sqw[0].cc += nfcs;
+    sqw[1].cc += nfcs;
+    wave.cc += nfcs;
+    noise.cc += nfcs;
+
     if(sound.cc >= sound.mix_threshold) {
         sound_mix();
 
         sound.cc -= sound.mix_threshold;
         sound.mix_threshold = (NORMAL_CPU_FREQ + sound.remainder) / sound.freq;
-        sound.remainder += NORMAL_CPU_FREQ % sound.freq;
+        sound.remainder = (NORMAL_CPU_FREQ + sound.remainder) % sound.freq;
+  //  printf("%i\n", sound.mix_threshold);
     }
 }
 
@@ -257,7 +260,7 @@ void sound_mix() {
     }
     else {
         if((sound.buf_end + 1) % sound.buf_size == sound.buf_start) {
-            //printf("WARNING: Sound-Buffer overrun!\n");
+            printf("WARNING: Sound-Buffer overrun!\n");
             sound.buf_start = 0;
             sound.buf_end = 0;
         }
@@ -268,6 +271,8 @@ void sound_mix() {
         samples[3] = noise_mix();
         buf[sound.buf_end*2 + 0] = (samples[0].l + samples[1].l + samples[2].l + samples[3].l)*sound.so1_volume*0x40;
         buf[sound.buf_end*2 + 1] = (samples[0].r + samples[1].r + samples[2].r + samples[3].r)*sound.so2_volume*0x40;
+        buf[sound.buf_end*2 + 0] = (samples[2].l /*+ samples[1].l + samples[2].l + samples[3].l*/)*sound.so1_volume*0x40;
+        buf[sound.buf_end*2 + 1] = (samples[2].r /*+ samples[1].r + samples[2].r + samples[3].r*/)*sound.so2_volume*0x40;
     }
     sound.buf_end++;
     sound.buf_end %= sound.buf_size;
