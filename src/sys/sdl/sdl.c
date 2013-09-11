@@ -31,7 +31,7 @@ void sys_init(int argc, const char** argv) {
     sys.sound_on = 1;
     sys.sound_freq = 22050;
     sys.quantum_length = 1000;
-    sys.bits_per_pixel = 16;
+    sys.bits_per_pixel = 15;
     moo.state = MOO_RUNNING_BIT;
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);

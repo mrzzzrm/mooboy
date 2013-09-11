@@ -24,7 +24,7 @@
 moo_t moo;
 
 void moo_init() {
-    moo_set_hw(CGB_HW);
+    moo_set_hw(DMG_HW);
     moo.mode = CGB_MODE;
 
     sound_init();
@@ -39,7 +39,6 @@ void moo_close() {
 }
 
 void moo_reset() {
-    printf("Reset\n");
     sys_reset();
     mem_reset();
     cpu_reset();
