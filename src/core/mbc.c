@@ -1,6 +1,7 @@
 #include "mbc.h"
 #include <assert.h>
 #include <stdio.h>
+#include "cpu.h"
 #include "rtc.h"
 #include "mem.h"
 
@@ -85,7 +86,7 @@ static void mbc3_lower_write(u16 adr, u8 val) {
                     mbc3.mode = MBC3_MAP_RTC;
                 break;
                 default:
-                    printf("Unknown write %.2X to %.4X\n", val, adr);
+                    printf("%.4X %.2X %.2X | Unknown write %.2X to %.4X\n", cpu.pc.w, cpu.op, cpu.cb, val, adr);
             }
         break;
         case 6: case 7: // Latch Clock Data (First write 0x00, then 0x01)

@@ -24,7 +24,7 @@
 moo_t moo;
 
 void moo_init() {
-    moo_set_hw(DMG_HW);
+    moo_set_hw(CGB_HW);
     moo.mode = NON_CGB_MODE;
 
     sound_init();
