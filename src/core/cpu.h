@@ -25,6 +25,9 @@ typedef struct {
     int freq;
     int freq_switch;
     int halted;
+
+    int dbg_mcs;
+    int dbg_nfcs;
 } cpu_t;
 
 

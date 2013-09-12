@@ -5,7 +5,6 @@
 
 typedef struct {
     u32 freq;
-    u32 sample;
 
     u16 buf_size;
     u16 buf_start;

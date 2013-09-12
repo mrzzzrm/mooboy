@@ -117,11 +117,9 @@ void moo_step_hw(int mcs) {
         return;
     }
 
-    mcs += cpu.remainder;
-
     if(cpu.freq == DOUBLE_CPU_FREQ) {
-        nfcs = mcs / 2;
-        cpu.remainder = mcs % 2;
+        nfcs = (mcs + cpu.remainder) / 2;
+        cpu.remainder = (mcs + cpu.remainder) % 2;
     }
     else {
         nfcs = mcs;
@@ -132,6 +130,9 @@ void moo_step_hw(int mcs) {
     rtc_step(nfcs);
     sound_step(nfcs);
     //serial_step();
+
+    cpu.dbg_mcs += mcs;
+    cpu.dbg_nfcs += nfcs;
 
     sys.invoke_cc += mcs;
 }

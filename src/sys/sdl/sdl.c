@@ -29,7 +29,7 @@ void sys_init(int argc, const char** argv) {
     memset(&sys, 0x00, sizeof(sys));
 
     sys.sound_on = 1;
-    sys.sound_freq = 44100;
+    sys.sound_freq = 22050;
     sys.quantum_length = 1000;
     sys.bits_per_pixel = 16;
     moo.state = MOO_RUNNING_BIT;
@@ -171,6 +171,7 @@ void sys_handle_events(void (*input_handle)(int, int)) {
 
 void sys_invoke() {
     sys.ticks = SDL_GetTicks() + sys.ticks_diff;
+
     if(sys.fb_ready) {
         if(!framerate_skip()) {
             render();
@@ -179,6 +180,7 @@ void sys_invoke() {
         sys.fb_ready = 0;
         performance.frames++;
     }
+
     framerate_curb();
 
     sys_handle_events(input_event);

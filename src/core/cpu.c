@@ -37,37 +37,13 @@ void cpu_reset() {
     cpu.freq = NORMAL_CPU_FREQ;
     cpu.halted = 0;
     cpu.freq_switch = 0x00;
+
+    cpu.dbg_mcs = 0;
+    cpu.dbg_nfcs = 0;
 }
 
-static u8 old_vrambanks[2][0x2000] = {{0}};
-static u8 old_d, old_e;
-
-static void debug_screwed_bg() {
-//    if(memcmp(old_vrambanks, ram.vrambanks, sizeof(old_vrambanks)) != 0) {
-//        int a, b;
-//        for(b = 0; b < 2; b++) {
-//            for(a = 0; a < sizeof(old_vrambanks)/2; a++) {
-//                if(old_vrambanks[b][a] != ram.vrambanks[b][a]) {
-//                    printf("%.4X %.2X | %i:%.2X %.2X => %.2X\n", cpu.pc.w, cpu.op, b, a, old_vrambanks[b][a], ram.vrambanks[b][a]);
-//                }
-//            }
-//        }
-//    }
-//    if(old_d != D) {
-//        printf("%.4X %.2X | D %.2X => %.2X\n", cpu.pc.w, cpu.op, old_d, D);
-//    }
-//    if(old_e!= E) {
-//        printf("%.4X %.2X | E %.2X => %.2X\n", cpu.pc.w, cpu.op, old_e, E);
-//    }
-//
-//    memcpy(old_vrambanks, ram.vrambanks, sizeof(old_vrambanks));
-//    old_d = D;
-//    old_e = E;
-}
 
 u8 cpu_step() {
-    debug_screwed_bg();
-
     ints_handle();
     cpu.op = mem_read_byte(PC++);
     return op_exec();
