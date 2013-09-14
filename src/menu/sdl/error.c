@@ -48,6 +48,5 @@ void menu_error() {
     }
 
     menu_free_word_string(msg_string);
-    moo_error_clear();
 }
 

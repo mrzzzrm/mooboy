@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "cpu.h"
 #include "rtc.h"
+#include "moo.h"
 #include "mem.h"
 
 #define MBC3_MAP_RAM 0x00
@@ -63,7 +64,7 @@ static void mbc2_lower_write(u16 adr, u8 val) {
             }
         break;
         default:
-            assert(0);
+            moo_errorf("Illegal write of %.2X to %.4X", val, adr);
     }
 }
 
@@ -85,8 +86,10 @@ static void mbc3_lower_write(u16 adr, u8 val) {
                     rtc_map_register(val & 0x0F);
                     mbc3.mode = MBC3_MAP_RTC;
                 break;
-                default:
-                    printf("%.4X %.2X %.2X | Unknown write %.2X to %.4X\n", cpu.pc.w, cpu.op, cpu.cb, val, adr);
+                default:;
+#ifdef DEBUG
+                    printf("Unknown write %.2X to %.4X\n", val, adr);
+#endif
             }
         break;
         case 6: case 7: // Latch Clock Data (First write 0x00, then 0x01)
@@ -114,8 +117,10 @@ static void mbc5_lower_write(u16 adr, u8 val) {
         break;
             mbc5.rombank &= 0xFEFF;
             mbc5.rombank |= ((u16)val&0x01)<<8;
+
             if(mbc5.rombank >= card.romsize) {
-                assert(0);
+                moo_errorf("Setting ROM-bank out of range");
+                mbc5.rombank = 0;
             }
 
             mbc.rombank = card.rombanks[mbc5.rombank];
@@ -126,8 +131,10 @@ static void mbc5_lower_write(u16 adr, u8 val) {
             }
             mbc.srambank = card.srambanks[val & 0x01];
         break;
-        default:
+        default:;
+#ifdef DEBUG
             printf("Suspicious write %.2X to %.4X\n", val, adr);
+#endif
     }
     assert(mbc5.rombank < 0x1E0);
 }
@@ -144,12 +151,14 @@ void mbc_set_type(u8 type) {
         default:
             assert(0);
     }
-    fprintf(stderr, "MBC-type is %i\n", (int)type);
+    printf("MBC-type is %i\n", (int)type);
 }
 
 u8 mbc_upper_read(u16 adr) {
     if(!mbc.ram_selected) {
+#ifdef DEBUG
         printf("Denied RAM access!\n");
+#endif
         return 0x00;
     }
 
@@ -168,7 +177,9 @@ void mbc_lower_write(u16 adr, u8 val) {
 
 void mbc_upper_write(u16 adr, u8 val) {
     if(!mbc.ram_selected) {
+#ifdef DEBUG
         printf("Denied RAM access!\n");
+#endif
         return;
     }
 

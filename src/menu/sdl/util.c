@@ -1,4 +1,5 @@
 #include "util.h"
+#include "core/moo.h"
 #include <SDL/SDL_ttf.h>
 #include "sys/sdl/input.h"
 #include <stdlib.h>
@@ -57,11 +58,15 @@ static void list_down(menu_list_t *list) {
 
 void menu_util_init() {
     if(!TTF_WasInit()) {
-        assert(!TTF_Init());
+        if(TTF_Init()) {
+            moo_fatalf("Couldn't init SDL_TTF");
+        }
 
         int font_size = SDL_GetVideoSurface()->h / 15;
         font = TTF_OpenFont("data/Xolonium.ttf", font_size);
-        assert(font != NULL);
+        if(font == NULL) {
+            moo_fatalf("Couldn't open font");
+        }
     }
 }
 

@@ -12,12 +12,16 @@ ram_t ram;
 card_t card;
 
 static u8 read_locked_mem(u16 adr) {
+#ifdef DEBUG
     printf("Denied read from locked memory location %.4X\n", adr);
+#endif
     return 0xFF;
 }
 
 static void write_locked_mem(u16 adr, u8 val) {
-//    printf("%.4X %.2X %.2X | Denied write of %.2X to locked memory location %.4X\n", PC, cpu.op, cpu.cb, val, adr);
+#ifdef DEBUG
+    printf("Denied write of %.2X to locked memory location %.4X\n", val, adr);
+#endif
 }
 
 void mem_reset() {
@@ -83,9 +87,6 @@ u8 mem_read_byte(u16 adr) {
                 return cpu.ie;
             }
         break;
-
-        default:
-            assert(0);
     }
 
     assert(0);

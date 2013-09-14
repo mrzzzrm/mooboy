@@ -96,8 +96,12 @@ static void parse() {
 }
 
 void config_save(const char *path) {
+    printf("Saving config to '%s'\n", path);
+
     file = fopen(path, "w");
-    assert(file != NULL);
+    if(file == NULL) {
+        moo_errorf("Couln't open file");
+    }
 
     save_int("sound_on", sys.sound_on);
     save_int("scalingmode", sys.scalingmode);
@@ -106,10 +110,13 @@ void config_save(const char *path) {
 }
 
 int config_load(const char *path) {
+
     file = fopen(path, "r");
     if(file == NULL) {
         return 0;
     }
+
+    printf("Loading config from '%s'\n", path);
 
     parse();
 

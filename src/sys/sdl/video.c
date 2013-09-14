@@ -7,12 +7,12 @@
 
 
 static u8 buf[32768];
-//static u16 fb_color[160][144];
 static int line_length;
 static int line_byte_offset;
 static int bytes_per_pixel;
 static int bytes_per_line;
 static SDL_Rect area;
+static int rshift, gshift, bshift;
 
 static u16 dmg_palette[4] = {
     0x1F<<10 | 0x1F << 5 | 0x1F << 0,
@@ -27,12 +27,11 @@ sys_t sys;
 static inline u16 cgb_to_rgb(u16 cgb_color) {
     u16 r, g, b;
 
-    r = (cgb_color & (0x001F << 10));
-    g = (cgb_color & (0x001F << 5));
-    b = (cgb_color & 0x001F);
+    r = (cgb_color >> 0) & 0x1F;
+    g = (cgb_color >> 5) & 0x1F;
+    b = (cgb_color >> 10) & 0x1F;
 
-    //return (b<<11) | (g << 1) | (r>>10);
-    return (b<<10) | (g << 0) | (r>>10);
+    return (r << rshift)| (g << gshift) | (b << bshift);
 }
 
 static inline u16 dmg_to_rgb(u16 dmg_color) {
@@ -146,7 +145,6 @@ static void area_render(SDL_Surface *surface, SDL_Rect _area) {
     line_length = area.w;
     line_byte_offset = area.x * bytes_per_pixel;
 
-    memset(buf, 0x00, sizeof(buf));
     for(aline = 0; aline < area.h; fbline++) {
         alines_to_fill = alines_in_fbline(aline, area.h, fbline);
         if(alines_to_fill > 0) {
@@ -167,6 +165,17 @@ static void area_render(SDL_Surface *surface, SDL_Rect _area) {
 
 void video_init() {
 
+}
+
+void video_switch_display_mode() {
+    SDL_Surface *screen = SDL_GetVideoSurface();
+
+    rshift = screen->format->Rshift + 3 - screen->format->Rloss;
+    gshift = screen->format->Gshift + 3 - screen->format->Gloss;
+    bshift = screen->format->Bshift + 3 - screen->format->Bloss;
+
+    memset(buf, 0x00, sizeof(buf));
+    SDL_FillRect(SDL_GetVideoSurface(), NULL, 0);
 }
 
 void video_render(SDL_Surface *surface, SDL_Rect area) {

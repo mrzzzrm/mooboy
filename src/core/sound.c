@@ -267,7 +267,9 @@ void sound_mix() {
     }
     else {
         if((sound.buf_end + 1) % sound.buf_size == sound.buf_start) {
+#ifdef DEBUG
             printf("WARNING: Sound-Buffer overrun!\n");
+#endif
             sound.buf_start = 0;
             sound.buf_end = 0;
         }
@@ -478,8 +480,10 @@ u8 sound_read(u8 sadr) {
             return wave.data[sadr - 0x30];
         break;
 
-        default:
+        default:;
+#ifdef DEBUG
             printf("%.4X: Unhandled sound read @ %.2X\n", PC-1, sadr);
+#endif
     }
 
     return 0;

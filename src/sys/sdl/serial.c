@@ -37,22 +37,22 @@ static msgstream_t instream;
 
 
 static u8 stream_pop(msgstream_t *stream) {
-    assert(stream->first != NULL);
-
-    msg_t *msg = stream->first;
-    u8 data = msg->data;
-
-    if(msg->next != NULL) {
-        msg->next->prev = NULL;
-    }
-    else {
-        stream->last = NULL;
-    }
-    stream->first = msg->next;
-
-    free(msg);
-
-    return data;
+//    assert(stream->first != NULL);
+//
+//    msg_t *msg = stream->first;
+//    u8 data = msg->data;
+//
+//    if(msg->next != NULL) {
+//        msg->next->prev = NULL;
+//    }
+//    else {
+//        stream->last = NULL;
+//    }
+//    stream->first = msg->next;
+//
+//    free(msg);
+//
+//    return data;
 }
 
 static void stream_push(msgstream_t *stream, u8 data) {
@@ -96,40 +96,40 @@ static int stream_empty(msgstream_t *stream) {
 //}
 
 static void parse_msgs(u8 *buf, ssize_t size) {
-    int c;
-
-    for(c = 0; c < size; c++) {
-        switch(buf[c]) {
-            case MSG_INTERNAL_PERIOD:
-                serial.external_period = ntohl(*((u32*)&buf[c+1]));
-                c += 4;
-                //printf("Net: Received external_period: %i\n", serial.external_period);
-            break;
-            case MSG_DATA:
-                stream_push(&instream, buf[c+1]);
-                c++;
-                //printf("Net: Received data: %.2X\n", buf[c]);
-            break;
-            default:
-                printf("No such msg-type %.2X\n", buf[c]);
-        }
-    }
+//    int c;
+//
+//    for(c = 0; c < size; c++) {
+//        switch(buf[c]) {
+//            case MSG_INTERNAL_PERIOD:
+//                serial.external_period = ntohl(*((u32*)&buf[c+1]));
+//                c += 4;
+//                //printf("Net: Received external_period: %i\n", serial.external_period);
+//            break;
+//            case MSG_DATA:
+//                stream_push(&instream, buf[c+1]);
+//                c++;
+//                //printf("Net: Received data: %.2X\n", buf[c]);
+//            break;
+//            default:
+//                printf("No such msg-type %.2X\n", buf[c]);
+//        }
+//    }
 }
 
 static void receive_msgs() {
-    u8 buf[1024];
-    ssize_t received;
-
-    received = recv(s, buf, sizeof(buf), 0);
-    if(received < 0) {
-        return;
-    }
-    if(received > sizeof(buf)) {
-        //printf("Net: Input buffer overflow %i > %i\n", received, sizeof(buf));
-        assert(0);
-    }
-
-    parse_msgs(buf, received);
+//    u8 buf[1024];
+//    ssize_t received;
+//
+//    received = recv(s, buf, sizeof(buf), 0);
+//    if(received < 0) {
+//        return;
+//    }
+//    if(received > sizeof(buf)) {
+//        //printf("Net: Input buffer overflow %i > %i\n", received, sizeof(buf));
+//        assert(0);
+//    }
+//
+//    parse_msgs(buf, received);
 }
 
 void sys_serial_init() {
@@ -141,23 +141,23 @@ void sys_serial_init() {
 }
 
 void sys_serial_connect() {
-    struct sockaddr_in addr;
-
-    s = socket(AF_INET, SOCK_STREAM, 0);
-    assert(s >= 0);
-
-
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(55876);
-    inet_aton ("127.0.0.1", &addr.sin_addr);
-    assert(connect(s, (struct sockaddr *)&addr, sizeof(addr)) == 0);
-
-    int flags = fcntl(s, F_GETFL, 0);
-    assert(flags != -1);
-    fcntl(s, F_SETFL, flags | O_NONBLOCK);
-
-    printf("Client ready!\n");
-    sys_serial_update_internal_period();
+//    struct sockaddr_in addr;
+//
+//    s = socket(AF_INET, SOCK_STREAM, 0);
+//    assert(s >= 0);
+//
+//
+//    addr.sin_family = AF_INET;
+//    addr.sin_port = htons(55876);
+//    inet_aton ("127.0.0.1", &addr.sin_addr);
+//    assert(connect(s, (struct sockaddr *)&addr, sizeof(addr)) == 0);
+//
+//    int flags = fcntl(s, F_GETFL, 0);
+//    assert(flags != -1);
+//    fcntl(s, F_SETFL, flags | O_NONBLOCK);
+//
+//    printf("Client ready!\n");
+//    sys_serial_update_internal_period();
 }
 
 void sys_serial_step() {
@@ -180,17 +180,17 @@ void sys_serial_out_bit(int bit) {
 }
 
 int sys_serial_in_bit() {
-    if(in_byte_shifts == 8) {
-        in_byte_shifts = 0;
-        in_byte = stream_pop(&instream);
-        printf(">> %.2X [%i %i]\n", in_byte, SDL_GetTicks() % 1000, serial.sc & 0x01);
-    }
-
-    int bit = in_byte & 0x80 ? 1 : 0;
-    in_byte <<= 1;
-    in_byte_shifts++;
-
-    return bit;
+//    if(in_byte_shifts == 8) {
+//        in_byte_shifts = 0;
+//        in_byte = stream_pop(&instream);
+//        printf(">> %.2X [%i %i]\n", in_byte, SDL_GetTicks() % 1000, serial.sc & 0x01);
+//    }
+//
+//    int bit = in_byte & 0x80 ? 1 : 0;
+//    in_byte <<= 1;
+//    in_byte_shifts++;
+//
+//    return bit;
 }
 
 void sys_serial_update_internal_period() {

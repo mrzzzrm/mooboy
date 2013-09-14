@@ -31,7 +31,7 @@ void sys_init(int argc, const char** argv) {
     sys.sound_on = 1;
     sys.sound_freq = 22050;
     sys.quantum_length = 1000;
-    sys.bits_per_pixel = 15;
+    sys.bits_per_pixel = 16;
     moo.state = MOO_RUNNING_BIT;
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
@@ -79,16 +79,19 @@ void sys_close() {
 void sys_pause() {
     sys_play_audio(0);
     sys.pause_start = SDL_GetTicks();
+    video_switch_display_mode();
 }
 
 void sys_begin() {
     sys.ticks_diff = sys.ticks - (long long)SDL_GetTicks();
     sys_play_audio(sys.sound_on);
+    video_switch_display_mode();
 }
 
 void sys_continue() {
     sys.ticks_diff -= (long long)SDL_GetTicks() - sys.pause_start;
     sys_play_audio(sys.sound_on);
+    video_switch_display_mode();
 }
 
 SDL_Rect none_scaling_area() {
@@ -137,8 +140,6 @@ SDL_Rect streched_scaling_area() {
 
 static void render() {
     SDL_Rect area;
-
-    SDL_FillRect(SDL_GetVideoSurface(), NULL, 0);
 
     switch(sys.scalingmode) {
         case SCALING_NONE: area = none_scaling_area(); break;

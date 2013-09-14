@@ -5,6 +5,7 @@
 #include "core/mbc.h"
 #include "core/mem.h"
 #include "core/rtc.h"
+#include "core/moo.h"
 
 
 void card_save() {
@@ -17,20 +18,27 @@ void card_save() {
     }
 
     sprintf(sramfile, "%s.card",  sys.rompath);
+
+    printf("Saving card '%s'\n", sramfile);
+
     file = fopen(sramfile, "wb");
-    assert(file);
+    if(file == NULL) {
+        moo_errorf("Couldn't save card #1");
+    }
 
     if(mbc.has_ram) {
         written = fwrite(card.srambanks, 1, card.sramsize * sizeof(*card.srambanks), file);
-        assert(written == card.sramsize * sizeof(*card.srambanks));
+        if(written != card.sramsize * sizeof(*card.srambanks)) {
+            moo_errorf("Couldn't save card #2");
+        }
     }
 
     if(mbc.has_rtc) {
-        written = fwrite(rtc.latched,     1, sizeof(rtc.latched), file);    assert (written == sizeof(rtc.latched));
-        written = fwrite(rtc.ticking,     1, sizeof(rtc.ticking), file);    assert (written == sizeof(rtc.ticking));
-        written = fwrite(&rtc.mapped,     1, sizeof(rtc.mapped), file);     assert (written == sizeof(rtc.mapped));
-        written = fwrite(&rtc.prelatched, 1, sizeof(rtc.prelatched), file); assert (written == sizeof(rtc.prelatched));
-        written = fwrite(&rtc.cc,         1, sizeof(rtc.cc), file);         assert (written == sizeof(rtc.cc));
+        written = fwrite(rtc.latched,     1, sizeof(rtc.latched), file);    if (written != sizeof(rtc.latched)) moo_errorf("Couldn't save card #2");
+        written = fwrite(rtc.ticking,     1, sizeof(rtc.ticking), file);    if (written != sizeof(rtc.ticking)) moo_errorf("Couldn't save card #3");
+        written = fwrite(&rtc.mapped,     1, sizeof(rtc.mapped), file);     if (written != sizeof(rtc.mapped)) moo_errorf("Couldn't save card #4");
+        written = fwrite(&rtc.prelatched, 1, sizeof(rtc.prelatched), file); if (written != sizeof(rtc.prelatched)) moo_errorf("Couldn't save card #5");
+        written = fwrite(&rtc.cc,         1, sizeof(rtc.cc), file);         if (written != sizeof(rtc.cc)) moo_errorf("Couldn't save card #6");
     }
 
     fclose(file);
@@ -54,23 +62,26 @@ void card_load() {
         return;
     }
 
-    printf("Loading card %s\n", sramfile);
+    printf("Loading card '%s'\n", sramfile);
 
     if(mbc.has_ram) {
         read = fread(card.srambanks, 1, card.sramsize * sizeof(*card.srambanks), file);
-        assert(read == card.sramsize * sizeof(*card.srambanks));
+        if(read != card.sramsize * sizeof(*card.srambanks)) {
+            moo_errorf("Card corrupt #1");
+        }
     }
 
     if(mbc.has_rtc) {
-        read = fread(rtc.latched,     1, sizeof(rtc.latched), file);    assert (read == sizeof(rtc.latched));
-        read = fread(rtc.ticking,     1, sizeof(rtc.ticking), file);    assert (read == sizeof(rtc.ticking));
-        read = fread(&rtc.mapped,     1, sizeof(rtc.mapped), file);     assert (read == sizeof(rtc.mapped));
-        read = fread(&rtc.prelatched, 1, sizeof(rtc.prelatched), file); assert (read == sizeof(rtc.prelatched));
-        read = fread(&rtc.cc,         1, sizeof(rtc.cc), file);         assert (read == sizeof(rtc.cc));
+        read = fread(rtc.latched,     1, sizeof(rtc.latched), file);    if(read != sizeof(rtc.latched)) moo_notifyf("Card corrupt #2");
+        read = fread(rtc.ticking,     1, sizeof(rtc.ticking), file);    if(read != sizeof(rtc.ticking)) moo_notifyf("Card corrupt #3");
+        read = fread(&rtc.mapped,     1, sizeof(rtc.mapped), file);     if(read != sizeof(rtc.mapped)) moo_notifyf("Card corrupt #4");
+        read = fread(&rtc.prelatched, 1, sizeof(rtc.prelatched), file); if(read != sizeof(rtc.prelatched)) moo_notifyf("Card corrupt #5");
+        read = fread(&rtc.cc,         1, sizeof(rtc.cc), file);         if(read != sizeof(rtc.cc)) moo_notifyf("Card corrupt #6");
     }
 
-    assert(fread(&dummy, 1, 1, file) == 0);
-    assert(feof(file));
+    if(fread(&dummy, 1, 1, file) != 0) {
+        moo_notifyf("Card corrupt #7");
+    }
 
     fclose(file);
 }

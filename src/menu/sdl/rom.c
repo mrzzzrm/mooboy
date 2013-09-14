@@ -17,13 +17,27 @@ typedef struct {
 } direntry_t;
 
 static int finished;
-static char cwd[256];
+static char cwd[256] = {'\0'};
 static menu_list_t *list = NULL;
 static direntry_t **direntries = NULL;
 
-static void poll_dir();
+static int poll_dir();
 
 
+static void to_base_dir() {
+    int l;
+
+    if(!getcwd(cwd, sizeof(cwd))) {
+        moo_errorf("Couldn't fetch CWD");
+        return;
+    }
+
+    l = strlen(cwd);
+    if(cwd[l - 1] != '/') {
+        cwd[l] = '/';
+        cwd[l + 1] = '\0';
+    }
+}
 
 static int is_romfile(const char *path) {
     const char *dot = strrchr(path, '.');
@@ -138,17 +152,22 @@ static void parent_dir() {
         cwd[c+1] = '\0';
     }
     save_dir();
-    poll_dir();
+    if(!poll_dir()) {
+        to_base_dir();
+    }
 }
 
-static void poll_dir() {
+static int poll_dir() {
     DIR *dir;
     struct dirent *ent;
     int e;
 
     clear();
     dir = opendir(cwd);
-    assert(dir);
+    if(dir == NULL) {
+        return 0;
+    }
+
     for(e = 0; (ent = readdir(dir)) != NULL;) {
         direntry_t *direntry;
         if(strcmp(ent->d_name, ".") == 0) {
@@ -189,6 +208,8 @@ static void poll_dir() {
 
     closedir(dir);
     sort_entries();
+
+    return 1;
 }
 
 static void rom_input_event(int type, int key) {
@@ -196,16 +217,9 @@ static void rom_input_event(int type, int key) {
 }
 
 void menu_rom_init() {
-    int l;
     if(!load_dir()) {
-        assert(getcwd(cwd, sizeof(cwd)));
-        l = strlen(cwd);
-        if(cwd[l - 1] != '/') {
-            cwd[l] = '/';
-            cwd[l + 1] = '\0';
-        }
+        to_base_dir();
     }
-
 
     list = menu_new_list("Choose ROM");
     list->back_func = back;

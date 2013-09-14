@@ -173,6 +173,10 @@ void moo_run() {
     }
 }
 
+void moo_notifyf(const char *format, ...) {
+
+}
+
 void moo_errorf(const char *format, ...) {
     va_list args;
     va_start(args, format);
@@ -185,6 +189,10 @@ void moo_errorf(const char *format, ...) {
     vsnprintf(moo.error->text, sizeof(moo.error->text), format, args);
     moo.state |= MOO_ERROR_BIT;
     moo.state &= ~MOO_ROM_RUNNING_BIT;
+}
+
+void moo_fatalf(const char *format, ...) {
+
 }
 
 void moo_error_clear() {

@@ -22,7 +22,7 @@ static u8 *load_binary(const char *path, size_t *size) {
 
     file = fopen(path, "rb");
     if(file == NULL) {
-        printf("Failed to open rompath: %s", strerror(errno));
+        moo_errorf("Failed to open ROM: %s", strerror(errno));
         return NULL;
     }
 
@@ -49,7 +49,7 @@ static u16 rom_bankcount(u8 ref) {
         return ((u8[]){72, 80, 96})[ref - 0x52];
     }
     else {
-        fprintf(stderr, "ROM-bankcount ref unknown: %.2X\n", ref);
+        moo_errorf("ROM-bankcount ref unknown: %.2X\n", ref);
         return 0;
     }
 }
@@ -84,7 +84,7 @@ static void init_card(u8 ref) {
             break;
             break;
             case 0xB: case 0xC: case 0xD:
-                assert(0);
+                moo_errorf("Unknown card-type #1");
             break;
             case 0xF:
                 mbc_set_type(3);
@@ -111,11 +111,11 @@ static void init_card(u8 ref) {
                 mbc.has_ram = ln != 0x9 && ln != 0xC;
             break;
             default:
-                assert(0);
+                moo_errorf("Unknown card-type #2");
         }
     }
     else {
-        assert(0);
+        moo_errorf("Unknown card-type #3");
     }
 
     printf("Full cardridge type: %.2X\n", ref);
@@ -123,19 +123,27 @@ static void init_card(u8 ref) {
 
 static void init_rom(u8 ref, u8 *rom, u32 romsize) {
     card.romsize = rom_bankcount(ref);
-        assert(card.romsize != 0);
-        assert(card.romsize * 0x4000 == romsize);
-        assert(romsize <  sizeof(card.rombanks));
+    if(card.romsize == 0) {
+        return;
+    }
+    if(card.romsize * 0x4000 != romsize) {
+        moo_errorf("ROM doesn't fit into banks tightly...");
+        return;
+    }
+    if(romsize >= sizeof(card.rombanks)) {
+        moo_errorf("ROM is too big for banks");
+        return;
+    }
     memcpy(card.rombanks, rom, romsize);
 
-    fprintf(stderr, "ROM-size set to %d banks, ref = %.2X\n", card.romsize, ref);
+    fprintf(stderr, "ROM-size set to %d banks[%.2X]\n", card.romsize, ref);
 }
 
 static void init_sram(u8 ref) {
     assert(ref <= 0x03);
 
     card.sramsize = (u8[]){1, 1, 1, 4}[ref];
-    fprintf(stderr, "Cardridge-RAM set to %d banks by ref %i \n", card.sramsize, ref);
+    fprintf(stderr, "Cardridge-RAM set to %d banks [%i]\n", card.sramsize, ref);
 }
 
 void load_rom() {

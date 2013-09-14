@@ -52,7 +52,8 @@ void moo_set_joy_button(u8 button, u8 state);
 
 void moo_set_hw( int hw);
 
+void moo_notifyf(const char *format, ...);
 void moo_errorf(const char *format, ...);
-void moo_error_clear();
+void moo_fatalf(const char *format, ...);
 
 #endif

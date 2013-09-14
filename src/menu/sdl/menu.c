@@ -87,7 +87,7 @@ static void set_slot(int label, int i) {
 static void load_state() {
     char file[256];
     snprintf(file, sizeof(file), "%s.sav%i", sys.rompath, load_slot);
-    if(state_load(file) == 0) {
+    if(state_load(file)) {
         moo_begin();
     }
 }

@@ -799,8 +799,10 @@ int op_exec() {
         case 0xFE: cp(fetch_byte()); break;
         case 0xFF: rst(0x38); break;
 
-        default:
+        default:;
+#ifdef DEBUG
             printf("op %.2X not implemented\n", cpu.op);
+#endif
     }
 
     return mcs[cpu.op];

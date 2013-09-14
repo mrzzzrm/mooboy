@@ -37,7 +37,7 @@
 
 lcd_t lcd;
 
-static u16 non_cgb_palettes[1][4] = {
+static u16 non_cgb_palettes[4] = {
     0x1F<<10 | 0x1F << 5 | 0x1F << 0,
     0x1A<<10 | 0x1A << 5 | 0x1A << 0,
     0x15<<10 | 0x15 << 5 | 0x15 << 0,
@@ -119,18 +119,18 @@ static void draw_line_non_cgb_mode(u8 *maps_scan, u8 *obj_scan) {
     for(x = 0; x < LCD_WIDTH; x++, pixel++) {
         if(OBJ_PRIORITY(obj_scan[x])) {
             if(maps_scan[x] != 0) {
-                *pixel = non_cgb_palettes[0][maps_scan[x]];
+                *pixel = non_cgb_palettes[maps_scan[x]];
             }
             else {
-                *pixel = non_cgb_palettes[0][OBJ_DATA(obj_scan[x])];
+                *pixel = non_cgb_palettes[OBJ_DATA(obj_scan[x])];
             }
         }
         else {
             if(OBJ_DATA(obj_scan[x]) != 0) {
-                *pixel = non_cgb_palettes[0][OBJ_DATA(obj_scan[x])];
+                *pixel = non_cgb_palettes[OBJ_DATA(obj_scan[x])];
             }
             else {
-                *pixel = non_cgb_palettes[0][maps_scan[x]];
+                *pixel = non_cgb_palettes[maps_scan[x]];
             }
         }
     }

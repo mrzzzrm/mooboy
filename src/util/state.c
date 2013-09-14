@@ -49,7 +49,9 @@ static u32 load(u8 size) {
     u32 re = 0;
     int b;
     for(b = 0; b < size; b++) {
-        assert(fread(&byte, 1, 1, f) == 1);
+        if(fread(&byte, 1, 1, f) != 1) {
+            moo_errorf("Savestate corrupt #1");
+        }
         re |= byte << (8*b);
         bytes_handled++;
     }
@@ -65,15 +67,15 @@ static void _set_checkpoint(int line) {
 
 static void _assert_checkpoint(int line) {
     if(current_checkpoint >= CHECKPOINTS) {
-        fprintf(stderr, "Savestate corrupt in line %i: too many checkpoints\n", line);
+        moo_errorf("Savestate corrupt in line %i: too many checkpoints\n", line);
         fclose(f);
-        assert(0);
+        return;
     }
     R(byte);
     if(byte != checkpoints[current_checkpoint]) {
-        fprintf(stderr, "Savestate corrupt in line %i: wrong byte\n", line);
+        moo_errorf("Savestate corrupt in line %i: wrong byte\n", line);
         fclose(f);
-        assert(0);
+        return;
     }
     current_checkpoint++;
 }
@@ -350,7 +352,9 @@ static void init_checkpoints() {
 static void load_checkpoints() {
     int cp;
     R(byte);
-    assert(byte == CHECKPOINTS);
+    if(byte != CHECKPOINTS) {
+        moo_errorf("Corrupt savestate #2");
+    }
     for(cp = 0; cp < CHECKPOINTS; cp++) {
         R(byte);
         checkpoints[cp] = byte;
@@ -360,10 +364,12 @@ static void load_checkpoints() {
 }
 
 void state_save(const char *filename) {
-    printf("Saving savestate '%s'\n", filename);
+    printf("Saving state to '%s'\n", filename);
 
     f = fopen(filename, "wb");
-    assert(f);
+    if(f == NULL) {
+        moo_errorf("Couln't open file");
+    }
 
     init_checkpoints();
 
@@ -381,10 +387,12 @@ void state_save(const char *filename) {
 }
 
 int state_load(const char *filename) {
-    printf("Loading savestate '%s'\n", filename);
+    printf("Loading state from '%s'\n", filename);
 
     f = fopen(filename, "rb");
-    assert(f);
+    if(f == NULL) {
+        return 0;
+    }
 
     load_checkpoints();
 
@@ -398,10 +406,12 @@ int state_load(const char *filename) {
     load_timers();
     load_sys();
 
-    assert(fread(&byte, 1, 1, f) == 0);
+    if(fread(&byte, 1, 1, f) != 0) {
+        return 0;
+    }
 
     fclose(f);
 
-    return 0;
+    return 1;
 }
 
