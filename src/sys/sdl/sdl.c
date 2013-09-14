@@ -16,8 +16,8 @@
 #include "util/framerate.h"
 #include "util/performance.h"
 
-#define SCALING_STRECHED 0
-#define SCALING_PROPORTIONAL 1
+#define SCALING_PROPORTIONAL 0
+#define SCALING_STRECHED 1
 #define SCALING_PROPORTIONAL_FULL 2
 #define SCALING_NONE 3
 
@@ -41,7 +41,7 @@ void sys_init(int argc, const char** argv) {
     SDL_ShowCursor(0);
 #else
     //SDL_SetVideoMode(1680, 1050, sys.bits_per_pixel, SDL_FULLSCREEN);
-    SDL_SetVideoMode(680, 300, sys.bits_per_pixel, 0);
+    SDL_SetVideoMode(800, 480, sys.bits_per_pixel, 0);
 #endif
 
     sys.scalingmode = 0;
@@ -77,6 +77,7 @@ void sys_close() {
 }
 
 void sys_pause() {
+    sys_play_audio(0);
     sys.pause_start = SDL_GetTicks();
 }
 
@@ -171,6 +172,7 @@ void sys_handle_events(void (*input_handle)(int, int)) {
 
 void sys_invoke() {
     sys.ticks = SDL_GetTicks() + sys.ticks_diff;
+
     if(sys.fb_ready) {
         if(!framerate_skip()) {
             render();
@@ -179,6 +181,7 @@ void sys_invoke() {
         sys.fb_ready = 0;
         performance.frames++;
     }
+
     framerate_curb();
 
     sys_handle_events(input_event);

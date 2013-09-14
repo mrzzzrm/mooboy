@@ -23,9 +23,15 @@
 
 moo_t moo;
 
+static void store_rompath() {
+    FILE *f = fopen("lastrom.txt", "w");
+    fwrite(sys.rompath, 1, strlen(sys.rompath), f);
+    fclose(f);
+}
+
 void moo_init() {
     moo_set_hw(CGB_HW);
-    moo.mode = CGB_MODE;
+    moo.mode = NON_CGB_MODE;
 
     sound_init();
     //serial_init();
@@ -51,19 +57,16 @@ void moo_reset() {
 }
 
 void moo_begin() {
-    printf("Begin\n");
     moo.state |= MOO_ROM_RUNNING_BIT;
     sys_begin();
 }
 
 void moo_continue() {
-    printf("Continue\n");
     moo.state |= MOO_ROM_RUNNING_BIT;
     sys_continue();
 }
 
 void moo_pause() {
-    printf("Pause\n");
     moo.state ^= MOO_ROM_RUNNING_BIT;
     sys_pause();
 }
@@ -84,11 +87,14 @@ void moo_load_rom(const char *path) {
         strcpy(sys.rompath, path);
     }
 
+    printf("Loading ROM '%s'\n", sys.rompath);
+
     moo_reset();
     load_rom();
 
     if(moo.state & MOO_ROM_LOADED_BIT) {
         moo_load_rom_config();
+        store_rompath();
     }
 }
 
@@ -113,11 +119,9 @@ void moo_step_hw(int mcs) {
         return;
     }
 
-    mcs += cpu.remainder;
-
     if(cpu.freq == DOUBLE_CPU_FREQ) {
-        nfcs = mcs / 2;
-        cpu.remainder = mcs % 2;
+        nfcs = (mcs + cpu.remainder) / 2;
+        cpu.remainder = (mcs + cpu.remainder) % 2;
     }
     else {
         nfcs = mcs;
@@ -128,6 +132,9 @@ void moo_step_hw(int mcs) {
     rtc_step(nfcs);
     sound_step(nfcs);
     //serial_step();
+
+    cpu.dbg_mcs += mcs;
+    cpu.dbg_nfcs += nfcs;
 
     sys.invoke_cc += mcs;
 }

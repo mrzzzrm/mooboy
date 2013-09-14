@@ -13,18 +13,55 @@
 
 
 #define LABEL_RESUME     0
-#define LABEL_LOAD_ROM   1
-#define LABEL_RESET      2
-#define LABEL_OPTIONS    3
-#define LABEL_LOAD_STATE 4
-#define LABEL_SAVE_STATE 5
-#define LABEL_CONNECT    6
-#define LABEL_QUIT       7
+#define LABEL_LAST_ROM   1
+#define LABEL_LOAD_ROM   2
+#define LABEL_RESET      3
+#define LABEL_OPTIONS    4
+#define LABEL_LOAD_STATE 5
+#define LABEL_SAVE_STATE 6
+#define LABEL_CONNECT    7
+#define LABEL_QUIT       8
 
 
 static menu_list_t *list = NULL;
 static int load_slot = 0;
 static int save_slot = 0;
+
+
+
+static int have_last_rom() {
+    FILE *f = fopen("lastrom.txt", "r");
+    if(f == NULL) {
+        return 0;
+    }
+
+    char last_rom_path[256];
+    size_t read = fread(last_rom_path, 1, sizeof(last_rom_path)-1, f);
+    last_rom_path[read] = '\0';
+    fclose(f);
+
+    f = fopen(last_rom_path, "r");
+    if(f == NULL) {
+        return 0;
+    }
+    fclose(f);
+    return 1;
+}
+
+static void load_last_rom() {
+    FILE *f = fopen("lastrom.txt", "r");
+    if(f == NULL) {
+        return;
+    }
+
+    char last_rom_path[256];
+    size_t read = fread(last_rom_path, 1, sizeof(last_rom_path), f);
+    last_rom_path[read] = '\0';
+    fclose(f);
+
+    moo_load_rom(last_rom_path);
+    moo_begin();
+}
 
 static void back() {
     if(moo.state & MOO_ROM_LOADED_BIT) {
@@ -75,6 +112,7 @@ static void quit() {
 }
 
 static void setup() {
+    menu_listentry_visible(list, LABEL_LAST_ROM, (~moo.state & MOO_ROM_LOADED_BIT) && have_last_rom());
     menu_listentry_visible(list, LABEL_RESUME, moo.state & MOO_ROM_LOADED_BIT);
     menu_listentry_visible(list, LABEL_RESET, moo.state & MOO_ROM_LOADED_BIT);
     menu_listentry_visible(list, LABEL_LOAD_STATE, moo.state & MOO_ROM_LOADED_BIT);
@@ -123,6 +161,7 @@ void menu_init() {
     list = menu_new_list("Main Menu");
     list->back_func = back;
 
+    menu_new_listentry_button(list, "Last ROM", LABEL_LAST_ROM, load_last_rom);
     menu_new_listentry_button(list, "Resume", LABEL_RESUME, resume);
     menu_new_listentry_button(list, "Load ROM", LABEL_LOAD_ROM, menu_rom);
     menu_new_listentry_button(list, "Reset", LABEL_RESET, reset);

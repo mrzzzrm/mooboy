@@ -76,7 +76,10 @@ static void tick_envelopes() {
     tick_envelope(&env[2], &noise.volume);
  }
 
-static void timer_step() {
+static void timer_step(int nfcs) {
+    sound.tick_cc += nfcs;
+    sound.tick_cc &= 0x3FFF;
+
     u8 step = (sound.tick_cc >> 11) & 0x07;
     if(step != sound.last_timer_step) {
         switch(step) {
@@ -90,36 +93,37 @@ static void timer_step() {
     }
 }
 
+
 static sample_t sqw_mix(sqw_t *ch) {
     sample_t r = {0,0};
+    int wavefreq;
     int wavelen;
-    int wavesam;
     u16 amp = 0;
 
     if(!ch->on) {
+        ch->cc = 0;
         return r;
     }
 
-    if(ch->freq == 2048) {
-        return r;
-    }
-    wavelen = sound.freq / (131072 / (2048 - ch->freq));
-    if(wavelen == 0) {
-        return r;
-    }
-    wavesam = sound.sample % wavelen;
+    wavefreq = 131072 / (2048 - ch->freq);
+    wavelen = NORMAL_CPU_FREQ / wavefreq;
 
     switch(ch->duty) {
-        case 0x00: amp = wavesam <= wavelen>>3 ? 0x0 : 0x1; break;
-        case 0x01: amp = wavesam <= wavelen>>2 ? 0x0 : 0x1; break;
-        case 0x02: amp = wavesam <= wavelen>>1 ? 0x0 : 0x1; break;
-        case 0x03: amp = wavesam <= (wavelen>>2)*3 ? 0x0 : 0x1; break;
+        case 0x00: amp = ch->cc <= wavelen>>3 ? 0x0 : 0x1; break;
+        case 0x01: amp = ch->cc <= wavelen>>2 ? 0x0 : 0x1; break;
+        case 0x02: amp = ch->cc <= wavelen>>1 ? 0x0 : 0x1; break;
+        case 0x03: amp = ch->cc <= (wavelen>>2)*3 ? 0x0 : 0x1; break;
     }
 
     amp *= ch->volume;
 
     r.l = ch->l ? amp : 0;
     r.r = ch->r ? amp : 0;
+
+    if(ch->cc >= wavelen) {
+        ch->cc -= wavelen;
+    }
+
     return r;
 }
 
@@ -127,25 +131,18 @@ static sample_t wave_mix() {
     sample_t r = {0,0};
     u16 amp;
     int wavelen;
-    int wavesam;
     int realsam;
 
     if(!wave.on || wave.shift == 0) {
+        wave.cc = 0;
         return r;
     }
 
-    assert(wave.freq != 2048);
-    wavelen = sound.freq / (65536/(2048 - wave.freq));
-    if(wavelen == 0) {
-        return r;
-    }
-    else {
-        wavesam = (sound.sample % wavelen);
-        realsam = (wavesam*0x20)/wavelen;
-    }
+    wavelen = (NORMAL_CPU_FREQ * (2048 - wave.freq))/ 65536;
+    wave.cc %= wavelen;
+    realsam = (wave.cc*0x20) / wavelen;
 
-
-    if(realsam%2 == 0) {
+    if(realsam % 2 == 0) {
         amp = wave.data[realsam>>1] >> 4;
     }
     else {
@@ -155,10 +152,10 @@ static sample_t wave_mix() {
 
     r.l = wave.l ? amp : 0;
     r.r = wave.r ? amp : 0;
+
     return r;
 }
 
-// TODO: There definitly is a bug in here...
 static sample_t noise_mix() {
     sample_t r = {0,0};
     u32 freq;
@@ -166,6 +163,7 @@ static sample_t noise_mix() {
     int wavelen;
 
     if(!noise.on || noise.volume == 0) {
+        noise.cc = 0;
         return r;
     }
 
@@ -176,10 +174,11 @@ static sample_t noise_mix() {
         freq = (524288 / noise.divr) >> (noise.shift+1);
     }
     assert(freq != 0);
-    wavelen = sound.freq / freq;
 
-    if(wavelen == 0 || sound.sample / wavelen != (sound.sample+1) / wavelen) {
-        u8 b = ((noise.lsfr+0x0001) & 0x03) >= 0x0002 ? 1 : 0;
+    wavelen = NORMAL_CPU_FREQ / freq;
+
+    if(noise.cc >= wavelen) {
+        u8 b = ((noise.lsfr + 0x0001) & 0x03) >= 0x0002 ? 1 : 0;
         noise.lsfr >>= 1;
         noise.lsfr &= 0xBFFF;
         noise.lsfr |= b << 14;
@@ -187,12 +186,14 @@ static sample_t noise_mix() {
             noise.lsfr &= 0xFFBF;
             noise.lsfr |= b << 6;
         }
+        noise.cc -= wavelen;
     }
 
     amp = noise.lsfr & 0x0001 ? 0x0 : noise.volume;
 
     r.l = noise.l ? amp : 0;
     r.r = noise.r ? amp : 0;
+
     return r;
 }
 
@@ -214,7 +215,6 @@ void sound_reset() {
     sound.so1_volume = 7;
     sound.so2_volume = 7;
     sound.last_timer_step = 0;
-    sound.sample = 0;
     sound.buf_start = 0;
     sound.buf_end = 0;
     sound.remainder = 0;
@@ -229,25 +229,35 @@ void sound_reset() {
 }
 
 void sound_step(int nfcs) {
-    timer_step();
+    timer_step(nfcs);
+
+    if(!sys.sound_on) {
+        return;
+    }
 
     sound.cc += nfcs;
-    sound.tick_cc += nfcs;
-    sound.tick_cc &= 0x3FFF;
+
+    sqw[0].cc += nfcs;
+    sqw[1].cc += nfcs;
+    wave.cc += nfcs;
+    noise.cc += nfcs;
 
     if(sound.cc >= sound.mix_threshold) {
+        sys_lock_audiobuf();
         sound_mix();
+        sys_unlock_audiobuf();
 
         sound.cc -= sound.mix_threshold;
         sound.mix_threshold = (NORMAL_CPU_FREQ + sound.remainder) / sound.freq;
-        sound.remainder += NORMAL_CPU_FREQ % sound.freq;
+        sound.remainder = (NORMAL_CPU_FREQ + sound.remainder) % sound.freq;
     }
+    sound.tick_cc += nfcs;
+    sound.tick_cc &= 0x3FFF;
 }
 
 // TODO: Handle userdefined on/off elsewhere, sound-off shouldn't use resources
 void sound_mix() {
     sample_t samples[4];
-    sys_lock_audiobuf();
 
     u16 *buf = (u16*)sound.buf;
 
@@ -257,7 +267,7 @@ void sound_mix() {
     }
     else {
         if((sound.buf_end + 1) % sound.buf_size == sound.buf_start) {
-            //printf("WARNING: Sound-Buffer overrun!\n");
+            printf("WARNING: Sound-Buffer overrun!\n");
             sound.buf_start = 0;
             sound.buf_end = 0;
         }
@@ -266,14 +276,12 @@ void sound_mix() {
         samples[1] = sqw_mix(&sqw[1]);
         samples[2] = wave_mix();
         samples[3] = noise_mix();
+
         buf[sound.buf_end*2 + 0] = (samples[0].l + samples[1].l + samples[2].l + samples[3].l)*sound.so1_volume*0x40;
         buf[sound.buf_end*2 + 1] = (samples[0].r + samples[1].r + samples[2].r + samples[3].r)*sound.so2_volume*0x40;
     }
     sound.buf_end++;
     sound.buf_end %= sound.buf_size;
-    sound.sample++;
-
-    sys_unlock_audiobuf();
 }
 
 void sound_write(u8 sadr, u8 val) {
@@ -340,7 +348,9 @@ void sound_write(u8 sadr, u8 val) {
             wave.freq &= 0x00FF;
             wave.freq |= (val&0x07)<<8;
             wave.counter.expires = val & 0x40;
-            //wave.on |= val & 0x80;
+            if(val & 0x80) {
+                wave.cc = 0;
+            }
         break;
         case 0x20:
             noise.counter.length = 64-(val & 0x3F);
@@ -359,6 +369,7 @@ void sound_write(u8 sadr, u8 val) {
             noise.counter.expires = val & 0x40;
             if(val & 0x80) {
                 noise.on = 1;
+                noise.cc = 0;
                 noise.counter.length = noise.counter.length == 0 ? 0x40 : noise.counter.length;
             }
         break;

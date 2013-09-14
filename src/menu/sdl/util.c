@@ -339,7 +339,7 @@ void menu_draw_list(menu_list_t *list) {
     top_margin = TTF_FontHeight(font) * 1.5;
     left_margin = SDL_GetVideoSurface()->w / 40;
     right_margin = SDL_GetVideoSurface()->w / 40;
-    bottom_margin = TTF_FontHeight(font) * 1.5;
+    bottom_margin = TTF_FontHeight(font) * 0.5;
     line_height = TTF_FontHeight(font);
     screen = SDL_GetVideoSurface();
 
@@ -380,8 +380,10 @@ void menu_list_input(menu_list_t *list, int type, int key) {
             case SDLK_LEFT: dir = -1;
             case SDLK_RIGHT: dir = 1;
                 if(list->selected >= 0) {
-                    if(list->entries[list->selected]->func.change != NULL) {
-                        list->entries[list->selected]->func.change(dir);
+                    if(list->entries[list->selected]->type == MENU_LISTENTRY_SELECTION) {
+                        if(list->entries[list->selected]->func.change != NULL) {
+                            list->entries[list->selected]->func.change(dir);
+                        }
                     }
                 }
             break;

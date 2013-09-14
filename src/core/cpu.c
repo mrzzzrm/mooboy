@@ -1,10 +1,13 @@
 #include "cpu.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include "lcd.h"
 #include "moo.h"
 #include "ints.h"
 #include "rtc.h"
+#include "mem.h"
 #include "mbc.h"
 #include "ops.h"
 #include "defines.h"
@@ -34,7 +37,11 @@ void cpu_reset() {
     cpu.freq = NORMAL_CPU_FREQ;
     cpu.halted = 0;
     cpu.freq_switch = 0x00;
+
+    cpu.dbg_mcs = 0;
+    cpu.dbg_nfcs = 0;
 }
+
 
 u8 cpu_step() {
     ints_handle();

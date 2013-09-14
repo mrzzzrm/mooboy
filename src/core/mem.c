@@ -17,7 +17,7 @@ static u8 read_locked_mem(u16 adr) {
 }
 
 static void write_locked_mem(u16 adr, u8 val) {
-    printf("Denied write of %.2X to locked memory location %.4X\n", val, adr);
+//    printf("%.4X %.2X %.2X | Denied write of %.2X to locked memory location %.4X\n", PC, cpu.op, cpu.cb, val, adr);
 }
 
 void mem_reset() {
@@ -142,7 +142,6 @@ void mem_write_byte(u16 adr, u8 val) {
             }
             else {
                 cpu.ie = val & 0x1F;
-//                printf("IE %.2X\n", cpu.ie);
             }
         return;
     }

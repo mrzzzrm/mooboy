@@ -17,14 +17,12 @@ void sys_unlock_audiobuf() {
 
 static u16 get_available_samples() {
     u16 r;
-    sys_lock_audiobuf();
     if(sound.buf_start > sound.buf_end) {
         r = sound.buf_size - (sound.buf_start - sound.buf_end) + 1;
     }
     else {
         r = sound.buf_end - sound.buf_start;
     }
-    sys_unlock_audiobuf();
 
     return r;
 }
@@ -34,35 +32,40 @@ static void handout_buf(void *_unused, Uint8 *stream, int length) {
     u16 available_samples;
     u16 served_samples;
 
-    if(!sys.sound_on || (~moo.state & MOO_ROM_RUNNING_BIT)) {
-        memset(stream, 0x00, length);
-        return;
-    }
-
     sys_lock_audiobuf();
 
-    while((available_samples = get_available_samples()) < requested_samples) {
-        sound_mix();
-    }
-
-    if(sound.buf_start > sound.buf_end) {
-        served_samples = sound.buf_size - sound.buf_start;
-        if(served_samples >= requested_samples) {
-            memcpy(stream, &sound.buf[sound.buf_start*2*2], length);
-        }
-        else {
-            u16 bytes = served_samples * sound.sample_size * 2;
-            memcpy(&stream[0], &sound.buf[sound.buf_start*2*2], bytes);
-            memcpy(&stream[bytes], &sound.buf[0], (requested_samples - served_samples) * sound.sample_size * 2);
-        }
+    if(!sys.sound_on || (~moo.state & MOO_ROM_RUNNING_BIT)) {
+        memset(stream, 0x00, length);
     }
     else {
-        memcpy(stream, &sound.buf[sound.buf_start*2*2], length);
+        if(get_available_samples() < requested_samples) {
+            printf("WARNING: Sound buffer underrun\n");
+        }
+
+        while((available_samples = get_available_samples()) < requested_samples) {
+            sound_mix();
+        }
+
+        if(sound.buf_start > sound.buf_end) {
+            served_samples = sound.buf_size - sound.buf_start;
+            if(served_samples >= requested_samples) {
+                memcpy(stream, &sound.buf[sound.buf_start*2*2], length);
+            }
+            else {
+                u16 bytes = served_samples * sound.sample_size * 2;
+                memcpy(&stream[0], &sound.buf[sound.buf_start*2*2], bytes);
+                memcpy(&stream[bytes], &sound.buf[0], (requested_samples - served_samples) * sound.sample_size * 2);
+            }
+        }
+        else {
+            memcpy(stream, &sound.buf[sound.buf_start*2*2], length);
+        }
     }
 
 
     sound.buf_start += requested_samples;
     sound.buf_start %= sound.buf_size;
+
     sys_unlock_audiobuf();
 }
 

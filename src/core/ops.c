@@ -483,21 +483,27 @@ static inline void reti() {
     case base + 6: cb_write_byte(HL, func(cb_read_byte(HL))); break; \
     case base + 7: A = func(A); break;
 
-#define CB_OP_CASES_ARG(base, func, arg) \
+#define CB_OP_CASES_ARG(base, func, arg, writeback) \
     case base + 0: B = func(arg, B); break; \
     case base + 1: C = func(arg, C); break; \
     case base + 2: D = func(arg, D); break; \
     case base + 3: E = func(arg, E); break; \
     case base + 4: H = func(arg, H); break; \
     case base + 5: L = func(arg, L); break; \
-    case base + 6: cb_write_byte(HL, func(arg, cb_read_byte(HL))); break; \
+    case base + 6: \
+        if(writeback) \
+            cb_write_byte(HL, func(arg, cb_read_byte(HL))); \
+        else \
+            func(arg, cb_read_byte(HL)); \
+    break; \
     case base + 7: A = func(arg, A); break;
 
-#define CB_BITMANIP_CASES(base, func) \
-    CB_OP_CASES_ARG(base + 0x00, func, 0); CB_OP_CASES_ARG(base + 0x08, func, 1);\
-    CB_OP_CASES_ARG(base + 0x10, func, 2); CB_OP_CASES_ARG(base + 0x18, func, 3);\
-    CB_OP_CASES_ARG(base + 0x20, func, 4); CB_OP_CASES_ARG(base + 0x28, func, 5);\
-    CB_OP_CASES_ARG(base + 0x30, func, 6); CB_OP_CASES_ARG(base + 0x38, func, 7);
+#define CB_BITMANIP_CASES(base, func, writeback) \
+    CB_OP_CASES_ARG(base + 0x00, func, 0, writeback); CB_OP_CASES_ARG(base + 0x08, func, 1, writeback);\
+    CB_OP_CASES_ARG(base + 0x10, func, 2, writeback); CB_OP_CASES_ARG(base + 0x18, func, 3, writeback);\
+    CB_OP_CASES_ARG(base + 0x20, func, 4, writeback); CB_OP_CASES_ARG(base + 0x28, func, 5, writeback);\
+    CB_OP_CASES_ARG(base + 0x30, func, 6, writeback); CB_OP_CASES_ARG(base + 0x38, func, 7, writeback);
+
 
 static inline int cb() {
     switch(cpu.cb) {
@@ -510,15 +516,16 @@ static inline int cb() {
         CB_OP_CASES_NOARG(0x30, swap);
         CB_OP_CASES_NOARG(0x38, srl);
 
-        CB_BITMANIP_CASES(0x40, bit);
-        CB_BITMANIP_CASES(0x80, res);
-        CB_BITMANIP_CASES(0xC0, set);
+        CB_BITMANIP_CASES(0x40, bit, 0);
+        CB_BITMANIP_CASES(0x80, res, 1);
+        CB_BITMANIP_CASES(0xC0, set, 1);
     }
 
     return 2;
 }
 
 int op_exec() {
+
     switch(cpu.op) {
         case 0x00: break;
         case 0x01: BC = fetch_word(); break;
