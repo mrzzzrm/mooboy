@@ -31,7 +31,8 @@ static inline u16 cgb_to_rgb(u16 cgb_color) {
     g = (cgb_color & (0x001F << 5));
     b = (cgb_color & 0x001F);
 
-    return (b<<11) | (g << 1) | (r>>10);
+    //return (b<<11) | (g << 1) | (r>>10);
+    return (b<<10) | (g << 0) | (r>>10);
 }
 
 static inline u16 dmg_to_rgb(u16 dmg_color) {
