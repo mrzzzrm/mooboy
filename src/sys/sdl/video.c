@@ -7,6 +7,8 @@
 
 
 static u8 buf[32768];
+static u16 cgb_to_rgb_buf[0x8000];
+static int acolumns_in_fbpixel_buf[160];
 static int line_length;
 static int line_byte_offset;
 static int bytes_per_pixel;
@@ -57,8 +59,10 @@ static void cgb_fw_render_fbline(int line) {
     fbx = 0;
 
     for(ax = 0; ax < area.w; fbx++) {
-        s_color = cgb_to_rgb(lcd.clean_fb[fb_pixel++]);
+        //s_color = cgb_to_rgb(lcd.clean_fb[fb_pixel++]);
+        s_color = cgb_to_rgb_buf[lcd.clean_fb[fb_pixel++]];
         pixels_to_set = acolumns_in_fbpixel(ax, area.w, fbx);
+        //pixels_to_set = acolumns_in_fbpixel_buf[fbx];
 
         for(ppos = 0; ppos < pixels_to_set; ppos++, ax++) {
             buf[buf_pos++] = s_color & 0x00FF;
@@ -170,6 +174,18 @@ void video_switch_display_mode() {
     dmg_palette[1] = 0x13<<rshift | 0x13 << gshift | 0x13 << bshift;
     dmg_palette[2] = 0x07<<rshift | 0x07 << gshift | 0x07 << bshift;
     dmg_palette[3] = 0x00<<rshift | 0x00 << gshift | 0x00 << bshift;
+
+    int c;
+    for(c = 0; c < 0x8000; c++) {
+        cgb_to_rgb_buf[c] = cgb_to_rgb(c);
+    }
+    int fbx, ax, ppos;
+//    for(ax = 0, fbx = 0; ax < area.w; fbx++) {
+//        acolumns_in_fbpixel_buf[fbx] = acolumns_in_fbpixel(ax, area.w, fbx);
+//
+//        for(ppos = 0; ppos < pixels_to_set; ppos++, ax++) {
+//        }
+//    }
 
     memset(buf, 0x00, sizeof(buf));
     SDL_FillRect(SDL_GetVideoSurface(), NULL, 0);

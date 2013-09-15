@@ -2,6 +2,7 @@
     - General sound sounds strange at times
     - Remove sys/sdl/video.c::buf with dynamic sized array
     - Select key on pandora doesn't work
+    - implement buffers in sdl/video.c
     
     
 [Game Bugs]
