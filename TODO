@@ -1,5 +1,4 @@
 [Emulator]
-    - Seperate SDL dependant and std-lib sys code
     - General sound sounds strange at times
     - gb graphics are messy 
     - Remove sys/sdl/video.c::buf with dynamic sized array

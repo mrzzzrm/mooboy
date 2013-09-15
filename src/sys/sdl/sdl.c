@@ -2,6 +2,7 @@
 #include "video.h"
 #include <stdarg.h>
 #include <SDL/SDL.h>
+#include <SDL/SDL_gfxPrimitives.h>
 #include <assert.h>
 #include "core/cpu.h"
 #include "core/rtc.h"
@@ -57,7 +58,6 @@ void sys_init(int argc, const char** argv) {
     audio_init();
     video_init();
     framerate_init();
-    performance_init();
     input_init();
 
     statuslabel = SDL_CreateRGBSurface(0, SDL_GetVideoSurface()->w, 8, sys.bits_per_pixel, 0, 0, 0, 0);
@@ -67,8 +67,6 @@ void sys_init(int argc, const char** argv) {
 void sys_reset() {
     sys.ticks = 0;
     sys.invoke_cc = 0;
-    framerate_begin();
-    performance_begin();
 }
 
 void sys_close() {
@@ -205,10 +203,9 @@ void sys_play_audio(int on) {
 
 void sys_new_performance_info() {
     char statusline[256];
-    snprintf(statusline, sizeof(statusline), "Skipped %i/%i Slept %6.2f %% frames, speed: %6.2f %%", performance.counters.skipped, performance.counters.frames, (float)performance.counters.slept*100/performance.update_period, performance.speed);
+    snprintf(statusline, sizeof(statusline), "Skipped %i/%i frames, Slept %6.2f %%, Speed: %6.2f %%", performance.counters.skipped, performance.counters.frames, (float)performance.counters.slept*100/PERFORMANCE_UPDATE_PERIOD, performance.speed);
 
     SDL_FillRect(statuslabel, NULL, 0);
     stringColor(statuslabel, 0, 0, statusline, 0xaaaaaaff);
-
 }
 

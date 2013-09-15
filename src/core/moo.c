@@ -16,6 +16,8 @@
 #include "serial.h"
 #include "sys/sys.h"
 #include "menu/menu.h"
+#include "util/performance.h"
+#include "util/framerate.h"
 #include "util/config.h"
 #include "util/card.h"
 #include "sound.h"
@@ -54,11 +56,14 @@ void moo_reset() {
     sound_reset();
     joy_reset();
     //serial_reset();
+
+    performance_reset();
 }
 
 void moo_begin() {
     moo.state |= MOO_ROM_RUNNING_BIT;
     sys_begin();
+    framerate_begin();
 }
 
 void moo_continue() {

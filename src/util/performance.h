@@ -1,7 +1,9 @@
 #ifndef SYS_PERFORMANCE_H
 #define SYS_PERFORMANCE_H
 
-#include <SDL/SDL.h>
+#include <time.h>
+
+extern const int PERFORMANCE_UPDATE_PERIOD;
 
 typedef struct {
     unsigned int slept;
@@ -15,14 +17,12 @@ typedef struct {
     float speed;
 
     time_t last_update_ticks;
-    time_t update_period;
     int update_cc;
 } performance_t;
 
 extern performance_t performance;
 
-void performance_init();
-void performance_begin();
+void performance_reset();
 void performance_invoked();
 
 #endif
