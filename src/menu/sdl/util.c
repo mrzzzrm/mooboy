@@ -370,8 +370,18 @@ void menu_draw_list(menu_list_t *list) {
     }
 }
 
+static void change_selection(menu_list_t *list, int dir) {
+    if(list->selected >= 0) {
+        if(list->entries[list->selected]->func.change != NULL) {
+            list->entries[list->selected]->func.change(dir);
+        }
+    }
+}
+
 void menu_list_input(menu_list_t *list, int type, int key) {
-    int dir;
+    int entrytype;
+
+    entrytype = list->entries[list->selected]->type;
     if(type == SDL_KEYDOWN) {
         switch(key) {
             case SDLK_UP:
@@ -382,22 +392,24 @@ void menu_list_input(menu_list_t *list, int type, int key) {
                 list_down(list);
                 list->scroll_state[1] = SCROLL_TO_THRESHOLD;
             break;
-            case SDLK_LEFT: dir = -1;
-            case SDLK_RIGHT: dir = 1;
-                if(list->selected >= 0) {
-                    if(list->entries[list->selected]->type == MENU_LISTENTRY_SELECTION) {
-                        if(list->entries[list->selected]->func.change != NULL) {
-                            list->entries[list->selected]->func.change(dir);
-                        }
-                    }
+            case SDLK_LEFT:
+                if(entrytype == MENU_LISTENTRY_SELECTION) {
+                    change_selection(list, -1);
+                }
+            break;
+            case SDLK_RIGHT:
+                if(entrytype == MENU_LISTENTRY_SELECTION) {
+                    change_selection(list, 1);
                 }
             break;
         }
 
-        if(key == input.keys.accept) {
-            if(list->selected >= 0) {
-                if(list->entries[list->selected]->func.accept != NULL) {
-                    list->entries[list->selected]->func.accept();
+        if(entrytype == MENU_LISTENTRY_BUTTON) {
+            if(key == input.keys.accept) {
+                if(list->selected >= 0) {
+                    if(list->entries[list->selected]->func.accept != NULL) {
+                        list->entries[list->selected]->func.accept();
+                    }
                 }
             }
         }

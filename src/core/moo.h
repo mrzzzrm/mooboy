@@ -29,7 +29,6 @@ typedef struct {
     moo_error_t *error;
 } moo_t;
 
-
 extern moo_t moo;
 
 void moo_init();
@@ -50,10 +49,11 @@ void moo_step_hw(int mcs);
 
 void moo_set_joy_button(u8 button, u8 state);
 
-void moo_set_hw( int hw);
+void moo_set_hw(int hw);
 
 void moo_notifyf(const char *format, ...);
 void moo_errorf(const char *format, ...);
 void moo_fatalf(const char *format, ...);
+void moo_error_clear();
 
 #endif

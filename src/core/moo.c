@@ -174,7 +174,22 @@ void moo_run() {
 }
 
 void moo_notifyf(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
 
+    if(moo.error != NULL) {
+        free(moo.error);
+    }
+
+    moo.error = malloc(sizeof(*moo.error));
+    vsnprintf(moo.error->text, sizeof(moo.error->text), format, args);
+
+    fprintf(stderr, "NOTIFICATION: "); vfprintf(stderr, format, args);
+
+    moo.state |= MOO_ERROR_BIT;
+    moo_pause();
+
+    va_end(args);
 }
 
 void moo_errorf(const char *format, ...) {
@@ -187,12 +202,23 @@ void moo_errorf(const char *format, ...) {
 
     moo.error = malloc(sizeof(*moo.error));
     vsnprintf(moo.error->text, sizeof(moo.error->text), format, args);
+
+    fprintf(stderr, "ERROR: "); vfprintf(stderr, format, args);
+
     moo.state |= MOO_ERROR_BIT;
     moo.state &= ~MOO_ROM_RUNNING_BIT;
+
+    va_end(args);
 }
 
 void moo_fatalf(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    fprintf(stderr, "FATAL: "); vfprintf(stderr, format, args);
 
+    moo_quit();
+
+    va_end(args);
 }
 
 void moo_error_clear() {

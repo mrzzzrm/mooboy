@@ -2,7 +2,7 @@
     - Seperate SDL dependant and std-lib sys code
     - General sound sounds strange at times
     - gb graphics are messy 
-    - Implement notify and fatal
+    - Remove sys/sdl/video.c::buf with dynamic sized array
     
     
 [Game Bugs]
