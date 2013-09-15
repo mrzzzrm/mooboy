@@ -51,13 +51,15 @@ void sys_unlock_audiobuf();
 
 void sys_handle_events(void (*input_handle)(int, int));
 
-void sys_serial_connect();
-void sys_serial_step();
-int sys_serial_incoming();
-void sys_serial_out_bit(int bit);
-int sys_serial_in_bit();
-void sys_serial_transfer_complete();
-void sys_serial_update_internal_period();
+void sys_new_performance_info();
+
+//void sys_serial_connect();
+//void sys_serial_step();
+//int sys_serial_incoming();
+//void sys_serial_out_bit(int bit);
+//int sys_serial_in_bit();
+//void sys_serial_transfer_complete();
+//void sys_serial_update_internal_period();
 
 
 #endif // SYS_H

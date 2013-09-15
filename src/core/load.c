@@ -56,6 +56,7 @@ static u16 rom_bankcount(u8 ref) {
 
 static void init_mode(u8 ref) {
     moo.mode = ref & 0x80 ? CGB_MODE : NON_CGB_MODE;
+    printf("%s\n", moo.mode == CGB_MODE ? "CGB mode" : "Non CGB Mode");
 }
 
 static void init_card(u8 ref) {

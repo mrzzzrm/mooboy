@@ -130,7 +130,7 @@ void lcd_scan_maps(u8 *scan) {
         palette = 0;
     }
 
-    if((lcd.c & LCDC_BG_ENABLE_BIT) || moo.hw == CGB_HW) {
+    if((lcd.c & LCDC_BG_ENABLE_BIT) || (moo.hw == CGB_HW)) {
         scan_bg(scan);
     }
     if(lcd.c & LCDC_WND_ENABLE_BIT) {

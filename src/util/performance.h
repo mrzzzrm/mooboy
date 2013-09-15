@@ -6,16 +6,17 @@
 typedef struct {
     unsigned int slept;
     unsigned int skipped;
-    unsigned int invokes;
     unsigned int frames;
+} performance_counters_t;
+
+typedef struct {
+    performance_counters_t counters, counting;
 
     float speed;
 
     time_t last_update_ticks;
     time_t update_period;
     int update_cc;
-
-    SDL_Surface *statuslabel;
 } performance_t;
 
 extern performance_t performance;

@@ -46,7 +46,7 @@ int framerate_skip() {
     if(should_framecount > framerate.framecount+1 || framerate.frameskip >= 0) {
         framerate.framecount = should_framecount;
         framerate.skipped++;
-        performance.skipped++;
+        performance.counting.skipped++;
         return 1;
     }
 
@@ -63,7 +63,7 @@ void framerate_curb() {
 
     if(ms_ahead >= framerate.delay_threshold) {
         sys_delay(framerate.delay_threshold);
-        performance.slept += framerate.delay_threshold;
+        performance.counting.slept += framerate.delay_threshold;
     }
 
     framerate.last_curb_ticks = sys.ticks;

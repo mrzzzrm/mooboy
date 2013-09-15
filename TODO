@@ -3,6 +3,7 @@
     - General sound sounds strange at times
     - gb graphics are messy 
     - Remove sys/sdl/video.c::buf with dynamic sized array
+    - assert SDL initialization
     
     
 [Game Bugs]

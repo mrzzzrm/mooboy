@@ -33,14 +33,11 @@ static inline u16 dmg_to_rgb(u16 dmg_color) {
     return dmg_palette[dmg_color];
 }
 
-// TODO: This is bufferable since aheight won't change for a
-//       while and fbline depends on aline and aheight
-//       9,600/s
 static inline int alines_in_fbline(int aline, int aheight, int fbline) {
     return (((fbline + 1) * aheight) / 144) - aline;
 }
 
-// TODO: This should be buffered - it is executed for every lcd-pixel
+// TODO: This could be buffered(?) - it is executed for every lcd-pixel
 //       1,382,400/s
 static inline int acolumns_in_fbpixel(int acolumn, int awidth, int fbx) {
     return (((fbx + 1) * awidth) / 160) - acolumn;
@@ -90,8 +87,8 @@ static void dmg_fw_render_fbline(int line) {
     }
 }
 
-static void fw_render_fbline(int line) {
-    if(moo.hw == CGB_HW) {
+static void render_fbline_to_buffer(int line) {
+    if(moo.hw == CGB_HW && moo.mode == CGB_MODE) {
         cgb_fw_render_fbline(line);
     }
     else {
@@ -113,7 +110,7 @@ static void fullwidth_render(SDL_Surface *surface, SDL_Rect _area) {
     for(aline = 0; aline < area.h; fbline++) {
         alines_to_fill = alines_in_fbline(aline, area.h, fbline);
         if(alines_to_fill > 0) {
-            fw_render_fbline(fbline);
+            render_fbline_to_buffer(fbline);
 
             for(buflines = 1; alines_to_fill >= buflines * 2; buflines *= 2) {
                 memcpy(&buf[buflines * bytes_per_line], buf, buflines * bytes_per_line);
@@ -143,7 +140,7 @@ static void area_render(SDL_Surface *surface, SDL_Rect _area) {
     for(aline = 0; aline < area.h; fbline++) {
         alines_to_fill = alines_in_fbline(aline, area.h, fbline);
         if(alines_to_fill > 0) {
-            fw_render_fbline(fbline);
+            render_fbline_to_buffer(fbline);
 
             for(buflines = 1; alines_to_fill >= buflines * 2; buflines *= 2) {
                 memcpy(&buf[buflines * bytes_per_line], buf, buflines * bytes_per_line);

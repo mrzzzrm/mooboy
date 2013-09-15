@@ -25,6 +25,8 @@
 
 sys_t sys;
 
+static SDL_Surface *statuslabel;
+
 void sys_init(int argc, const char** argv) {
     memset(&sys, 0x00, sizeof(sys));
 
@@ -57,6 +59,9 @@ void sys_init(int argc, const char** argv) {
     framerate_init();
     performance_init();
     input_init();
+
+    statuslabel = SDL_CreateRGBSurface(0, SDL_GetVideoSurface()->w, 8, sys.bits_per_pixel, 0, 0, 0, 0);
+    assert(statuslabel);
 }
 
 void sys_reset() {
@@ -150,7 +155,7 @@ static void render() {
     }
 
     video_render(SDL_GetVideoSurface(), area);
-    SDL_BlitSurface(performance.statuslabel, NULL, SDL_GetVideoSurface(), NULL);
+    SDL_BlitSurface(statuslabel, NULL, SDL_GetVideoSurface(), NULL);
     SDL_Flip(SDL_GetVideoSurface());
 }
 
@@ -180,7 +185,7 @@ void sys_invoke() {
         }
 
         sys.fb_ready = 0;
-        performance.frames++;
+        performance.counting.frames++;
     }
 
     framerate_curb();
@@ -196,5 +201,14 @@ void sys_fb_ready() {
 
 void sys_play_audio(int on) {
     SDL_PauseAudio(!on);
+}
+
+void sys_new_performance_info() {
+    char statusline[256];
+    snprintf(statusline, sizeof(statusline), "Skipped %i/%i Slept %6.2f %% frames, speed: %6.2f %%", performance.counters.skipped, performance.counters.frames, (float)performance.counters.slept*100/performance.update_period, performance.speed);
+
+    SDL_FillRect(statuslabel, NULL, 0);
+    stringColor(statuslabel, 0, 0, statusline, 0xaaaaaaff);
+
 }
 
