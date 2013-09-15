@@ -251,8 +251,6 @@ void sound_step(int nfcs) {
         sound.mix_threshold = (NORMAL_CPU_FREQ + sound.remainder) / sound.freq;
         sound.remainder = (NORMAL_CPU_FREQ + sound.remainder) % sound.freq;
     }
-    sound.tick_cc += nfcs;
-    sound.tick_cc &= 0x3FFF;
 }
 
 // TODO: Handle userdefined on/off elsewhere, sound-off shouldn't use resources
@@ -279,14 +277,18 @@ void sound_mix() {
         samples[2] = wave_mix();
         samples[3] = noise_mix();
 
-        buf[sound.buf_end*2 + 0] = (samples[0].l + samples[1].l + samples[2].l + samples[3].l)*sound.so1_volume*0x40;
-        buf[sound.buf_end*2 + 1] = (samples[0].r + samples[1].r + samples[2].r + samples[3].r)*sound.so2_volume*0x40;
+        buf[sound.buf_end*2 + 0] = (samples[0].l/* + samples[1].l + samples[2].l + samples[3].l*/)*sound.so1_volume*0x40;
+        buf[sound.buf_end*2 + 1] = (samples[0].r/* + samples[1].r + samples[2].r + samples[3].r*/)*sound.so2_volume*0x40;
     }
     sound.buf_end++;
     sound.buf_end %= sound.buf_size;
 }
 
 void sound_write(u8 sadr, u8 val) {
+    if(sadr <= 0x14) {
+        printf("%.2X = %.2X\n", sadr, val);
+    }
+
     switch(sadr) {
         case 0x10:
             sweep.period = (val & 0x70) >> 4;
@@ -395,6 +397,9 @@ void sound_write(u8 sadr, u8 val) {
         case 0x3C: case 0x3D: case 0x3E: case 0x3F:
             wave.data[sadr - 0x30] = val;
         break;
+
+        default:
+            assert(0);
     }
 }
 
@@ -480,12 +485,8 @@ u8 sound_read(u8 sadr) {
             return wave.data[sadr - 0x30];
         break;
 
-        default:;
-#ifdef DEBUG
-            printf("%.4X: Unhandled sound read @ %.2X\n", PC-1, sadr);
-#endif
+        default:
+            assert(0);
     }
-
-    return 0;
 }
 
