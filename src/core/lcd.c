@@ -113,18 +113,18 @@ static void draw_line_non_cgb_mode(u8 *maps_scan, u8 *obj_scan) {
     for(x = 0; x < LCD_WIDTH; x++, pixel++) {
         if(OBJ_PRIORITY(obj_scan[x])) {
             if(maps_scan[x] != 0) {
-                *pixel = maps_scan[x]; //non_cgb_palettes[maps_scan[x]];
+                *pixel = lcd.bgp_map[maps_scan[x]];
             }
             else {
-                *pixel = OBJ_DATA(obj_scan[x]);//non_cgb_palettes[OBJ_DATA(obj_scan[x])];
+                *pixel = lcd.obp_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
             }
         }
         else {
             if(OBJ_DATA(obj_scan[x]) != 0) {
-                *pixel = OBJ_DATA(obj_scan[x]);//non_cgb_palettes[OBJ_DATA(obj_scan[x])];
+                *pixel = lcd.obp_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
             }
             else {
-                *pixel = maps_scan[x];//non_cgb_palettes[maps_scan[x]];
+                *pixel = lcd.bgp_map[maps_scan[x]];
             }
         }
     }
