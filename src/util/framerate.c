@@ -10,7 +10,7 @@ void framerate_init() {
     framerate.limit_framerate = 1;
     framerate.frameskip = -1;
     framerate.max_frameskip = 5;
-    framerate.delay_threshold = 10;
+    framerate.delay_threshold = 3;
     framerate.cc_ahead = 0;
     framerate.last_curb_ticks = 0;
     framerate.skipped = 0;

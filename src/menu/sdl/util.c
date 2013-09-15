@@ -207,6 +207,12 @@ void menu_free_list(menu_list_t *list) {
 void menu_clear_list(menu_list_t *list) {
     int e;
     for(e = 0; e < list->num_entries; e++) {
+        if(list->entries[e]->text != NULL) {
+            menu_free_label(list->entries[e]->text);
+        }
+        if(list->entries[e]->val != NULL) {
+            menu_free_label(list->entries[e]->val);
+        }
         free(list->entries[e]);
     }
     free(list->entries);

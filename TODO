@@ -1,8 +1,7 @@
 [Emulator]
     - General sound sounds strange at times
-    - gb graphics are messy 
     - Remove sys/sdl/video.c::buf with dynamic sized array
-    - assert SDL initialization
+    - Select key on pandora doesn't work
     
     
 [Game Bugs]
@@ -16,5 +15,11 @@
     - Paletting problem in Kirby when run with CGB_HW
 
 [Menu]  
+	- Dirup in rom per key
+	- Per key to roms starting with a specific letter
     
 
+[Misc]
+	- Makefile
+	- Pandora scripts
+	
