@@ -345,6 +345,7 @@ void menu_draw_list(menu_list_t *list) {
     left_margin = SDL_GetVideoSurface()->w / 40;
     right_margin = SDL_GetVideoSurface()->w / 40;
     bottom_margin = TTF_FontHeight(font) * 0.5;
+
     line_height = TTF_FontHeight(font);
     screen = SDL_GetVideoSurface();
 

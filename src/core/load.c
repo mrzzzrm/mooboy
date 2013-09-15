@@ -136,7 +136,7 @@ static void init_rom(u8 ref, u8 *rom, u32 romsize) {
     }
     memcpy(card.rombanks, rom, romsize);
 
-    fprintf(stderr, "ROM-size set to %d banks[%.2X]\n", card.romsize, ref);
+    fprintf(stderr, "ROM-size set to %d banks [%.2X]\n", card.romsize, ref);
 }
 
 static void init_sram(u8 ref) {
@@ -168,5 +168,4 @@ void load_rom() {
 
     moo.state |= MOO_ROM_LOADED_BIT;
 }
-
 

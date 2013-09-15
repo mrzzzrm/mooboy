@@ -14,12 +14,7 @@ static int bytes_per_line;
 static SDL_Rect area;
 static int rshift, gshift, bshift;
 
-static u16 dmg_palette[4] = {
-    0x1F<<10 | 0x1F << 5 | 0x1F << 0,
-    0x13<<10 | 0x13 << 5 | 0x13 << 0,
-    0x07<<10 | 0x07 << 5 | 0x07 << 0,
-    0x00<<10 | 0x00 << 5 | 0x00 << 0
-};
+static u16 dmg_palette[4];
 
 sys_t sys;
 
@@ -173,6 +168,11 @@ void video_switch_display_mode() {
     rshift = screen->format->Rshift + 3 - screen->format->Rloss;
     gshift = screen->format->Gshift + 3 - screen->format->Gloss;
     bshift = screen->format->Bshift + 3 - screen->format->Bloss;
+
+    dmg_palette[0] = 0x1F<<rshift | 0x1F << gshift | 0x1F << bshift;
+    dmg_palette[1] = 0x13<<rshift | 0x13 << gshift | 0x13 << bshift;
+    dmg_palette[2] = 0x07<<rshift | 0x07 << gshift | 0x07 << bshift;
+    dmg_palette[3] = 0x00<<rshift | 0x00 << gshift | 0x00 << bshift;
 
     memset(buf, 0x00, sizeof(buf));
     SDL_FillRect(SDL_GetVideoSurface(), NULL, 0);
