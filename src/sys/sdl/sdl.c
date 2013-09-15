@@ -37,15 +37,19 @@ void sys_init(int argc, const char** argv) {
     sys.bits_per_pixel = 16;
     moo.state = MOO_RUNNING_BIT;
 
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
+        moo_fatalf("Couln't initialize SDL");
+    }
 
 #ifdef PANDORA
-    SDL_SetVideoMode(800, 480, sys.bits_per_pixel, SDL_FULLSCREEN);
     SDL_ShowCursor(0);
+    if(SDL_SetVideoMode(800, 480, sys.bits_per_pixel, SDL_FULLSCREEN) == NULL) {
 #else
-    //SDL_SetVideoMode(1680, 1050, sys.bits_per_pixel, SDL_FULLSCREEN);
-    SDL_SetVideoMode(800, 480, sys.bits_per_pixel, 0);
+    if(SDL_SetVideoMode(800, 480, sys.bits_per_pixel, 0) == NULL) {
 #endif
+        moo_fatalf("Setting of SDL video-mode failed");
+    }
+
 
     sys.scalingmode = 0;
     sys.num_scalingmodes = 4;

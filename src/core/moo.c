@@ -33,7 +33,6 @@ static void store_rompath() {
 
 void moo_init() {
     moo_set_hw(CGB_HW);
-    moo.mode = NON_CGB_MODE;
 
     sound_init();
     //serial_init();
@@ -189,7 +188,7 @@ void moo_notifyf(const char *format, ...) {
     moo.error = malloc(sizeof(*moo.error));
     vsnprintf(moo.error->text, sizeof(moo.error->text), format, args);
 
-    fprintf(stderr, "NOTIFICATION: "); vfprintf(stderr, format, args);
+    fprintf(stderr, "NOTIFICATION: "); vfprintf(stderr, format, args); fprintf(stderr, "\n");
 
     moo.state |= MOO_ERROR_BIT;
     moo_pause();
@@ -208,7 +207,7 @@ void moo_errorf(const char *format, ...) {
     moo.error = malloc(sizeof(*moo.error));
     vsnprintf(moo.error->text, sizeof(moo.error->text), format, args);
 
-    fprintf(stderr, "ERROR: "); vfprintf(stderr, format, args);
+    fprintf(stderr, "ERROR: "); vfprintf(stderr, format, args); fprintf(stderr, "\n");
 
     moo.state |= MOO_ERROR_BIT;
     moo.state &= ~MOO_ROM_RUNNING_BIT;
@@ -219,18 +218,22 @@ void moo_errorf(const char *format, ...) {
 void moo_fatalf(const char *format, ...) {
     va_list args;
     va_start(args, format);
-    fprintf(stderr, "FATAL: "); vfprintf(stderr, format, args);
+    fprintf(stderr, "FATAL: "); vfprintf(stderr, format, args); fprintf(stderr, "\n");
 
     moo_quit();
 
     va_end(args);
 }
 
-void moo_error_clear() {
+void moo_clear_error() {
     if(moo.error != NULL) {
         free(moo.error);
         moo.error = NULL;
     }
     moo.state &= ~MOO_ERROR_BIT;
+
+    if(moo.state & MOO_ROM_LOADED_BIT) {
+        moo_continue();
+    }
 }
 

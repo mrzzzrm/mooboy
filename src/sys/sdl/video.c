@@ -26,7 +26,7 @@ static inline u16 cgb_to_rgb(u16 cgb_color) {
     g = (cgb_color >> 5) & 0x1F;
     b = (cgb_color >> 10) & 0x1F;
 
-    return (r << rshift)| (g << gshift) | (b << bshift);
+    return (r << rshift) | (g << gshift) | (b << bshift);
 }
 
 static inline u16 dmg_to_rgb(u16 dmg_color) {

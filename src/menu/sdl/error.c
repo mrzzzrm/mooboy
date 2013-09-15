@@ -32,7 +32,7 @@ static void error_input_event(int type, int key) {
 
 void menu_error_init() {
     heading_surface = menu_text("Error!");
-    footer_surface = menu_text("Press any button to return to menu");
+    footer_surface = menu_text("Press any button to continue");
 }
 
 void menu_error_close() {
@@ -48,5 +48,6 @@ void menu_error() {
     }
 
     menu_free_word_string(msg_string);
+    moo_clear_error();
 }
 

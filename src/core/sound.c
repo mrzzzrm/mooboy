@@ -277,18 +277,14 @@ void sound_mix() {
         samples[2] = wave_mix();
         samples[3] = noise_mix();
 
-        buf[sound.buf_end*2 + 0] = (samples[0].l/* + samples[1].l + samples[2].l + samples[3].l*/)*sound.so1_volume*0x40;
-        buf[sound.buf_end*2 + 1] = (samples[0].r/* + samples[1].r + samples[2].r + samples[3].r*/)*sound.so2_volume*0x40;
+        buf[sound.buf_end*2 + 0] = (samples[0].l + samples[1].l + samples[2].l + samples[3].l)*sound.so1_volume*0x40;
+        buf[sound.buf_end*2 + 1] = (samples[0].r + samples[1].r + samples[2].r + samples[3].r)*sound.so2_volume*0x40;
     }
     sound.buf_end++;
     sound.buf_end %= sound.buf_size;
 }
 
 void sound_write(u8 sadr, u8 val) {
-    if(sadr <= 0x14) {
-        printf("%.2X = %.2X\n", sadr, val);
-    }
-
     switch(sadr) {
         case 0x10:
             sweep.period = (val & 0x70) >> 4;
@@ -404,73 +400,75 @@ void sound_write(u8 sadr, u8 val) {
 }
 
 u8 sound_read(u8 sadr) {
+    u8 val;
+
     switch(sadr) {
         case 0x10:
-            return (sweep.period << 4) | (sweep.dir << 3) | sweep.shift;
+            val = (sweep.period << 4) | (sweep.dir << 3) | sweep.shift;
         break;
         case 0x11:
-            return sqw[0].duty << 6;
+            val = sqw[0].duty << 6;
         break;
         case 0x12:
-            return (sqw[0].volume << 4) || (env[0].dir << 3) | env[0].sweep;
+            val = (sqw[0].volume << 4) || (env[0].dir << 3) | env[0].sweep;
         break;
         case 0x13:
-            return 0x00;
+            val = 0x00;
         break;
         case 0x14:
-            return sqw[0].counter.expires;
+            val = sqw[0].counter.expires;
         break;
         case 0x16:
-            return sqw[1].duty << 6;
+            val = sqw[1].duty << 6;
         break;
         case 0x17:
-            return (sqw[1].volume << 4) | (env[1].dir << 3) | env[1].sweep;
+            val = (sqw[1].volume << 4) | (env[1].dir << 3) | env[1].sweep;
         break;
         case 0x18:
-            return 0x00;
+            val = 0x00;
         break;
         case 0x19:
-            return sqw[1].counter.expires;
+            val = sqw[1].counter.expires;
         break;
         case 0x1A:
-            return wave.on;
+            val = wave.on;
         break;
         case 0x1B:
-            return wave.counter.length;
+            val = wave.counter.length;
         break;
         case 0x1C:
-            return wave.shift << 5;
+            val = wave.shift << 5;
         break;
         case 0x1D:
-            return 0x00;
+            val = 0x00;
         break;
         case 0x1E:
-            return wave.counter.expires;
+            val = wave.counter.expires;
         break;
         case 0x20:
-            return noise.counter.length;
+            val = noise.counter.length;
         break;
         case 0x21:
-            return (noise.volume << 4) | (env[2].dir << 3) | (env[2].sweep);
+            val = (noise.volume << 4) | (env[2].dir << 3) | (env[2].sweep);
         break;
         case 0x22:
-            return (noise.shift << 4) || (noise.width) | (noise.divr);
+            val = (noise.shift << 4) || (noise.width) | (noise.divr);
         break;
         case 0x23:
-            return noise.counter.expires;
+            val = noise.counter.expires;
         break;
         case 0x24:
-            return sound.so1_volume | (sound.so2_volume << 4);
+            val = sound.so1_volume | (sound.so2_volume << 4);
         break;
         case 0x25:
-            return
+            val =
             (sqw[0].l ? 0x01 : 0x00) | (sqw[0].r ? 0x10 : 0x00) |
             (sqw[1].l ? 0x02 : 0x00) | (sqw[1].r ? 0x20 : 0x00) |
             (wave.l ? 0x04 : 0x00) | (wave.r ? 0x40 : 0x00) |
             (noise.l ? 0x08 : 0x00) | (noise.r ? 0x80 : 0x00);
         break;
         case 0x26:
-            return
+            val =
             (sound.on ? 0x80 : 0x00) |
             (noise.on ? 0x08 : 0x00) |
             (wave.on ? 0x04 : 0x00) |
@@ -482,11 +480,13 @@ u8 sound_read(u8 sadr) {
         case 0x34: case 0x35: case 0x36: case 0x37:
         case 0x38: case 0x39: case 0x3A: case 0x3B:
         case 0x3C: case 0x3D: case 0x3E: case 0x3F:
-            return wave.data[sadr - 0x30];
+            val = wave.data[sadr - 0x30];
         break;
 
         default:
             assert(0);
     }
+
+    return val;
 }
 
