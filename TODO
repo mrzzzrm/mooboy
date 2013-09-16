@@ -2,7 +2,8 @@
     - General sound sounds strange at times
     - Remove sys/sdl/video.c::buf with dynamic sized array
     - Select key on pandora doesn't work
-    - implement buffers in sdl/video.c
+    - Optimize step-system to event-queue
+    - Optimize scan-system - not every pixel should have separate layer-tests
     
     
 [Game Bugs]
@@ -13,14 +14,13 @@
     - Alice in Wonderland: Messed up graphics
     - Donkeykong doesn't load
     - Sound to slow in Zelda Oracle of Seasons
-    - Paletting problem in Kirby when run with CGB_HW
 
 [Menu]  
 	- Dirup in rom per key
 	- Per key to roms starting with a specific letter
     
-
 [Misc]
-	- Makefile
+	- Icon
+	- Build system
 	- Pandora scripts
 	

@@ -113,6 +113,9 @@ void moo_load_rom_config() {
 
 void moo_set_hw(int hw) {
     moo.hw = hw;
+    if(!moo.hw == CGB_HW) {
+        moo.mode = NON_CGB_MODE;
+    }
     //serial_update_internal_period();
 }
 

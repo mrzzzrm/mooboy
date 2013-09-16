@@ -39,8 +39,6 @@ static inline int alines_in_fbline(int aline, int aheight, int fbline) {
     return (((fbline + 1) * aheight) / 144) - aline;
 }
 
-// TODO: This could be buffered(?) - it is executed for every lcd-pixel
-//       1,382,400/s
 static inline int acolumns_in_fbpixel(int acolumn, int awidth, int fbx) {
     return (((fbx + 1) * awidth) / 160) - acolumn;
 }
@@ -63,8 +61,9 @@ static void cgb_fw_render_fbline(int line) {
         s_color = cgb_to_rgb_buf[lcd.clean_fb[fb_pixel++]];
         //pixels_to_set = acolumns_in_fbpixel(ax, area.w, fbx);
         pixels_to_set = acolumns_in_fbpixel_buf[fbx];
+        ax += pixels_to_set;
 
-        for(ppos = 0; ppos < pixels_to_set; ppos++, ax++) {
+        for(ppos = 0; ppos < pixels_to_set; ppos++) {
             buf[buf_pos++] = s_color & 0x00FF;
             buf[buf_pos++] = s_color >> 8;
         }
@@ -92,7 +91,7 @@ static void dmg_fw_render_fbline(int line) {
 }
 
 static void render_fbline_to_buffer(int line) {
-    if(moo.hw == CGB_HW && moo.mode == CGB_MODE) {
+    if(moo.mode == CGB_MODE) {
         cgb_fw_render_fbline(line);
     }
     else {

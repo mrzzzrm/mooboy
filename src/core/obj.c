@@ -117,7 +117,7 @@ static inline void render_obj(u8 *obj, u8 *scan) {
         tile_index &= 0xFE;
     }
 
-    line_data = &ram.vrambanks[moo.hw == CGB_HW ? BANK(obj) : 0][tile_index*0x10 + obj_line*0x02];
+    line_data = &ram.vrambanks[moo.mode == CGB_MODE ? BANK(obj) : 0][tile_index*0x10 + obj_line*0x02];
     sx = POSX(obj) - 8;
 
     if(sx < 0) {
@@ -129,7 +129,7 @@ static inline void render_obj(u8 *obj, u8 *scan) {
     }
 
     priority = PRIORITY(obj) ? OBJ_PRIORITY_BIT : 0x00;
-    palette = moo.hw == CGB_HW ? CGB_PALETTE(obj) : DMG_PALETTE(obj);
+    palette = moo.mode == CGB_MODE ? CGB_PALETTE(obj) : DMG_PALETTE(obj);
 
     if(XFLIP(obj)) {
         render_obj_line_flipped(line_data, tx, sx, scan);
