@@ -5,6 +5,7 @@
 
 void video_init();
 void video_switch_display_mode();
-void video_render(SDL_Surface *surface, SDL_Rect area);
+void video_set_area(SDL_Rect rect);
+void video_render(SDL_Surface *surface);
 
 #endif

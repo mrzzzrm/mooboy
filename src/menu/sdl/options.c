@@ -34,7 +34,7 @@ static void change_sound(int dir) {
 }
 
 static void change_scaling(int dir) {
-    sys.scalingmode = (sys.scalingmode + dir + sys.num_scalingmodes) % sys.num_scalingmodes; // Since -1 % 5 != 4 this does (-1+5)%5
+    sys_set_scalingmode((sys.scalingmode + dir + sys.num_scalingmodes) % sys.num_scalingmodes); // Since -1 % 5 != 4 this does (-1+5)%5
     menu_listentry_val(list, LABEL_SCALING,  sys.scalingmode_names[sys.scalingmode]);
 }
 

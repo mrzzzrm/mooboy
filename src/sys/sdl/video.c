@@ -61,8 +61,8 @@ static void cgb_fw_render_fbline(int line) {
     for(ax = 0; ax < area.w; fbx++) {
         //s_color = cgb_to_rgb(lcd.clean_fb[fb_pixel++]);
         s_color = cgb_to_rgb_buf[lcd.clean_fb[fb_pixel++]];
-        pixels_to_set = acolumns_in_fbpixel(ax, area.w, fbx);
-        //pixels_to_set = acolumns_in_fbpixel_buf[fbx];
+        //pixels_to_set = acolumns_in_fbpixel(ax, area.w, fbx);
+        pixels_to_set = acolumns_in_fbpixel_buf[fbx];
 
         for(ppos = 0; ppos < pixels_to_set; ppos++, ax++) {
             buf[buf_pos++] = s_color & 0x00FF;
@@ -100,10 +100,9 @@ static void render_fbline_to_buffer(int line) {
     }
 }
 
-static void fullwidth_render(SDL_Surface *surface, SDL_Rect _area) {
+static void fullwidth_render(SDL_Surface *surface) {
     int aline, buflines, fbline, alines_to_fill;
 
-    area = _area;
     buflines = 0;
     fbline = 0;
     line_length = surface->w;
@@ -130,10 +129,9 @@ static void fullwidth_render(SDL_Surface *surface, SDL_Rect _area) {
 }
 
 
-static void area_render(SDL_Surface *surface, SDL_Rect _area) {
+static void area_render(SDL_Surface *surface) {
     int aline, buflines, fbline, alines_to_fill;
 
-    area = _area;
     buflines = 0;
     fbline = 0;
     bytes_per_line = surface->pitch;
@@ -179,24 +177,26 @@ void video_switch_display_mode() {
     for(c = 0; c < 0x8000; c++) {
         cgb_to_rgb_buf[c] = cgb_to_rgb(c);
     }
-    int fbx, ax, ppos;
-//    for(ax = 0, fbx = 0; ax < area.w; fbx++) {
-//        acolumns_in_fbpixel_buf[fbx] = acolumns_in_fbpixel(ax, area.w, fbx);
-//
-//        for(ppos = 0; ppos < pixels_to_set; ppos++, ax++) {
-//        }
-//    }
 
     memset(buf, 0x00, sizeof(buf));
     SDL_FillRect(SDL_GetVideoSurface(), NULL, 0);
 }
 
-void video_render(SDL_Surface *surface, SDL_Rect area) {
+void video_set_area(SDL_Rect _area) {
+    int fbx, ax;
+    area = _area;
+    for(ax = 0, fbx = 0; ax < area.w; fbx++) {
+        acolumns_in_fbpixel_buf[fbx] = acolumns_in_fbpixel(ax, area.w, fbx);
+        ax += acolumns_in_fbpixel_buf[fbx];
+    }
+}
+
+void video_render(SDL_Surface *surface) {
     if(area.x == 0 && area.w == surface->w) {
-        fullwidth_render(surface, area);
+        fullwidth_render(surface);
     }
     else {
-        area_render(surface, area);
+        area_render(surface);
     }
 }
 

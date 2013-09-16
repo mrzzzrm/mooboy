@@ -146,17 +146,7 @@ SDL_Rect streched_scaling_area() {
 }
 
 static void render() {
-    SDL_Rect area;
-
-    switch(sys.scalingmode) {
-        case SCALING_NONE: area = none_scaling_area(); break;
-        case SCALING_PROPORTIONAL: area = proportional_scaling_area(); break;
-        case SCALING_PROPORTIONAL_FULL: area = proportional_full_scaling_area(); break;
-        case SCALING_STRECHED: area = streched_scaling_area(); break;
-        default: moo_errorf("No valid scalingmode selected"); return;
-    }
-
-    video_render(SDL_GetVideoSurface(), area);
+    video_render(SDL_GetVideoSurface());
     SDL_BlitSurface(statuslabel, NULL, SDL_GetVideoSurface(), NULL);
     SDL_Flip(SDL_GetVideoSurface());
 }
@@ -213,3 +203,17 @@ void sys_new_performance_info() {
     stringColor(statuslabel, 0, 0, statusline, 0xaaaaaaff);
 }
 
+void sys_set_scalingmode(int mode) {
+    SDL_Rect area;
+
+    switch(sys.scalingmode) {
+        case SCALING_NONE: area = none_scaling_area(); break;
+        case SCALING_PROPORTIONAL: area = proportional_scaling_area(); break;
+        case SCALING_PROPORTIONAL_FULL: area = proportional_full_scaling_area(); break;
+        case SCALING_STRECHED: area = streched_scaling_area(); break;
+        default: moo_errorf("No valid scalingmode selected"); return;
+    }
+
+    video_set_area(area);
+    sys.scalingmode = mode;
+}

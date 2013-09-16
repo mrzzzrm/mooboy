@@ -53,6 +53,8 @@ void sys_handle_events(void (*input_handle)(int, int));
 
 void sys_new_performance_info();
 
+void sys_set_scalingmode(int mode);
+
 //void sys_serial_connect();
 //void sys_serial_step();
 //int sys_serial_incoming();
