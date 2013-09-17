@@ -8,6 +8,7 @@
 #include "rtc.h"
 #include "serial.h"
 #include "cpu.h"
+#include "hw.h"
 #include "mem.h"
 #include "timers.h"
 #include "joy.h"
@@ -125,6 +126,7 @@ void moo_step_hw(int mcs) {
     if(mcs == 0) {
         return;
     }
+    hw_step(mcs);
 
     if(cpu.freq == DOUBLE_CPU_FREQ) {
         nfcs = (mcs + cpu.remainder) / 2;

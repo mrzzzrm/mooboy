@@ -12,5 +12,6 @@ extern timers_t timers;
 
 void timers_reset();
 void timers_step(int nfcs, int mcs);
+void timers_enable(int on);
 
 #endif
