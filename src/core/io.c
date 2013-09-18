@@ -8,7 +8,6 @@
 #include "timers.h"
 #include "sound.h"
 #include "defines.h"
-#include "defines.h"
 #include "joy.h"
 #include "serial.h"
 
@@ -94,7 +93,7 @@ void io_write(u16 adr, u8 val) {
         case 0x04: timers.div = 0x00; break;
         case 0x05: timers.tima = val; break;
         case 0x06: timers.tma = val; break;
-        case 0x07: timers_enable(val & 0x04); timers.tac = val & 0x07; break;
+        case 0x07: timers_tac(val & 0x07); break;
         case 0x0F: cpu.irq = val & 0x1F; break;
 
         case 0x10: case 0x11: case 0x12: case 0x13:

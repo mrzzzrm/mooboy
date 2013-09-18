@@ -1,111 +1,65 @@
 #include "hw.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
-hw_event_queue_t hw_event_queue;
+hw_events_t hw_events;
 
-
-static void schedule() {
-    hw_event_t *event, *next;
-
-    if(hw_event_queue.schedule == NULL)
-        return;
-
-    for(event = hw_event_queue.first; event != NULL; event = event->next) {
-        printf("%s[%i/%i] ", event->name, event->cc, event->mcs);
-    }
-    printf("-> ");
-
-    for(; hw_event_queue.schedule != NULL; hw_event_queue.schedule = next) {
-        event = hw_event_queue.schedule;
-        next = event->next;
-
-        event->next = hw_event_queue.first;
-        hw_event_queue.first = event;
-
-        hw_event_t *prev = NULL;
-        while(event->next != NULL) {
-            if(event->mcs > event->next->mcs) {
-                printf("Switching %s and %s\n", event->name, event->next->name);
-                if(prev == NULL) {
-                    hw_event_queue.first = event->next;
-                }
-                else {
-                    prev->next = event->next;
-                }
-
-                prev = event->next;
-                event->next = event->next->next;
-                prev->next = event;
-            }
-            else {
-                break;
-            }
-        }
-    }
-    for(event = hw_event_queue.first; event != NULL; event = event->next) {
-        printf("%s[%i/%i] ", event->name, event->cc, event->mcs);
-    }
-    printf("\n");
-}
-
-static void event_queue() {
-    hw_event_t *event;
-
-    if(hw_event_queue.first != NULL) {
-        if(hw_event_queue.cc >= hw_event_queue.first->cc) {
-
-            printf("(1) [");
-            for(event = hw_event_queue.first; event != NULL; event = event->next) {
-                printf("%s[%i/%i] ", event->name, event->cc, event->mcs);
-            }
-            printf("]-> ");
-
-            do {
-                hw_event_queue.first->cc -= hw_event_queue.cc;
-                printf("Exec{%s} ", hw_event_queue.first->name);
-               hw_event_queue.first->callback(hw_event_queue.first->cc);
-                hw_event_queue.first = hw_event_queue.first->next;
-                printf("Front{%p} ", hw_event_queue.first);
-            } while(hw_event_queue.first != NULL && hw_event_queue.first->mcs >= hw_event_queue.first->cc);
-
-            printf("(2) [");
-            for(event = hw_event_queue.first; event != NULL; event = event->next) {
-                printf("%s[%i/%i] ", event->name, event->cc, event->mcs);
-            }
-            printf("]-> ");
-
-            for(event = hw_event_queue.first; event != NULL; event = event->next) {
-                event->cc -= hw_event_queue.cc;
-                event = event->next;
-            }
-            hw_event_queue.cc = 0;
-
-            printf("(3) [");
-            for(event = hw_event_queue.first; event != NULL; event = event->next) {
-                printf("%s[%i/%i] ", event->name, event->cc, event->mcs);
-            }
-            printf("]\n");
-        }
-    }
-}
-
-void hw_init() {
-    hw_event_queue.cc = 0;
-    hw_event_queue.first = NULL;
-    hw_event_queue.schedule = NULL;
+void hw_reset() {
+    hw_events.cc = 0;
+    hw_events.first = NULL;
 }
 
 void hw_step(int mcs) {
-    hw_event_queue.cc += mcs;
-
-    schedule();
-    event_queue();
+    hw_event_t *next;
+    hw_events.cc += mcs;
+    while(hw_events.first != NULL && hw_events.first->mcs >= mcs) {
+        next = hw_events.first->next;
+        hw_events.first->callback(mcs - hw_events.first->mcs);
+        hw_events.first = next;
+    }
 }
 
-void hw_schedule(hw_event_t *event) {
-    printf("New %s\n", event->name);
-    event->next = hw_event_queue.schedule;
-    hw_event_queue.schedule = event;
+void hw_schedule(hw_event_t *sched, int mcs) {
+    hw_event_t *event, *prev;
+    int exec_mcs = hw_events.cc + mcs;
+
+    for(event = hw_events.first, prev = NULL; event != NULL; event = event->next) {
+        if(exec_mcs <= event->mcs) {
+            sched->next = event;
+            if(prev == NULL) {
+                hw_events.first = sched;
+            }
+            else {
+                prev->next = event;
+            }
+            return;
+        }
+        prev = event;
+    }
+    if(prev == NULL) {
+        hw_events.first = sched;
+    }
+    else {
+        prev->next = sched;
+    }
+    sched->next = NULL;
 }
+
+void hw_unschedule(hw_event_t *del) {
+    hw_event_t *event, *prev;
+    for(event = hw_events.first, prev = NULL; event != NULL; event = event->next) {
+        if(event == del) {
+            if(prev != NULL) {
+                prev->next = event->next;
+            }
+            else {
+                hw_events.first = event->next;
+            }
+        }
+        prev = event;
+    }
+}
+
 

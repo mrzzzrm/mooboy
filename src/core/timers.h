@@ -12,6 +12,6 @@ extern timers_t timers;
 
 void timers_reset();
 void timers_step(int nfcs, int mcs);
-void timers_enable(int on);
+void timers_tac(u8 tac);
 
 #endif

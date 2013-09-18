@@ -49,6 +49,7 @@ void moo_close() {
 void moo_reset() {
     sys_reset();
     mem_reset();
+    hw_reset();
     cpu_reset();
     lcd_reset();
     timers_reset();
@@ -126,7 +127,6 @@ void moo_step_hw(int mcs) {
     if(mcs == 0) {
         return;
     }
-    hw_step(mcs);
 
     if(cpu.freq == DOUBLE_CPU_FREQ) {
         nfcs = (mcs + cpu.remainder) / 2;
@@ -136,14 +136,19 @@ void moo_step_hw(int mcs) {
         nfcs = mcs;
     }
 
+//    cpu.dbg_mcs += mcs;
+//    cpu.dbg_nfcs += nfcs;
+
+
+    //hw_step(mcs);
+
+
     timers_step(nfcs, mcs);
     lcd_step(nfcs);
     rtc_step(nfcs);
     sound_step(nfcs);
     //serial_step();
 
-    cpu.dbg_mcs += mcs;
-    cpu.dbg_nfcs += nfcs;
 
     sys.invoke_cc += mcs;
 }

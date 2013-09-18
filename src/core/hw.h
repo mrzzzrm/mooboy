@@ -1,25 +1,25 @@
 #ifndef CORE_HW_H
 #define CORE_HW_H
 
+#include "defines.h"
+
 typedef struct hw_event_s {
-    int cc;
-    int mcs;
     void (*callback)(int);
     struct hw_event_s *next;
-    char name[64];
+    u16 mcs;
 } hw_event_t;
 
 typedef struct {
+    u16 cc;
     hw_event_t *first;
-    hw_event_t *schedule;
-    int cc;
-} hw_event_queue_t;
+} hw_events_t;
 
-extern hw_event_queue_t hw_event_queue;
+extern hw_events_t hw_events;
 
 
-void hw_init();
+void hw_reset();
 void hw_step(int mcs);
-void hw_schedule(hw_event_t *event);
+void hw_schedule(hw_event_t *event, int mcs);
+void hw_unschedule(hw_event_t *del);
 
 #endif

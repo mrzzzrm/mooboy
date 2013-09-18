@@ -197,7 +197,7 @@ void sys_play_audio(int on) {
 
 void sys_new_performance_info() {
     char statusline[256];
-    snprintf(statusline, sizeof(statusline), "Skipped %i/%i frames, Slept %6.2f %%, Speed: %6.2f %%", performance.counters.skipped, performance.counters.frames, (float)performance.counters.slept*100/PERFORMANCE_UPDATE_PERIOD, performance.speed);
+    snprintf(statusline, sizeof(statusline), "Skipped %i/%i frames, Slept %6.2f %%, Speed: %6.2f %%, CPU: %i Hz", performance.counters.skipped, performance.counters.frames, (float)performance.counters.slept*100/PERFORMANCE_UPDATE_PERIOD, performance.speed, cpu.freq);
 
     SDL_FillRect(statuslabel, NULL, 0);
     stringColor(statuslabel, 0, 0, statusline, 0xaaaaaaff);

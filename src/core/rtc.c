@@ -50,7 +50,7 @@ void rtc_reset() {
 
 void rtc_step(int nfcs) {
     if(mbc.type == 3) {
-        rtc.cc += nfcs;//cpu.step_nf_cycles;
+        rtc.cc += nfcs;
         if(rtc.ticking[DH] & 0x40 || rtc.cc < NORMAL_CPU_FREQ) { // Halt bit set or next tick not yet reached
             return;
         }
