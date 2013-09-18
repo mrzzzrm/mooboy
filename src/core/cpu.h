@@ -23,6 +23,7 @@ typedef struct {
     int remainder;
 
     int freq;
+    int freq_factor;
     int freq_switch;
     int halted;
 

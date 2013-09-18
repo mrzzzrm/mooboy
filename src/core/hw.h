@@ -6,11 +6,11 @@
 typedef struct hw_event_s {
     void (*callback)(int);
     struct hw_event_s *next;
-    u16 mcs;
+    u32 mcs;
 } hw_event_t;
 
 typedef struct {
-    u16 cc;
+    u32 cc;
     hw_event_t *first, *sched;
 } hw_events_t;
 

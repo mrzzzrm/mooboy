@@ -85,6 +85,7 @@ extern noise_t noise;
 void sound_init();
 void sound_close();
 void sound_reset();
+void sound_begin();
 
 void sound_step(int nfcs);
 

@@ -63,6 +63,8 @@ void moo_reset() {
 
 void moo_begin() {
     moo.state |= MOO_ROM_RUNNING_BIT;
+    rtc_begin();
+    sound_begin();
     sys_begin();
     framerate_begin();
 }
@@ -145,7 +147,7 @@ void moo_step_hw(int mcs) {
 
   //  timers_step(nfcs, mcs);
     lcd_step(nfcs);
-    rtc_step(nfcs);
+    //rtc_step(nfcs);
     sound_step(nfcs);
     //serial_step();
 

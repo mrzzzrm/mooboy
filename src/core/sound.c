@@ -1,5 +1,6 @@
 #include "sound.h"
 #include "cpu.h"
+#include "hw.h"
 #include "defines.h"
 #include "sys/sys.h"
 #include <assert.h>
@@ -18,8 +19,12 @@ env_t env[3];
 wave_t wave;
 noise_t noise;
 
+static hw_event_t mix_event;
+static hw_event_t length_counters_event;
+static hw_event_t sweep_event;
+static hw_event_t envelopes_event;
 
-static void tick_length_counter(counter_t *counter, u8 *on) {
+static inline void tick_length_counter(counter_t *counter, u8 *on) {
     if(counter->length > 0) {
         counter->length--;
         if(counter->expires && counter->length == 0) {
@@ -29,10 +34,10 @@ static void tick_length_counter(counter_t *counter, u8 *on) {
 }
 
 static void tick_length_counters() {
-    tick_length_counter(&sqw[0].counter, &sqw[0].on);
-    tick_length_counter(&sqw[1].counter, &sqw[1].on);
-    tick_length_counter(&wave.counter, &wave.on);
-    tick_length_counter(&noise.counter, &noise.on);
+//    tick_length_counter(&sqw[0].counter, &sqw[0].on);
+//    tick_length_counter(&sqw[1].counter, &sqw[1].on);
+//    tick_length_counter(&wave.counter, &wave.on);
+//    tick_length_counter(&noise.counter, &noise.on);
 }
 
 static void tick_sweep() {
@@ -197,6 +202,55 @@ static sample_t noise_mix() {
     return r;
 }
 
+static void mix(int mcs) {
+    if(sys.sound_on) {
+        sys_lock_audiobuf();
+        sound_mix();
+        sys_unlock_audiobuf();
+    }
+
+    sound.mix_threshold = (cpu.freq + sound.remainder) / sound.freq;
+    sound.remainder = (cpu.freq + sound.remainder) % sound.freq;
+
+    //printf("Mix in %i %i\n", sound.mix_threshold, mcs);
+    hw_schedule(&mix_event, sound.mix_threshold - mcs);
+}
+
+static void _length_counters(int mcs) {
+    tick_length_counter(&sqw[0].counter, &sqw[0].on);
+    tick_length_counter(&sqw[1].counter, &sqw[1].on);
+    tick_length_counter(&wave.counter, &wave.on);
+    tick_length_counter(&noise.counter, &noise.on);
+
+    hw_schedule(&length_counters_event, 4096 * cpu.freq_factor - mcs);
+}
+
+static void _sweep(int mcs) {
+    if(sweep.period != 0) {
+        sweep.tick++;
+        if(sweep.tick >= sweep.period) {
+            if(sweep.dir) {
+                sqw[0].freq -= sqw[0].freq >> sweep.shift;
+            }
+            else {
+                sqw[0].freq += sqw[0].freq >> sweep.shift;
+            }
+            sqw[0].freq &= 0x07FF;
+            sweep.tick = 0;
+        }
+    }
+
+    hw_schedule(&sweep_event, 9192 * cpu.freq_factor - mcs);
+}
+
+static void _envelopes(int mcs) {
+    tick_envelope(&env[0], &sqw[0].volume);
+    tick_envelope(&env[1], &sqw[1].volume);
+    tick_envelope(&env[2], &noise.volume);
+
+    hw_schedule(&envelopes_event, 18384 * cpu.freq_factor - mcs);
+}
+
 void sound_init() {
     memset(&sound, 0x00, sizeof(sound));
 
@@ -226,31 +280,42 @@ void sound_reset() {
     memset(&noise, 0x00, sizeof(noise));
 
     noise.lsfr = 0xFFFF;
+
+    mix_event.callback = mix;
+    length_counters_event.callback = _length_counters;
+    sweep_event.callback = _sweep;
+    envelopes_event.callback = _envelopes;
+}
+
+void sound_begin() {
+    sound.remainder = 0;
+
+    hw_schedule(&mix_event, cpu.freq / sound.freq);
+    hw_schedule(&length_counters_event, 4096);
+    hw_schedule(&sweep_event, 4096);
+    hw_schedule(&envelopes_event, 18384);
 }
 
 void sound_step(int nfcs) {
-    timer_step(nfcs);
-
-    if(!sys.sound_on) {
-        return;
-    }
-
-    sound.cc += nfcs;
+//    timer_step(nfcs);
+//
+//
+//    sound.cc += nfcs;
 
     sqw[0].cc += nfcs;
     sqw[1].cc += nfcs;
     wave.cc += nfcs;
     noise.cc += nfcs;
 
-    if(sound.cc >= sound.mix_threshold) {
-        sys_lock_audiobuf();
-        sound_mix();
-        sys_unlock_audiobuf();
-
-        sound.cc -= sound.mix_threshold;
-        sound.mix_threshold = (NORMAL_CPU_FREQ + sound.remainder) / sound.freq;
-        sound.remainder = (NORMAL_CPU_FREQ + sound.remainder) % sound.freq;
-    }
+//    if(sound.cc >= sound.mix_threshold) {
+//        sys_lock_audiobuf();
+//        sound_mix();
+//        sys_unlock_audiobuf();
+//
+//        sound.cc -= sound.mix_threshold;
+//        sound.mix_threshold = (NORMAL_CPU_FREQ + sound.remainder) / sound.freq;
+//        sound.remainder = (NORMAL_CPU_FREQ + sound.remainder) % sound.freq;
+//    }
 }
 
 // TODO: Handle userdefined on/off elsewhere, sound-off shouldn't use resources

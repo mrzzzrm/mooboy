@@ -17,11 +17,12 @@ void hw_reset() {
 void hw_step(int mcs) {
     hw_event_t *next_sched, *next, *event, *prev;
 
+
     if(hw_events.first != NULL) {
         hw_events.cc += mcs;
 
         while(hw_events.first != NULL) {
-            uint16_t dist = hw_events.cc - hw_events.first->mcs;
+            u32 dist = hw_events.cc - hw_events.first->mcs;
 
             if(dist <= mcs) {
                 next = hw_events.first->next;
@@ -38,21 +39,22 @@ void hw_step(int mcs) {
         next_sched = hw_events.sched->next;
         prev = NULL;
 
-        for(event = hw_events.first; event != NULL; event = next) {
-            next = hw_events.sched->next;
+        for(event = hw_events.first; event != NULL;) {
+            next = event->next;
 
-            if((uint16_t)(hw_events.sched->mcs - hw_events.cc) <= (uint16_t)(event->mcs - hw_events.cc)) {
+            if((u32)(hw_events.sched->mcs - hw_events.cc) <= (u32)(event->mcs - hw_events.cc)) {
                 hw_events.sched->next = event;
                 if(prev == NULL) {
                     hw_events.first = hw_events.sched;
                 }
                 else {
-                    prev->next = hw_events.sched->next;
+                    prev->next = hw_events.sched;
                 }
                 break;
             }
 
             prev = event;
+            event = next;
         }
 
         if(event == NULL) {
@@ -70,7 +72,6 @@ void hw_step(int mcs) {
 
 void hw_schedule(hw_event_t *sched, int mcs) {
     sched->mcs = hw_events.cc + mcs;
-    assert(sched != hw_events.sched);
     sched->next = hw_events.sched;
     hw_events.sched = sched;
 }

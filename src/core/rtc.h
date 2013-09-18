@@ -14,6 +14,7 @@ typedef struct {
 extern rtc_t rtc;
 
 void rtc_reset();
+void rtc_begin();
 
 void rtc_step(int nfcs);
 void rtc_map_register(u8 val);

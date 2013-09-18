@@ -326,9 +326,11 @@ static inline void stop() {
     if(cpu.freq_switch) {
         if(cpu.freq == NORMAL_CPU_FREQ) {
             cpu.freq = DOUBLE_CPU_FREQ;
+            cpu.freq_factor = 2;
         }
         else {
             cpu.freq = NORMAL_CPU_FREQ;
+            cpu.freq_factor = 1;
         }
 
         cpu.freq_switch = 0x00;
