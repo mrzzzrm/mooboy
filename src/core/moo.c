@@ -136,14 +136,14 @@ void moo_step_hw(int mcs) {
         nfcs = mcs;
     }
 
-//    cpu.dbg_mcs += mcs;
-//    cpu.dbg_nfcs += nfcs;
+    cpu.dbg_mcs += mcs;
+    cpu.dbg_nfcs += nfcs;
 
 
-    //hw_step(mcs);
+    hw_step(mcs);
 
 
-    timers_step(nfcs, mcs);
+  //  timers_step(nfcs, mcs);
     lcd_step(nfcs);
     rtc_step(nfcs);
     sound_step(nfcs);

@@ -1,65 +1,98 @@
 #include "hw.h"
+#include "cpu.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 
 hw_events_t hw_events;
 
 void hw_reset() {
     hw_events.cc = 0;
     hw_events.first = NULL;
+    hw_events.sched = NULL;
 }
 
 void hw_step(int mcs) {
-    hw_event_t *next;
-    hw_events.cc += mcs;
-    while(hw_events.first != NULL && hw_events.first->mcs >= mcs) {
-        next = hw_events.first->next;
-        hw_events.first->callback(mcs - hw_events.first->mcs);
-        hw_events.first = next;
+    hw_event_t *next_sched, *next, *event, *prev;
+
+    if(hw_events.first != NULL) {
+        hw_events.cc += mcs;
+
+        while(hw_events.first != NULL) {
+            uint16_t dist = hw_events.cc - hw_events.first->mcs;
+
+            if(dist <= mcs) {
+                next = hw_events.first->next;
+                hw_events.first->callback(dist);
+                hw_events.first = next;
+            }
+            else {
+                break;
+            }
+        }
+    }
+
+    while(hw_events.sched != NULL) {
+        next_sched = hw_events.sched->next;
+        prev = NULL;
+
+        for(event = hw_events.first; event != NULL; event = next) {
+            next = hw_events.sched->next;
+
+            if((uint16_t)(hw_events.sched->mcs - hw_events.cc) <= (uint16_t)(event->mcs - hw_events.cc)) {
+                hw_events.sched->next = event;
+                if(prev == NULL) {
+                    hw_events.first = hw_events.sched;
+                }
+                else {
+                    prev->next = hw_events.sched->next;
+                }
+                break;
+            }
+
+            prev = event;
+        }
+
+        if(event == NULL) {
+            if(prev == NULL) {
+                hw_events.first = hw_events.sched;
+            }
+            else {
+                prev->next = hw_events.sched;
+            }
+            hw_events.sched->next = NULL;
+        }
+        hw_events.sched = next_sched;
     }
 }
 
 void hw_schedule(hw_event_t *sched, int mcs) {
-    hw_event_t *event, *prev;
-    int exec_mcs = hw_events.cc + mcs;
-
-    for(event = hw_events.first, prev = NULL; event != NULL; event = event->next) {
-        if(exec_mcs <= event->mcs) {
-            sched->next = event;
-            if(prev == NULL) {
-                hw_events.first = sched;
-            }
-            else {
-                prev->next = event;
-            }
-            return;
-        }
-        prev = event;
-    }
-    if(prev == NULL) {
-        hw_events.first = sched;
-    }
-    else {
-        prev->next = sched;
-    }
-    sched->next = NULL;
+    sched->mcs = hw_events.cc + mcs;
+    assert(sched != hw_events.sched);
+    sched->next = hw_events.sched;
+    hw_events.sched = sched;
 }
 
-void hw_unschedule(hw_event_t *del) {
+static void unschedule_from_queue(hw_event_t **q, hw_event_t *del) {
     hw_event_t *event, *prev;
-    for(event = hw_events.first, prev = NULL; event != NULL; event = event->next) {
+    for(event = *q, prev = NULL; event != NULL; event = event->next) {
         if(event == del) {
             if(prev != NULL) {
                 prev->next = event->next;
             }
             else {
-                hw_events.first = event->next;
+                *q = event->next;
             }
         }
         prev = event;
     }
+}
+
+void hw_unschedule(hw_event_t *del) {
+    unschedule_from_queue(&hw_events.first, del);
+    unschedule_from_queue(&hw_events.sched, del);
 }
 
 

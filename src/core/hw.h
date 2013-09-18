@@ -11,7 +11,7 @@ typedef struct hw_event_s {
 
 typedef struct {
     u16 cc;
-    hw_event_t *first;
+    hw_event_t *first, *sched;
 } hw_events_t;
 
 extern hw_events_t hw_events;
