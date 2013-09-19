@@ -226,7 +226,7 @@ static void mode_0(int mcs) {
     }
 
     if(lcd.ly == 143) {
-        hw_schedule(&mode_1_event, DUR_SCANLINE * cpu.freq_factor - mcs);
+        hw_schedule(&mode_1_event, DUR_MODE_0 * cpu.freq_factor - mcs);
     }
     else {
         hw_schedule(&mode_2_event, DUR_MODE_0 * cpu.freq_factor - mcs);
@@ -242,7 +242,7 @@ static void mode_1(int mcs) {
     sys_fb_ready();
     swap_fb();
 
-    hw_schedule(&mode_2_event, DUR_VBLANK * cpu.freq_factor - mcs);
+    hw_schedule(&vblank_line_event, DUR_SCANLINE * cpu.freq_factor - mcs);
 }
 
 static void mode_2(int mcs) {
@@ -409,6 +409,7 @@ void lcd_gdma() {
 
 void lcd_enable() {
     lcd.stat = (lcd.stat & 0xF8) | 0x04;
+    unschedule();
     hw_schedule(&mode_2_event, DUR_SCANLINE * cpu.freq_factor);
 }
 
