@@ -206,6 +206,7 @@ void sys_new_performance_info() {
 void sys_set_scalingmode(int mode) {
     SDL_Rect area;
 
+    sys.scalingmode = mode;
     switch(sys.scalingmode) {
         case SCALING_NONE: area = none_scaling_area(); break;
         case SCALING_PROPORTIONAL: area = proportional_scaling_area(); break;
@@ -215,5 +216,4 @@ void sys_set_scalingmode(int mode) {
     }
 
     video_set_area(area);
-    sys.scalingmode = mode;
 }

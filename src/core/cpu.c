@@ -39,8 +39,10 @@ void cpu_reset() {
     cpu.halted = 0;
     cpu.freq_switch = 0x00;
 
+#ifdef DEBUG
     cpu.dbg_mcs = 0;
     cpu.dbg_nfcs = 0;
+#endif
 }
 
 

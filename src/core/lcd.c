@@ -316,11 +316,19 @@ void lcd_reset() {
     lcd_obp0_dirty();
     lcd_obp1_dirty();
 
-    mode_0_event.callback = mode_0; sprintf(mode_0_event.name, "lcd-mode-0");
-    mode_1_event.callback = mode_1; sprintf(mode_1_event.name, "lcd-mode-1");
-    mode_2_event.callback = mode_2; sprintf(mode_2_event.name, "lcd-mode-2");
-    mode_3_event.callback = mode_3; sprintf(mode_3_event.name, "lcd-mode-3");
-    vblank_line_event.callback = vblank_line; sprintf(mode_0_event.name, "vblank_line");
+    mode_0_event.callback = mode_0;
+    mode_1_event.callback = mode_1;
+    mode_2_event.callback = mode_2;
+    mode_3_event.callback = mode_3;
+    vblank_line_event.callback = vblank_line;
+
+#ifdef DEBUG
+    sprintf(mode_0_event.name, "lcd-mode-0");
+    sprintf(mode_1_event.name, "lcd-mode-1");
+    sprintf(mode_2_event.name, "lcd-mode-2");
+    sprintf(mode_3_event.name, "lcd-mode-3");
+    sprintf(mode_0_event.name, "vblank_line");
+#endif
 }
 
 void lcd_begin() {

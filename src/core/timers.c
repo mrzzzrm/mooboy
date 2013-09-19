@@ -45,8 +45,13 @@ void timers_reset() {
     timers.div_cc = 0;
     timers.tima_cc = 0;
 
-    div_event.callback = div_step;sprintf(div_event.name, "div");
-    timer_event.callback = timer_step;sprintf(timer_event.name, "tima");
+    div_event.callback = div_step;
+    timer_event.callback = timer_step;
+
+#ifdef DEBUG
+    sprintf(div_event.name, "div");
+    sprintf(timer_event.name, "tima");
+#endif
 }
 
 void timers_begin() {

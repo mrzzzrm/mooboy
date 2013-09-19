@@ -1,5 +1,6 @@
 #include "hw.h"
 #include "cpu.h"
+#include "sys/sys.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -25,6 +26,9 @@ static void print_queue(hw_event_t *e) {
 void hw_step(int mcs) {
     hw_event_t *next_sched, *next, *event, *prev;
 
+
+    sys.invoke_cc += mcs;
+
     if(hw_events.first != NULL) {
         hw_events.cc += mcs;
 
@@ -32,7 +36,9 @@ void hw_step(int mcs) {
             u32 dist = hw_events.cc - hw_events.first->mcs;
             if(dist < mcs) {
                 next = hw_events.first->next;
+#ifdef DEBUG
                 hw_events.first->dbg_queued = 0;
+#endif
                 hw_events.first->callback(dist);
                 hw_events.first = next;
             }
@@ -83,11 +89,13 @@ void hw_step(int mcs) {
 }
 
 void hw_schedule(hw_event_t *sched, int mcs) {
+#ifdef DEBUG
     if(sched->dbg_queued) {
         printf("%s already queued\n", sched->name);
         assert(0);
     }
     sched->dbg_queued = 1;
+#endif
 
     sched->mcs = hw_events.cc + mcs;
     sched->next = hw_events.sched;
@@ -110,7 +118,9 @@ static void unschedule_from_queue(hw_event_t **q, hw_event_t *del) {
 }
 
 void hw_unschedule(hw_event_t *del) {
+#ifdef DEBUG
     del->dbg_queued = 0;
+#endif
 
     unschedule_from_queue(&hw_events.first, del);
     unschedule_from_queue(&hw_events.sched, del);

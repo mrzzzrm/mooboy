@@ -57,7 +57,11 @@ static void step(int mcs) {
 void rtc_reset() {
     memset(&rtc, 0x00, sizeof(rtc));
 
-    rtc_event.callback = step;sprintf(rtc_event.name, "rtc0");
+    rtc_event.callback = step;
+
+#ifdef DEBUG
+    sprintf(rtc_event.name, "rtc0");
+#endif
 }
 
 void rtc_begin() {

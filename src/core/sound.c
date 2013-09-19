@@ -34,10 +34,10 @@ static inline void tick_length_counter(counter_t *counter, u8 *on) {
 }
 
 static void tick_length_counters() {
-//    tick_length_counter(&sqw[0].counter, &sqw[0].on);
-//    tick_length_counter(&sqw[1].counter, &sqw[1].on);
-//    tick_length_counter(&wave.counter, &wave.on);
-//    tick_length_counter(&noise.counter, &noise.on);
+    tick_length_counter(&sqw[0].counter, &sqw[0].on);
+    tick_length_counter(&sqw[1].counter, &sqw[1].on);
+    tick_length_counter(&wave.counter, &wave.on);
+    tick_length_counter(&noise.counter, &noise.on);
 }
 
 static void tick_sweep() {
@@ -286,10 +286,17 @@ void sound_reset() {
 
     noise.lsfr = 0xFFFF;
 
-    mix_event.callback = mix;sprintf(mix_event.name, "mix");
-    length_counters_event.callback = _length_counters;sprintf(length_counters_event.name, "length_counters");
-    sweep_event.callback = _sweep;sprintf(sweep_event.name, "sweep");
-    envelopes_event.callback = _envelopes;sprintf(envelopes_event.name, "envelopes");
+    mix_event.callback = mix;
+    length_counters_event.callback = _length_counters;
+    sweep_event.callback = _sweep;
+    envelopes_event.callback = _envelopes;
+
+#ifdef DEBUG
+    sprintf(mix_event.name, "mix");
+    sprintf(length_counters_event.name, "length_counters");
+    sprintf(sweep_event.name, "sweep");
+    sprintf(envelopes_event.name, "envelopes");
+#endif
 }
 
 void sound_begin() {

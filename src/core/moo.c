@@ -141,21 +141,19 @@ void moo_step_hw(int mcs) {
         nfcs = mcs;
     }
 
+#ifdef DEBUG
     cpu.dbg_mcs += mcs;
     cpu.dbg_nfcs += nfcs;
-
+#endif
 
     hw_step(mcs);
 
 
-  //  timers_step(nfcs, mcs);
-    //lcd_step(nfcs);
-    //rtc_step(nfcs);
+//    timers_step(nfcs, mcs);
+//    lcd_step(nfcs);
+//    rtc_step(nfcs);
     sound_step(nfcs);
-    //serial_step();
-
-
-    sys.invoke_cc += mcs;
+//    serial_step();
 }
 
 static void moo_cycle(int num) {
