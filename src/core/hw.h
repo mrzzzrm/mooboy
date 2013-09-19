@@ -4,9 +4,11 @@
 #include "defines.h"
 
 typedef struct hw_event_s {
+    int dbg_queued;
     void (*callback)(int);
     struct hw_event_s *next;
     u32 mcs;
+    char name[64];
 } hw_event_t;
 
 typedef struct {

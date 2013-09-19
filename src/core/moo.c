@@ -67,6 +67,7 @@ void moo_begin() {
     rtc_begin();
     sound_begin();
     lcd_begin();
+    timers_begin();
     sys_begin();
     framerate_begin();
 }
@@ -129,12 +130,9 @@ void moo_step_hw(int mcs) {
     assert(mcs <= 10);
 
     int nfcs;
-fprintf(stderr, "a ");
     if(mcs == 0) {
         return;
     }
-
-fprintf(stderr, "b ");
     if(cpu.freq == DOUBLE_CPU_FREQ) {
         nfcs = (mcs + cpu.remainder) / 2;
         cpu.remainder = (mcs + cpu.remainder) % 2;
@@ -143,15 +141,12 @@ fprintf(stderr, "b ");
         nfcs = mcs;
     }
 
-fprintf(stderr, "c ");
     cpu.dbg_mcs += mcs;
     cpu.dbg_nfcs += nfcs;
 
 
-fprintf(stderr, "d ");
     hw_step(mcs);
 
-fprintf(stderr, "e ");
 
   //  timers_step(nfcs, mcs);
     //lcd_step(nfcs);
@@ -160,9 +155,7 @@ fprintf(stderr, "e ");
     //serial_step();
 
 
-fprintf(stderr, "f ");
     sys.invoke_cc += mcs;
-fprintf(stderr, "g ");
 }
 
 static void moo_cycle(int num) {
@@ -177,11 +170,8 @@ static void moo_cycle(int num) {
             moo_step_hw(1);
         }
         else {
-fprintf(stderr, "-> ");
             u8 mcs = cpu_step();
-fprintf(stderr, "<- ");
             moo_step_hw(mcs);
-fprintf(stderr, "/\n");
         }
     }
 }

@@ -39,11 +39,11 @@
 
 lcd_t lcd;
 
-static hw_event_t mode_0_event;
-static hw_event_t mode_1_event;
-static hw_event_t mode_2_event;
-static hw_event_t mode_3_event;
-static hw_event_t vblank_line_event;
+static hw_event_t mode_0_event = {0};
+static hw_event_t mode_1_event = {0};
+static hw_event_t mode_2_event = {0};
+static hw_event_t mode_3_event = {0};
+static hw_event_t vblank_line_event = {0};
 
 static void mode_2(int mcs);
 
@@ -194,7 +194,7 @@ inline void lcd_hdma() {
 
 static void next_line() {
     lcd.ly++;
-    printf("%i: LY %i\n", cpu.dbg_mcs, lcd.ly);
+   // printf("LCD: %i: LY %i\n", cpu.dbg_mcs, lcd.ly);
     if(lcd.ly == lcd.lyc) {
         lcd.stat |= 0x04;
         stat_irq(SIF_LYC);
@@ -202,7 +202,7 @@ static void next_line() {
 }
 
 static void vblank_line(int mcs) {
-    printf("VBlank\n");
+    //printf("LCD: VBlank\n");
 
     next_line();
     if(lcd.ly == 153) {
@@ -214,7 +214,7 @@ static void vblank_line(int mcs) {
 }
 
 static void mode_0(int mcs) {
-    printf("0\n");
+    //printf("LCD: 0\n");
 
     STAT_SET_MODE(0);
     stat_irq(SIF_HBLANK);
@@ -234,8 +234,6 @@ static void mode_0(int mcs) {
 }
 
 static void mode_1(int mcs) {
-    printf("%i VBlanking\n",  cpu.dbg_mcs);
-
     STAT_SET_MODE(1);
     next_line();
 
@@ -248,7 +246,7 @@ static void mode_1(int mcs) {
 }
 
 static void mode_2(int mcs) {
-    printf("2\n");
+   // printf("LCD: 2\n");
     STAT_SET_MODE(2);
     next_line();
     lcd.ly %= 154;
@@ -257,7 +255,7 @@ static void mode_2(int mcs) {
 }
 
 static void mode_3(int mcs) {
-    printf("3\n");
+  //  printf("LCD: 3\n");
     STAT_SET_MODE(3);
     hw_schedule(&mode_0_event, DUR_MODE_3 * cpu.freq_factor - mcs);
 }
@@ -318,15 +316,16 @@ void lcd_reset() {
     lcd_obp0_dirty();
     lcd_obp1_dirty();
 
-    mode_0_event.callback = mode_0;
-    mode_1_event.callback = mode_1;
-    mode_2_event.callback = mode_2;
-    mode_3_event.callback = mode_3;
-    vblank_line_event.callback = vblank_line;
+    mode_0_event.callback = mode_0; sprintf(mode_0_event.name, "lcd-mode-0");
+    mode_1_event.callback = mode_1; sprintf(mode_1_event.name, "lcd-mode-1");
+    mode_2_event.callback = mode_2; sprintf(mode_2_event.name, "lcd-mode-2");
+    mode_3_event.callback = mode_3; sprintf(mode_3_event.name, "lcd-mode-3");
+    vblank_line_event.callback = vblank_line; sprintf(mode_0_event.name, "vblank_line");
 }
 
 void lcd_begin() {
-    hw_schedule(&mode_2_event, DUR_VBLANK);
+    unschedule();
+    hw_schedule(&mode_2_event, DUR_VBLANK * cpu.freq_factor);
 }
 
 void lcd_step(int nfcs) {
@@ -410,8 +409,7 @@ void lcd_gdma() {
 
 void lcd_enable() {
     lcd.stat = (lcd.stat & 0xF8) | 0x04;
-    hw_schedule(&mode_2_event, DUR_SCANLINE);
-    hw_schedule(&mode_2_event, DUR_SCANLINE);
+    hw_schedule(&mode_2_event, DUR_SCANLINE * cpu.freq_factor);
 }
 
 void lcd_disable() {
@@ -430,7 +428,7 @@ void lcd_set_lyc(u8 lyc) {
 void lcd_reset_ly() {
     lcd.ly = 0x00;
     unschedule();
-    hw_schedule(&mode_2_event, DUR_SCANLINE);
+    hw_schedule(&mode_2_event, DUR_SCANLINE * cpu.freq_factor);
 }
 
 void lcd_c_dirty() {

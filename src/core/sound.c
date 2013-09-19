@@ -19,10 +19,10 @@ env_t env[3];
 wave_t wave;
 noise_t noise;
 
-static hw_event_t mix_event;
-static hw_event_t length_counters_event;
-static hw_event_t sweep_event;
-static hw_event_t envelopes_event;
+static hw_event_t mix_event = {0};
+static hw_event_t length_counters_event = {0};
+static hw_event_t sweep_event = {0};
+static hw_event_t envelopes_event = {0};
 
 static inline void tick_length_counter(counter_t *counter, u8 *on) {
     if(counter->length > 0) {
@@ -286,19 +286,19 @@ void sound_reset() {
 
     noise.lsfr = 0xFFFF;
 
-    mix_event.callback = mix;
-    length_counters_event.callback = _length_counters;
-    sweep_event.callback = _sweep;
-    envelopes_event.callback = _envelopes;
+    mix_event.callback = mix;sprintf(mix_event.name, "mix");
+    length_counters_event.callback = _length_counters;sprintf(length_counters_event.name, "length_counters");
+    sweep_event.callback = _sweep;sprintf(sweep_event.name, "sweep");
+    envelopes_event.callback = _envelopes;sprintf(envelopes_event.name, "envelopes");
 }
 
 void sound_begin() {
     sound.remainder = 0;
 
-    hw_schedule(&mix_event, cpu.freq / sound.freq);
-    hw_schedule(&length_counters_event, 4096);
-    hw_schedule(&sweep_event, 4096);
-    hw_schedule(&envelopes_event, 18384);
+    hw_unschedule(&mix_event); hw_schedule(&mix_event, cpu.freq / sound.freq);
+    hw_unschedule(&length_counters_event); hw_schedule(&length_counters_event, 4096);
+    hw_unschedule(&sweep_event); hw_schedule(&sweep_event, 4096);
+    hw_unschedule(&envelopes_event); hw_schedule(&envelopes_event, 18384);
 }
 
 void sound_step(int nfcs) {

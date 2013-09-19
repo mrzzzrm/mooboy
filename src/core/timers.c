@@ -11,8 +11,8 @@ timers_t timers;
 
 static const u16 MCS_PER_TIMA[4] = {0x100, 0x04, 0x10, 0x40};
 
-static hw_event_t div_event;
-static hw_event_t timer_event;
+static hw_event_t div_event = {0};
+static hw_event_t timer_event = {0};
 
 
 
@@ -29,7 +29,7 @@ static void timer_step(int mcs) {
             timers.tima = timers.tma;
         }
 
-        if(mcs >= MCS_PER_TIMA[timers.tac & 0x03])
+        if(mcs > MCS_PER_TIMA[timers.tac & 0x03])
             mcs -= MCS_PER_TIMA[timers.tac & 0x03];
         else
             break;
@@ -45,8 +45,13 @@ void timers_reset() {
     timers.div_cc = 0;
     timers.tima_cc = 0;
 
-    div_event.callback = div_step;
-    timer_event.callback = timer_step;
+    div_event.callback = div_step;sprintf(div_event.name, "div");
+    timer_event.callback = timer_step;sprintf(timer_event.name, "tima");
+}
+
+void timers_begin() {
+    hw_unschedule(&timer_event);
+    hw_unschedule(&div_event);
 
     hw_schedule(&div_event, MCS_PER_DIVT);
 }
@@ -78,6 +83,7 @@ void timers_tac(u8 tac) {
         hw_unschedule(&timer_event);
     }
     else if(!(timers.tac & 0x04) && (tac & 0x04)) {
+        hw_unschedule(&timer_event);
         hw_schedule(&timer_event, MCS_PER_TIMA[timers.tac & 0x03]);
     }
 
