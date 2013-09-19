@@ -55,11 +55,17 @@ typedef struct {
 extern lcd_t lcd;
 
 void lcd_reset();
+void lcd_begin();
 
 void lcd_step(int nfcs);
 void lcd_dma(u8 v);
 void lcd_gdma();
 void lcd_hdma();
+
+void lcd_enable();
+void lcd_disable();
+void lcd_set_lyc(u8 lyc);
+void lcd_reset_ly();
 
 void lcd_c_dirty();
 void lcd_obp0_dirty();

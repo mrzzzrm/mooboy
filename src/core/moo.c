@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <stdarg.h>
 #include "defines.h"
 #include "lcd.h"
@@ -65,6 +66,7 @@ void moo_begin() {
     moo.state |= MOO_ROM_RUNNING_BIT;
     rtc_begin();
     sound_begin();
+    lcd_begin();
     sys_begin();
     framerate_begin();
 }
@@ -124,12 +126,15 @@ void moo_set_hw(int hw) {
 }
 
 void moo_step_hw(int mcs) {
-    int nfcs;
+    assert(mcs <= 10);
 
+    int nfcs;
+fprintf(stderr, "a ");
     if(mcs == 0) {
         return;
     }
 
+fprintf(stderr, "b ");
     if(cpu.freq == DOUBLE_CPU_FREQ) {
         nfcs = (mcs + cpu.remainder) / 2;
         cpu.remainder = (mcs + cpu.remainder) % 2;
@@ -138,28 +143,32 @@ void moo_step_hw(int mcs) {
         nfcs = mcs;
     }
 
+fprintf(stderr, "c ");
     cpu.dbg_mcs += mcs;
     cpu.dbg_nfcs += nfcs;
 
 
+fprintf(stderr, "d ");
     hw_step(mcs);
 
+fprintf(stderr, "e ");
 
   //  timers_step(nfcs, mcs);
-    lcd_step(nfcs);
+    //lcd_step(nfcs);
     //rtc_step(nfcs);
     sound_step(nfcs);
     //serial_step();
 
 
+fprintf(stderr, "f ");
     sys.invoke_cc += mcs;
+fprintf(stderr, "g ");
 }
 
 static void moo_cycle(int num) {
     unsigned int t;
 
     sys.invoke_cc = 0;
-
     for(t = 0; t < num; t++) {
         if(cpu.halted) {
             if(ints_handle_standby()) {
@@ -168,8 +177,11 @@ static void moo_cycle(int num) {
             moo_step_hw(1);
         }
         else {
+fprintf(stderr, "-> ");
             u8 mcs = cpu_step();
+fprintf(stderr, "<- ");
             moo_step_hw(mcs);
+fprintf(stderr, "/\n");
         }
     }
 }

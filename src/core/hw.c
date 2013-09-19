@@ -17,7 +17,7 @@ void hw_reset() {
 void hw_step(int mcs) {
     hw_event_t *next_sched, *next, *event, *prev;
 
-
+    fprintf(stderr, "1 ");
     if(hw_events.first != NULL) {
         hw_events.cc += mcs;
 
@@ -34,6 +34,7 @@ void hw_step(int mcs) {
         }
     }
 
+    fprintf(stderr, "2 ");
     while(hw_events.sched != NULL) {
         next_sched = hw_events.sched->next;
         prev = NULL;
@@ -67,6 +68,7 @@ void hw_step(int mcs) {
         }
         hw_events.sched = next_sched;
     }
+    fprintf(stderr, "3 ");
 }
 
 void hw_schedule(hw_event_t *sched, int mcs) {
