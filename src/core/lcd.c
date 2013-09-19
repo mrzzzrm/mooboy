@@ -232,6 +232,22 @@ void lcd_reset() {
     lcd_obp1_dirty();
 }
 
+static void step_to_mode_0(int mcs) {
+
+}
+
+static void step_to_mode_1(int mcs) {
+
+}
+
+static void step_to_mode_2(int mcs) {
+
+}
+
+static void step_to_mode_3(int mcs) {
+
+}
+
 void lcd_step(int nfcs) {
     u16 m1, m2;
     u8 old_ly;

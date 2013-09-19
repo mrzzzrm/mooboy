@@ -203,16 +203,21 @@ static sample_t noise_mix() {
 }
 
 static void mix(int mcs) {
-    if(sys.sound_on) {
-        sys_lock_audiobuf();
-        sound_mix();
-        sys_unlock_audiobuf();
+    for(;;) {
+        if(sys.sound_on) {
+            sys_lock_audiobuf();
+            sound_mix();
+            sys_unlock_audiobuf();
+        }
+
+        sound.mix_threshold = (cpu.freq + sound.remainder) / sound.freq;
+        sound.remainder = (cpu.freq + sound.remainder) % sound.freq;
+
+        if(mcs >= sound.mix_threshold)
+            mcs -= sound.mix_threshold;
+        else
+            break;
     }
-
-    sound.mix_threshold = (cpu.freq + sound.remainder) / sound.freq;
-    sound.remainder = (cpu.freq + sound.remainder) % sound.freq;
-
-    //printf("Mix in %i %i\n", sound.mix_threshold, mcs);
     hw_schedule(&mix_event, sound.mix_threshold - mcs);
 }
 

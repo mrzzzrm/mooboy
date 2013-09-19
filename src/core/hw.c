@@ -23,7 +23,6 @@ void hw_step(int mcs) {
 
         while(hw_events.first != NULL) {
             u32 dist = hw_events.cc - hw_events.first->mcs;
-
             if(dist <= mcs) {
                 next = hw_events.first->next;
                 hw_events.first->callback(dist);
