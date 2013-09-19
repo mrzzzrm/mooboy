@@ -72,7 +72,7 @@ static void draw_line_cgb_mode(u8 *maps_scan, u8 *obj_scan) {
     u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
     u8 x;
 
-    for(x = 0; x < LCD_WIDTH; x++, pixel++) {
+    for(x = 0; x < LCD_WIDTH; x++, pixel++) {http://d24w6bsrhbeh9d.cloudfront.net/photo/6301703_700b_v3.jpg
         u8 bg_priority;
 
         if(lcd.c & LCDC_BG_ENABLE_BIT) {
@@ -230,22 +230,71 @@ void lcd_reset() {
     lcd_bgp_dirty();
     lcd_obp0_dirty();
     lcd_obp1_dirty();
+
+    hw_schedule(&next_line_event, DUR_SCANLINE);
+    hw_schedule(&step_to_mode_2_event, DUR_VBLANK);
+}
+
+static void next_line(int mcs) {
+    for(;;) {
+        lcd.ly++;
+        if(lcd.ly == lcd.lyc) {
+            lcd.stat |= 0x04;
+            stat_irq(SIF_LYC);
+        }
+
+        if(mcs >= DUR_SCANLINE)
+            mcs -= DUR_SCANLINE;
+        else;
+            break;
+    }
+    hw_schedule(&next_line_event, DUR_SCANLINE - mcs);
 }
 
 static void step_to_mode_0(int mcs) {
+    stat_irq(SIF_HBLANK);
+    if(lcd.c & LCDC_DISPLAY_ENABLE_BIT) {
+        draw_line();
+    }
+    if(!lcd.hdma_inactive) {
+        lcd_hdma();
+    }
 
+    if(lcd.ly == )
 }
 
 static void step_to_mode_1(int mcs) {
+    cpu.irq |= IF_VBLANK;
+    stat_irq(SIF_VBLANK);
+    sys_fb_ready();
+    swap_fb();
 
+    if(mcs >= DUR_MODE_1) {
+        step_to_mode_2_event(mcs - DUR_MODE_1);
+    }
+    else {
+        hw_schedule(&step_to_mode_2_event, DUR_MODE_1 - mcs);
+    }
 }
 
 static void step_to_mode_2(int mcs) {
+    stat_irq(SIF_OAM);
 
+    if(mcs >= DUR_MODE_2) {
+        step_to_mode_3_event(mcs - DUR_MODE_2);
+    }
+    else {
+        hw_schedule(&step_to_mode_3_event, DUR_MODE_2 - mcs);
+    }
 }
 
 static void step_to_mode_3(int mcs) {
-
+    if(mcs >= DUR_MODE_3) {
+        step_to_mode_0_event(mcs - DUR_MODE_3);
+    }
+    else {
+        hw_schedule(&step_to_mode_0_event, DUR_MODE_3 - mcs);
+    }
 }
 
 void lcd_step(int nfcs) {
