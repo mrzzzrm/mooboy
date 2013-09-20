@@ -41,7 +41,6 @@ void cpu_reset() {
 
 #ifdef DEBUG
     cpu.dbg_mcs = 0;
-    cpu.dbg_nfcs = 0;
 #endif
 }
 

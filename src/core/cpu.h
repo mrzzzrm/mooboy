@@ -29,7 +29,6 @@ typedef struct {
 
 #ifdef DEBUG
     int dbg_mcs;
-    int dbg_nfcs;
 #endif
 } cpu_t;
 

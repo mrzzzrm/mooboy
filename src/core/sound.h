@@ -2,6 +2,7 @@
 #define CORE_SOUND_H
 
 #include "defines.h"
+#include "hw.h"
 
 typedef struct {
     u32 freq;
@@ -20,6 +21,7 @@ typedef struct {
 
     int mix_threshold;
     int cc;
+    hw_cycle_t cc_reset;
     int tick_cc;
     int remainder;
 } sound_t;
@@ -42,6 +44,7 @@ typedef struct {
     u8 duty;
     u8 volume;
     int cc;
+    hw_cycle_t cc_reset;
     counter_t counter;
 } sqw_t;
 
@@ -55,6 +58,7 @@ typedef struct {
 typedef struct {
     u8 on;
     int cc;
+    hw_cycle_t cc_reset;
     u8 l, r;
     u16 freq;
     u8 shift;
@@ -65,6 +69,7 @@ typedef struct {
 typedef struct {
     u8 on;
     int cc;
+    hw_cycle_t cc_reset;
     u8 l, r;
     u8 volume;
     u8 shift;

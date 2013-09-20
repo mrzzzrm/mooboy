@@ -178,7 +178,9 @@ static inline void stat_irq(u8 flag) {
 
 inline void lcd_hdma() {
     u16 end;
-    moo_step_hw(8);
+
+    hw_defer(8);
+
     for(end = lcd.hdma_source + 0x10; lcd.hdma_source < end; lcd.hdma_source++, lcd.hdma_dest++) {
         mem_write_byte(lcd.hdma_dest, mem_read_byte(lcd.hdma_source));
     }
@@ -194,7 +196,8 @@ inline void lcd_hdma() {
 
 static void next_line() {
     lcd.ly++;
-   // printf("LCD: %i: LY %i\n", cpu.dbg_mcs, lcd.ly);
+    lcd.ly %= 154;
+    //printf("%i LY = %i\n", cpu.dbg_mcs, lcd.ly);
     if(lcd.ly == lcd.lyc) {
         lcd.stat |= 0x04;
         stat_irq(SIF_LYC);
@@ -202,8 +205,6 @@ static void next_line() {
 }
 
 static void vblank_line(int mcs) {
-    //printf("LCD: VBlank\n");
-
     next_line();
     if(lcd.ly == 153) {
         hw_schedule(&mode_2_event, DUR_SCANLINE * cpu.freq_factor - mcs);
@@ -214,7 +215,7 @@ static void vblank_line(int mcs) {
 }
 
 static void mode_0(int mcs) {
-    //printf("LCD: 0\n");
+    //printf("%i 0\n", cpu.dbg_mcs);
 
     STAT_SET_MODE(0);
     stat_irq(SIF_HBLANK);
@@ -229,13 +230,14 @@ static void mode_0(int mcs) {
         hw_schedule(&mode_1_event, DUR_MODE_0 * cpu.freq_factor - mcs);
     }
     else {
-        hw_schedule(&mode_2_event, DUR_MODE_0 * cpu.freq_factor - mcs);
+       hw_schedule(&mode_2_event, DUR_MODE_0 * cpu.freq_factor - mcs);
     }
 }
 
 static void mode_1(int mcs) {
-    STAT_SET_MODE(1);
     next_line();
+    //printf("%i 1\n", cpu.dbg_mcs);
+    STAT_SET_MODE(1);
 
     cpu.irq |= IF_VBLANK;
     stat_irq(SIF_VBLANK);
@@ -246,16 +248,16 @@ static void mode_1(int mcs) {
 }
 
 static void mode_2(int mcs) {
-   // printf("LCD: 2\n");
-    STAT_SET_MODE(2);
     next_line();
-    lcd.ly %= 154;
+    //printf("%i 2\n", cpu.dbg_mcs);
+    STAT_SET_MODE(2);
     stat_irq(SIF_OAM);
+
     hw_schedule(&mode_3_event, DUR_MODE_2 * cpu.freq_factor - mcs);
 }
 
 static void mode_3(int mcs) {
-  //  printf("LCD: 3\n");
+    //printf("%i 3\n", cpu.dbg_mcs);
     STAT_SET_MODE(3);
     hw_schedule(&mode_0_event, DUR_MODE_3 * cpu.freq_factor - mcs);
 }
@@ -327,13 +329,15 @@ void lcd_reset() {
     sprintf(mode_1_event.name, "lcd-mode-1");
     sprintf(mode_2_event.name, "lcd-mode-2");
     sprintf(mode_3_event.name, "lcd-mode-3");
-    sprintf(mode_0_event.name, "vblank_line");
+    sprintf(vblank_line_event.name, "vblank_line");
 #endif
 }
 
 void lcd_begin() {
     unschedule();
-    hw_schedule(&mode_2_event, DUR_VBLANK * cpu.freq_factor);
+#ifdef NEW_LCD
+    hw_schedule(&vblank_line_event, (DUR_MODE_0 + DUR_MODE_2) * cpu.freq_factor);
+#endif
 }
 
 void lcd_step(int nfcs) {
@@ -354,6 +358,7 @@ void lcd_step(int nfcs) {
 
 
     if(lcd.ly != old_ly) {
+        //printf("%i LY = %i\n", cpu.dbg_mcs, lcd.ly);
         if(lcd.ly == lcd.lyc) {
             stat_irq(SIF_LYC);
         }
@@ -362,6 +367,7 @@ void lcd_step(int nfcs) {
     if(m1 != m2) {
         switch(m2) {
             case 0x00:
+                //printf("%i 0\n", cpu.dbg_mcs);
                 stat_irq(SIF_HBLANK);
                 if(lcd.c & LCDC_DISPLAY_ENABLE_BIT) {
                     draw_line();
@@ -371,15 +377,18 @@ void lcd_step(int nfcs) {
                 }
             break;
             case 0x01:
+                //printf("%i 1\n", cpu.dbg_mcs);
                 cpu.irq |= IF_VBLANK;
                 stat_irq(SIF_VBLANK);
                 sys_fb_ready();
                 swap_fb();
             break;
             case 0x02:
+                //printf("%i 2\n", cpu.dbg_mcs);
                 stat_irq(SIF_OAM);
             break;
             case 0x03:
+                //printf("%i 3\n", cpu.dbg_mcs);
             break;
         }
     }
@@ -416,28 +425,50 @@ void lcd_gdma() {
 }
 
 void lcd_enable() {
+    //printf("%i LCD On\n", cpu.dbg_mcs);
+#ifndef NEW_LCD
+    lcd.stat = (lcd.stat & 0xF8) | 0x04;
+    lcd.cc = 1;
+#else
     lcd.stat = (lcd.stat & 0xF8) | 0x04;
     unschedule();
-    hw_schedule(&mode_2_event, DUR_SCANLINE * cpu.freq_factor);
+    lcd.ly = -1;
+    mode_2(1);
+#endif
 }
 
 void lcd_disable() {
+    //printf("%i LCD Off\n", cpu.dbg_mcs);
+#ifndef NEW_LCD
     lcd.ly = 0;
     lcd.stat = (lcd.stat & 0xF8) | 0x00;
     lcd.cc = 114;
-
+#else
+    lcd.ly = 0;
+    lcd.stat = (lcd.stat & 0xF8) | 0x00;
     unschedule();
+#endif
 }
 
 void lcd_set_lyc(u8 lyc) {
     lcd.lyc = lyc;
+#ifndef NEW_LCD
     STAT_SET_CFLAG(lcd.ly == lcd.lyc ? 1 : 0);
+#endif
 }
 
 void lcd_reset_ly() {
+#ifndef NEW_LCD
     lcd.ly = 0x00;
+    STAT_SET_MODE(2);
+    stat_irq(SIF_OAM);
+
     unschedule();
-    hw_schedule(&mode_2_event, DUR_SCANLINE * cpu.freq_factor);
+    hw_schedule(&mode_3_event, DUR_MODE_2 * cpu.freq_factor);
+#else
+    lcd.ly = 0x00;
+    lcd.cc = 0;
+#endif
 }
 
 void lcd_c_dirty() {

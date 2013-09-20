@@ -66,7 +66,7 @@ void rtc_reset() {
 
 void rtc_begin() {
     if(mbc.type == 3) {
-        hw_schedule(&rtc_event, cpu.freq);
+      //  hw_schedule(&rtc_event, cpu.freq);
     }
 }
 

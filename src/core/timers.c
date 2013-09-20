@@ -29,7 +29,7 @@ static void timer_step(int mcs) {
             timers.tima = timers.tma;
         }
 
-        if(mcs > MCS_PER_TIMA[timers.tac & 0x03])
+        if(mcs >= MCS_PER_TIMA[timers.tac & 0x03])
             mcs -= MCS_PER_TIMA[timers.tac & 0x03];
         else
             break;
@@ -63,7 +63,7 @@ void timers_begin() {
 
 void timers_step(int nfcs, int mcs) {
     if(timers.tac & 0x04) {
-        timers.tima_cc += nfcs;//cpu.step_nf_cycles;
+        timers.tima_cc += nfcs;
         u16 per_tick = MCS_PER_TIMA[timers.tac & 0x03];
         while(timers.tima_cc >= per_tick) {
             timers.tima++;
@@ -75,7 +75,7 @@ void timers_step(int nfcs, int mcs) {
         }
     }
 
-    timers.div_cc += mcs;//cpu.step_sf_cycles;
+    timers.div_cc += mcs;
     while(timers.div_cc >= MCS_PER_DIVT) { // Runs faster or slower depending on gameboy cpu speed
         timers.div++;
         timers.div_cc -= MCS_PER_DIVT;

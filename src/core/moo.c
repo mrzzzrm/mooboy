@@ -127,33 +127,39 @@ void moo_set_hw(int hw) {
 }
 
 void moo_step_hw(int mcs) {
+#ifdef DEBUG
     assert(mcs <= 10);
+#endif
 
-    int nfcs;
-    if(mcs == 0) {
-        return;
-    }
-    if(cpu.freq == DOUBLE_CPU_FREQ) {
-        nfcs = (mcs + cpu.remainder) / 2;
-        cpu.remainder = (mcs + cpu.remainder) % 2;
-    }
-    else {
-        nfcs = mcs;
-    }
+//    int nfcs;
+//
+//    if(mcs == 0) {
+//        return;
+//    }
+//
+//    if(cpu.freq == DOUBLE_CPU_FREQ) {
+//        nfcs = (mcs + cpu.remainder) / 2;
+//        cpu.remainder = (mcs + cpu.remainder) % 2;
+//    }
+//    else {
+//        nfcs = mcs;
+//    }
 
 #ifdef DEBUG
     cpu.dbg_mcs += mcs;
-    cpu.dbg_nfcs += nfcs;
 #endif
 
     hw_step(mcs);
 
-
 //    timers_step(nfcs, mcs);
-//    lcd_step(nfcs);
+#ifndef NEW_LCD
+    lcd_step(nfcs);
+#endif
 //    rtc_step(nfcs);
-    sound_step(nfcs);
+//    sound_step(nfcs);
 //    serial_step();
+
+    sys.invoke_cc += mcs;
 }
 
 static void moo_cycle(int num) {

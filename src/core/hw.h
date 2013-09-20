@@ -3,10 +3,12 @@
 
 #include "defines.h"
 
+typedef u32 hw_cycle_t;
+
 typedef struct hw_event_s {
     void (*callback)(int);
     struct hw_event_s *next;
-    u32 mcs;
+    hw_cycle_t mcs;
 #ifdef DEBUG
     char name[64];
     int dbg_queued;
@@ -14,7 +16,8 @@ typedef struct hw_event_s {
 } hw_event_t;
 
 typedef struct {
-    u32 cc;
+    hw_cycle_t cc;
+    hw_cycle_t defered;
     hw_event_t *first, *sched;
 } hw_events_t;
 
@@ -25,5 +28,6 @@ void hw_reset();
 void hw_step(int mcs);
 void hw_schedule(hw_event_t *event, int mcs);
 void hw_unschedule(hw_event_t *del);
+void hw_defer(hw_cycle_t mcs);
 
 #endif

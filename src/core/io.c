@@ -115,14 +115,9 @@ void io_write(u16 adr, u8 val) {
             if(!(lcd.c & val & 0x80)) {
                 if(val & 0x80) {
                     lcd_enable();
-                    /*lcd.stat = (lcd.stat & 0xF8) | 0x04;
-                    lcd.cc = 1;*/
                 }
                 else if(lcd.c & 0x80) {
                     lcd_disable();
-                    /*lcd.ly = 0;
-                    lcd.stat = (lcd.stat & 0xF8) | 0x00;
-                    lcd.cc = 114;*/
                 }
             }
 
@@ -132,8 +127,8 @@ void io_write(u16 adr, u8 val) {
         case 0x41: lcd.stat = (lcd.stat & 0x87) | (val & 0x78); break;
         case 0x42: lcd.scy = val; break;
         case 0x43: lcd.scx = val; break;
-        case 0x44: lcd_reset_ly(); /*lcd.ly = 0x00; lcd.cc = 0;*/  break;
-        case 0x45: lcd_set_lyc(val); /*lcd.lyc = val;*/ break;
+        case 0x44: lcd_reset_ly(); break;
+        case 0x45: lcd_set_lyc(val); break;
         case 0x46: lcd_dma(val); break;
         case 0x47:
             lcd.bgp = val;
@@ -210,3 +205,5 @@ void io_write(u16 adr, u8 val) {
 #endif
     }
 }
+
+
