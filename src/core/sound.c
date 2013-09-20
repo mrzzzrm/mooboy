@@ -150,10 +150,13 @@ static sample_t wave_mix() {
     }
     wave.cc = hw_events.cc - wave.cc_reset;
 
-    wavelen = (cpu.freq * (2048 - wave.freq))/ 65536;
+    wavelen = (cpu.freq/65536) * (2048 - wave.freq);
 
 //    wave.cc %= wavelen;
     if(wave.cc >= wavelen) {
+        if(wavelen == 0) {
+            printf("Null! %i\n", wave.freq);
+        }
         wave.cc %= wavelen;
         wave.cc_reset = hw_events.cc - wave.cc;
     }
@@ -219,7 +222,7 @@ static sample_t noise_mix() {
     return r;
 }
 
-static void mix(int mcs) {http://9gag.com/
+static void mix(int mcs) {
     if(sys.sound_on) {
         sys_lock_audiobuf();
         sound_mix();
