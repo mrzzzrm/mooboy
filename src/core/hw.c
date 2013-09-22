@@ -16,13 +16,13 @@ void hw_reset() {
 }
 
 #ifdef DEBUG
-static void print_queue(hw_event_t *e) {
-    hw_event_t *c;
-    for(c = e; c != NULL; c = c->next) {
-        fprintf(stdout, "[%s %i] ", c->name, c->mcs);
-        assert(c != c->next);
-    }
-}
+//static void print_queue(hw_event_t *e) {
+//    hw_event_t *c;
+//    for(c = e; c != NULL; c = c->next) {
+//        fprintf(stdout, "[%s %i] ", c->name, c->mcs);
+//        assert(c != c->next);
+//    }
+//}
 #endif
 
 void hw_step(int mcs) {

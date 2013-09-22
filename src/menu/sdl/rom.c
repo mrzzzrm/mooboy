@@ -214,6 +214,19 @@ static int poll_dir() {
 
 static void rom_input_event(int type, int key) {
     menu_list_input(list, type, key);
+
+    if(type == SDL_KEYDOWN) {
+        switch(key) {
+            case SDLK_RIGHT:
+                if(!direntries[list->selected]->is_file && strcmp(direntries[list->selected]->name, "..")) {
+                    change_dir();
+                }
+            break;
+            case SDLK_LEFT:
+                parent_dir();
+            break;
+        }
+    }
 }
 
 void menu_rom_init() {

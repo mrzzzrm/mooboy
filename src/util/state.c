@@ -478,8 +478,6 @@ void state_save(const char *filename) {
 }
 
 int state_load(const char *filename) {
-    int r;
-
     printf("Loading state from '%s'\n", filename);
 
     f = fopen(filename, "rb");

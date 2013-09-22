@@ -20,6 +20,7 @@
 
 typedef struct {
     SDL_Surface *surfaces[2];
+    char text[64];
 } menu_label_t;
 
 typedef struct menu_list_entry_s {
@@ -41,6 +42,7 @@ typedef struct {
     int selected;
     int num_visible;
     int first_visible;
+
     void (*back_func)(void);
 
     int scroll_state[2];
@@ -59,11 +61,13 @@ SDL_Surface *menu_text(const char *text);
 
 menu_label_t *menu_label(const char *text);
 void menu_free_label(menu_label_t *label);
+void menu_free_label_surfaces(menu_label_t *label);
 
 menu_word_string_t *menu_word_string(const char *text);
 void menu_free_word_string(menu_word_string_t *string);
 
 void menu_blit(SDL_Surface *s, int x, int y);
+void menu_blit_label(menu_label_t *label, int align, int selected, int x, int y);
 void menu_blit_word_string(menu_word_string_t *string, int x, int y);
 
 
@@ -84,6 +88,7 @@ int menu_list_selected_id(menu_list_t *list);
 
 void menu_list_select_first(menu_list_t *list);
 void menu_listentry_visible(menu_list_t *list, int id, int visible);
+void menu_collect_list_garbage(menu_list_t *list);
 void menu_draw_list(menu_list_t *list);
 void menu_list_input(menu_list_t *list, int type, int key);
 

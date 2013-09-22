@@ -13,6 +13,11 @@
 #define SCROLL_TO_THRESHOLD 1
 #define SCROLL_ACTIVE 2
 
+#define ALIGN_LEFTBOUND 0
+#define ALIGN_RIGHTBOUND 1
+
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#define max(a, b) ((a) > (b) ? (a) : (b))
 
 static TTF_Font *font;
 
@@ -76,11 +81,11 @@ void menu_util_close() {
 
 menu_label_t *menu_label(const char *text) {
     menu_label_t *label;
-    SDL_Color unselected = {180, 180, 200}, selected = {120, 120, 255};
 
     label = malloc(sizeof(*label));
-    label->surfaces[0] = TTF_RenderText_Blended(font, text, unselected);
-    label->surfaces[1] = TTF_RenderText_Blended(font, text, selected);
+    strncpy(label->text, text, sizeof(label->text));
+    label->surfaces[0] = NULL;
+    label->surfaces[1] = NULL;
 
     return label;
 }
@@ -91,8 +96,23 @@ SDL_Surface *menu_text(const char *text) {
 }
 
 void menu_free_label(menu_label_t *label) {
-    SDL_FreeSurface(label->surfaces[0]);
-    SDL_FreeSurface(label->surfaces[1]);
+    if(label->surfaces[0] != NULL) {
+        SDL_FreeSurface(label->surfaces[0]);
+    }
+    if(label->surfaces[1] != NULL) {
+        SDL_FreeSurface(label->surfaces[1]);
+    }
+    free(label);
+}
+
+void menu_free_label_surfaces(menu_label_t *label) {
+    int s;
+    for(s = 0; s < 2; s++) {
+        if(label->surfaces[0] != NULL) {
+            SDL_FreeSurface(label->surfaces[0]);
+            label->surfaces[0] = NULL;
+        }
+    }
 }
 
 static void mark_word_end(char *text, int *c) {
@@ -138,6 +158,22 @@ void menu_blit(SDL_Surface *s, int x, int y) {
     SDL_BlitSurface(s, NULL, SDL_GetVideoSurface(), &r);
 }
 
+void menu_blit_label(menu_label_t *label, int align, int selected, int x, int y) {
+    SDL_Color unselected_color = {180, 180, 200}, selected_color = {120, 120, 255};
+
+    if(label->surfaces[selected] == NULL) {
+        label->surfaces[selected] = TTF_RenderText_Blended(font, label->text, selected ? selected_color : unselected_color);
+    }
+
+    SDL_Surface *s = label->surfaces[selected];
+
+    if(align == ALIGN_RIGHTBOUND) {
+        x -= s->w;
+    }
+
+    menu_blit(s, x, y);
+}
+
 void menu_blit_word_string(menu_word_string_t *string, int x, int y) {
     int cx, cy, sw, lh;
 
@@ -169,7 +205,7 @@ menu_list_t *menu_new_list(const char *title) {
 
     list->entries = NULL;
     list->num_entries = 0;
-    list->title = menu_label(title);
+    list->title = title == NULL ? NULL : menu_label(title);
     list->selected = -1;
     list->num_visible = 1;
     list->back_func = NULL;
@@ -227,7 +263,7 @@ static menu_listentry_t *new_listentry(menu_list_t *list, const char *text, int 
 
     entry = malloc(sizeof(*entry));
 
-    entry->text = text != NULL ? menu_label(text) : NULL;
+    entry->text = text == NULL ? NULL : menu_label(text);
     entry->val = NULL;
     entry->id = id;
     entry->is_visible = 1;
@@ -340,6 +376,29 @@ void menu_listentry_visible(menu_list_t *list, int id, int visible) {
     }
 }
 
+void menu_collect_list_garbage(menu_list_t *list) {
+    int e;
+    int first_kept, last_kept;
+
+    first_kept = max(list->first_visible - 5, 0);
+    last_kept = min(list->first_visible + list->num_visible - 1, list->num_entries - 1);
+
+
+    for(e = 0; e < list->num_entries; e++) {
+        if(e == first_kept) {
+            e = last_kept;
+            continue;
+        }
+
+        if(list->entries[e]->text != NULL) {
+            menu_free_label_surfaces(list->entries[e]->text);
+        }
+        if(list->entries[e]->val != NULL) {
+            menu_free_label_surfaces(list->entries[e]->val);
+        }
+    }
+}
+
 void menu_draw_list(menu_list_t *list) {
     int e, l;
     int last_visible;
@@ -357,24 +416,26 @@ void menu_draw_list(menu_list_t *list) {
 
     list->num_visible = (SDL_GetVideoSurface()->h - top_margin - bottom_margin) / line_height;
 
-    menu_blit(list->title->surfaces[0], 0, 0);
+    if(list->title != NULL) {
+        menu_blit_label(list->title, ALIGN_LEFTBOUND, 0, 0, 0);
+    }
 
     last_visible = list->first_visible + list->num_visible - 1;
     last_visible = min(last_visible, list->num_entries - 1);
     for(e = list->first_visible, l = 0; e <= last_visible; e++) {
         if(list->entries[e]->is_visible) {
             if(list->entries[e]->type != MENU_LISTENTRY_SPACER) {
-                menu_blit(list->entries[e]->text->surfaces[list->selected == e ? 1 : 0],
-                          left_margin, top_margin + l * line_height);
+                menu_blit_label(list->entries[e]->text, ALIGN_LEFTBOUND, list->selected == e ? 1 : 0, left_margin, top_margin + l * line_height);
 
                 if(list->entries[e]->val != NULL) {
-                    SDL_Surface *val = list->entries[e]->val->surfaces[list->selected == e ? 1 : 0];
-                    menu_blit(val, screen->w - right_margin - val->w, top_margin + l * line_height);
+                    menu_blit_label(list->entries[e]->val, ALIGN_RIGHTBOUND, list->selected == e ? 1 : 0, screen->w - right_margin, top_margin + l * line_height);
                 }
             }
             l++;
         }
     }
+
+    menu_collect_list_garbage(list);
 }
 
 static void change_selection(menu_list_t *list, int dir) {

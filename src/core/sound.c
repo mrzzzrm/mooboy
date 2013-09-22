@@ -32,30 +32,30 @@ static inline void tick_length_counter(counter_t *counter, u8 *on) {
         }
     }
 }
-
-static void tick_length_counters() {
-    tick_length_counter(&sqw[0].counter, &sqw[0].on);
-    tick_length_counter(&sqw[1].counter, &sqw[1].on);
-    tick_length_counter(&wave.counter, &wave.on);
-    tick_length_counter(&noise.counter, &noise.on);
-}
-
-static void tick_sweep() {
-    if(sweep.period != 0) {
-        sweep.tick++;
-        if(sweep.tick >= sweep.period) {
-            if(sweep.dir) {
-                sqw[0].freq -= sqw[0].freq >> sweep.shift;
-            }
-            else {
-                sqw[0].freq += sqw[0].freq >> sweep.shift;
-            }
-            sqw[0].freq &= 0x07FF;
-            sweep.tick = 0;
-        }
-    }
-}
-
+//
+//static void tick_length_counters() {
+//    tick_length_counter(&sqw[0].counter, &sqw[0].on);
+//    tick_length_counter(&sqw[1].counter, &sqw[1].on);
+//    tick_length_counter(&wave.counter, &wave.on);
+//    tick_length_counter(&noise.counter, &noise.on);
+//}
+//
+//static void tick_sweep() {
+//    if(sweep.period != 0) {
+//        sweep.tick++;
+//        if(sweep.tick >= sweep.period) {
+//            if(sweep.dir) {
+//                sqw[0].freq -= sqw[0].freq >> sweep.shift;
+//            }
+//            else {
+//                sqw[0].freq += sqw[0].freq >> sweep.shift;
+//            }
+//            sqw[0].freq &= 0x07FF;
+//            sweep.tick = 0;
+//        }
+//    }
+//}
+//
 static void tick_envelope(env_t *env, u8 *volume) {
     if(env->sweep != 0) {
         env->tick++;
@@ -75,28 +75,28 @@ static void tick_envelope(env_t *env, u8 *volume) {
     }
 }
 
-static void tick_envelopes() {
-    tick_envelope(&env[0], &sqw[0].volume);
-    tick_envelope(&env[1], &sqw[1].volume);
-    tick_envelope(&env[2], &noise.volume);
- }
+//static void tick_envelopes() {
+//    tick_envelope(&env[0], &sqw[0].volume);
+//    tick_envelope(&env[1], &sqw[1].volume);
+//    tick_envelope(&env[2], &noise.volume);
+// }
 
-static void timer_step(int nfcs) {
-    sound.tick_cc += nfcs;
-    sound.tick_cc &= 0x3FFF;
-
-    u8 step = (sound.tick_cc >> 11) & 0x07;
-    if(step != sound.last_timer_step) {
-        switch(step) {
-            case 0: tick_length_counters();               break;
-            case 2: tick_length_counters(); tick_sweep(); break;
-            case 4: tick_length_counters();               break;
-            case 6: tick_length_counters(); tick_sweep(); break;
-            case 7: tick_envelopes();                     break;
-        }
-        sound.last_timer_step = step;
-    }
-}
+//static void timer_step(int nfcs) {
+//    sound.tick_cc += nfcs;
+//    sound.tick_cc &= 0x3FFF;
+//
+//    u8 step = (sound.tick_cc >> 11) & 0x07;
+//    if(step != sound.last_timer_step) {
+//        switch(step) {
+//            case 0: tick_length_counters();               break;
+//            case 2: tick_length_counters(); tick_sweep(); break;
+//            case 4: tick_length_counters();               break;
+//            case 6: tick_length_counters(); tick_sweep(); break;
+//            case 7: tick_envelopes();                     break;
+//        }
+//        sound.last_timer_step = step;
+//    }
+//}
 
 
 static sample_t sqw_mix(sqw_t *ch) {

@@ -1,5 +1,6 @@
 #include "rtc.h"
 #include <string.h>
+#include <stdio.h>
 #include "cpu.h"
 #include "mbc.h"
 
