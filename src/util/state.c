@@ -48,13 +48,11 @@ static u8 checkpoints[CHECKPOINTS];
 static int current_checkpoint;
 static int bytes_handled;
 
-int o = 0;
 
 static void save(u32 val, u8 size) {
     int b;
     for(b = 0; b < size; b++) {
         u8 byte = val & 0xFF;
-        if(o)printf("S: %.2X\n", byte);
         fwrite(&byte, 1, 1, f);
         val >>= 8;
         bytes_handled++;
@@ -68,7 +66,6 @@ static u32 load(u8 size) {
         if(fread(&byte, 1, 1, f) != 1) {
             moo_errorf("Savestate corrupt #1");
         }
-        if(o)printf("R: %.2X\n", byte);
         re |= byte << (8*b);
         bytes_handled++;
     }
@@ -84,14 +81,12 @@ static void _set_checkpoint(int line) {
 
 static void _assert_checkpoint(int line) {
     if(current_checkpoint >= CHECKPOINTS) {
-        moo_errorf("Savestate corrupt in line %i: too many checkpoints\n", line);
-        fclose(f);
+        moo_errorf("Savestate corrupt in line %i: too many checkpoints", line);
         return;
     }
     R(byte);
     if(byte != checkpoints[current_checkpoint]) {
-        moo_errorf("Savestate corrupt in line %i: wrong byte, expected %.2X got %.2X\n", line, checkpoints[current_checkpoint], byte);
-        fclose(f);
+        moo_errorf("Savestate corrupt in line %i: wrong byte, expected %.2X got %.2X", line, checkpoints[current_checkpoint], byte);
         return;
     }
     current_checkpoint++;
@@ -483,6 +478,8 @@ void state_save(const char *filename) {
 }
 
 int state_load(const char *filename) {
+    int r;
+
     printf("Loading state from '%s'\n", filename);
 
     f = fopen(filename, "rb");
@@ -504,12 +501,14 @@ int state_load(const char *filename) {
 
     load_sys();
 
+#ifdef DEBUG
     if(fread(&byte, 1, 1, f) != 0) {
-        return 0;
+        moo_errorf("Savestate file is too big. Is this really an error?");
     }
+#endif
 
     fclose(f);
 
-    return 1;
+    return ~moo.state & MOO_ERROR_BIT;
 }
 

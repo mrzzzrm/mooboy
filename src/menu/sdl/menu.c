@@ -87,7 +87,9 @@ static void load_state() {
     char file[256];
     snprintf(file, sizeof(file), "%s.sav%i", sys.rompath, load_slot);
     if(state_load(file)) {
-        moo_begin();
+        if((~moo.state & MOO_ERROR_BIT)) {
+            moo_begin();
+        }
     }
 }
 
@@ -145,6 +147,7 @@ static void menu_input_event(int type, int key) {
 }
 
 static void mainmenu() {
+    setup();
     while((~moo.state & MOO_ROM_RUNNING_BIT) && (moo.state & MOO_RUNNING_BIT) && (~moo.state & MOO_ERROR_BIT)) {
         draw();
         sys_handle_events(menu_input_event);
@@ -187,8 +190,6 @@ void menu_close() {
 }
 
 void menu_run() {
-    setup();
-
     while((~moo.state & MOO_ROM_RUNNING_BIT) && (moo.state & MOO_RUNNING_BIT)) {
         if(moo.state & MOO_ERROR_BIT) {
             menu_error();

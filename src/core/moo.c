@@ -230,6 +230,7 @@ void moo_errorf(const char *format, ...) {
 
     moo.state |= MOO_ERROR_BIT;
     moo.state &= ~MOO_ROM_RUNNING_BIT;
+    moo.state &= ~MOO_ROM_LOADED_BIT;
 
     va_end(args);
 }
@@ -239,9 +240,9 @@ void moo_fatalf(const char *format, ...) {
     va_start(args, format);
     fprintf(stderr, "FATAL: "); vfprintf(stderr, format, args); fprintf(stderr, "\n");
 
-    moo_quit();
-
     va_end(args);
+
+    moo_quit();
 }
 
 void moo_clear_error() {
