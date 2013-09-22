@@ -81,6 +81,11 @@ typedef struct {
 
 extern sound_t sound;
 
+extern hw_event_t sound_mix_event;
+extern hw_event_t sound_length_counters_event;
+extern hw_event_t sound_sweep_event;
+extern hw_event_t sound_envelopes_event;
+
 extern sqw_t sqw[2];
 extern env_t env[3];
 extern sweep_t sweep;

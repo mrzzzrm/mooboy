@@ -24,6 +24,7 @@ static void print_queue(hw_event_t *e) {
     }
 }
 #endif
+
 void hw_step(int mcs) {
     hw_event_t *next_sched, *next, *event, *prev;
 

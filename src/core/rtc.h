@@ -2,6 +2,7 @@
 #define CORE_RTC_H
 
 #include "defines.h"
+#include "hw.h"
 
 typedef struct {
     u8 latched[5];
@@ -12,6 +13,8 @@ typedef struct {
 } rtc_t;
 
 extern rtc_t rtc;
+
+extern hw_event_t rtc_event;
 
 void rtc_reset();
 void rtc_begin();

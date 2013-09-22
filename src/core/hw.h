@@ -13,6 +13,7 @@ typedef struct hw_event_s {
     char name[64];
     int dbg_queued;
 #endif
+    int id;
 } hw_event_t;
 
 typedef struct {
@@ -25,7 +26,9 @@ extern hw_events_t hw_events;
 
 
 void hw_reset();
+
 void hw_step(int mcs);
+
 void hw_schedule(hw_event_t *event, int mcs);
 void hw_unschedule(hw_event_t *del);
 void hw_defer(hw_cycle_t mcs);

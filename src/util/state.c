@@ -12,6 +12,7 @@
 #include "core/moo.h"
 #include "core/mem.h"
 #include "core/timers.h"
+#include "core/sound.h"
 #include "core/lcd.h"
 #include "core/defines.h"
 
@@ -23,10 +24,23 @@
 
 #define BYTE(val) ((u8)(val))
 
-#define CHECKPOINTS 32
+#define CHECKPOINTS 40
 
 #define set_checkpoint() _set_checkpoint(__LINE__)
 #define assert_checkpoint() _assert_checkpoint(__LINE__)
+
+#define LCD_MODE_0_EVENT_ID 0
+#define LCD_MODE_1_EVENT_ID 1
+#define LCD_MODE_2_EVENT_ID 2
+#define LCD_MODE_3_EVENT_ID 3
+#define LCD_VBLANK_LINE_EVENT_ID 4
+#define SOUND_MIX_EVENT_ID 5
+#define SOUND_SWEEP_EVENT_ID 6
+#define SOUND_ENVELOPES_EVENT_ID 7
+#define SOUND_LENGTH_COUNTERS_EVENT_ID 8
+#define TIMERS_TIMA_EVENT_ID 9
+#define TIMER_DIV_EVENT_ID 10
+#define RTC_EVENT_ID 11
 
 FILE *f;
 static u8 byte;
@@ -34,10 +48,13 @@ static u8 checkpoints[CHECKPOINTS];
 static int current_checkpoint;
 static int bytes_handled;
 
+int o = 0;
+
 static void save(u32 val, u8 size) {
     int b;
     for(b = 0; b < size; b++) {
         u8 byte = val & 0xFF;
+        if(o)printf("S: %.2X\n", byte);
         fwrite(&byte, 1, 1, f);
         val >>= 8;
         bytes_handled++;
@@ -51,6 +68,7 @@ static u32 load(u8 size) {
         if(fread(&byte, 1, 1, f) != 1) {
             moo_errorf("Savestate corrupt #1");
         }
+        if(o)printf("R: %.2X\n", byte);
         re |= byte << (8*b);
         bytes_handled++;
     }
@@ -72,7 +90,7 @@ static void _assert_checkpoint(int line) {
     }
     R(byte);
     if(byte != checkpoints[current_checkpoint]) {
-        moo_errorf("Savestate corrupt in line %i: wrong byte\n", line);
+        moo_errorf("Savestate corrupt in line %i: wrong byte, expected %.2X got %.2X\n", line, checkpoints[current_checkpoint], byte);
         fclose(f);
         return;
     }
@@ -326,6 +344,82 @@ static void load_timers() {
     assert_checkpoint();
 }
 
+static u8 hw_event_to_id(hw_event_t *event) {
+    if(event == &lcd_mode_0_event) return LCD_MODE_0_EVENT_ID;
+    if(event == &lcd_mode_1_event) return LCD_MODE_1_EVENT_ID;
+    if(event == &lcd_mode_2_event) return LCD_MODE_2_EVENT_ID;
+    if(event == &lcd_mode_3_event) return LCD_MODE_3_EVENT_ID;
+    if(event == &lcd_vblank_line_event) return LCD_VBLANK_LINE_EVENT_ID;
+    if(event == &sound_mix_event) return SOUND_MIX_EVENT_ID;
+    if(event == &sound_sweep_event) return SOUND_SWEEP_EVENT_ID;
+    if(event == &sound_envelopes_event) return SOUND_ENVELOPES_EVENT_ID;
+    if(event == &sound_length_counters_event) return SOUND_LENGTH_COUNTERS_EVENT_ID;
+    if(event == &timers_tima_event) return TIMERS_TIMA_EVENT_ID;
+    if(event == &timers_div_event) return TIMER_DIV_EVENT_ID;
+    if(event == &rtc_event) return RTC_EVENT_ID;
+    assert(0);
+}
+
+static void save_hw_queue(hw_event_t *q) {
+    hw_event_t *event;
+    for(event = q; event != NULL; event = event->next) {
+        S(hw_event_to_id(event));
+        S(event->mcs);
+    }
+    S(BYTE(0xFF));
+}
+
+static void save_hw() {
+    S(hw_events.cc);
+    save_hw_queue(hw_events.first);
+    set_checkpoint();
+    save_hw_queue(hw_events.sched);
+    set_checkpoint();
+}
+
+static hw_event_t *hw_id_to_event(u8 id) {
+    if(id == LCD_MODE_0_EVENT_ID) return &lcd_mode_0_event;
+    if(id == LCD_MODE_1_EVENT_ID) return &lcd_mode_1_event;
+    if(id == LCD_MODE_2_EVENT_ID) return &lcd_mode_2_event;
+    if(id == LCD_MODE_3_EVENT_ID) return &lcd_mode_3_event;
+    if(id == LCD_VBLANK_LINE_EVENT_ID) return &lcd_vblank_line_event;
+    if(id == SOUND_MIX_EVENT_ID) return &sound_mix_event;
+    if(id == SOUND_SWEEP_EVENT_ID) return &sound_sweep_event;
+    if(id == SOUND_ENVELOPES_EVENT_ID) return &sound_envelopes_event;
+    if(id == SOUND_LENGTH_COUNTERS_EVENT_ID) return &sound_length_counters_event;
+    if(id == TIMERS_TIMA_EVENT_ID) return &timers_tima_event;
+    if(id == TIMER_DIV_EVENT_ID) return &timers_div_event;
+    if(id == RTC_EVENT_ID) return &rtc_event;
+    assert(0);
+}
+
+static hw_event_t *load_hw_queue() {
+    u8 id;
+    hw_event_t *event = NULL, *begin = NULL;
+
+    R(id);
+    if(id != 0xFF) {
+        event = begin = hw_id_to_event(id);
+        R(event->mcs);
+        for(R(id); id != 0xFF; R(id)) {
+            event->next = hw_id_to_event(id);
+            R(event->mcs);
+            event = event->next;
+        }
+        event->next = NULL;
+    }
+
+    return begin;
+}
+
+static void load_hw() {
+    R(hw_events.cc);
+    hw_events.first = load_hw_queue();
+    assert_checkpoint();
+    hw_events.sched = load_hw_queue();
+    assert_checkpoint();
+}
+
 static void save_sys() {
     S(sys.ticks);
     set_checkpoint();
@@ -368,6 +462,7 @@ void state_save(const char *filename) {
     f = fopen(filename, "wb");
     if(f == NULL) {
         moo_errorf("Couln't open file");
+        return;
     }
 
     init_checkpoints();
@@ -380,6 +475,8 @@ void state_save(const char *filename) {
     save_rtc();
     save_sound();
     save_timers();
+    save_hw();
+
     save_sys();
 
     fclose(f);
@@ -403,6 +500,8 @@ int state_load(const char *filename) {
     load_rtc();
     load_sound();
     load_timers();
+    load_hw();
+
     load_sys();
 
     if(fread(&byte, 1, 1, f) != 0) {

@@ -60,7 +60,6 @@ static void load_last_rom() {
     fclose(f);
 
     moo_load_rom(last_rom_path);
-    moo_begin();
 }
 
 static void back() {
@@ -123,10 +122,6 @@ static void setup() {
 static void draw() {
     SDL_FillRect(SDL_GetVideoSurface(), NULL, 0);
 
-//    if(moo.state & MOO_ROM_LOADED_BIT) {
-//        video_render(SDL_GetVideoSurface(), prevr);
-//    }
-
     menu_draw_list(list);
 
     SDL_Flip(SDL_GetVideoSurface());
@@ -146,6 +141,14 @@ static void menu_input_event(int type, int key) {
                 set_slot(label, key == SDLK_LEFT ? save_slot-1 : key == SDLK_RIGHT ? save_slot+1 : save_slot);
             break;
         }
+    }
+}
+
+static void mainmenu() {
+    while((~moo.state & MOO_ROM_RUNNING_BIT) && (moo.state & MOO_RUNNING_BIT) && (~moo.state & MOO_ERROR_BIT)) {
+        draw();
+        sys_handle_events(menu_input_event);
+        menu_list_update(list);
     }
 }
 
@@ -187,9 +190,12 @@ void menu_run() {
     setup();
 
     while((~moo.state & MOO_ROM_RUNNING_BIT) && (moo.state & MOO_RUNNING_BIT)) {
-        draw();
-        sys_handle_events(menu_input_event);
-        menu_list_update(list);
+        if(moo.state & MOO_ERROR_BIT) {
+            menu_error();
+        }
+        else {
+            mainmenu();
+        }
     }
 }
 

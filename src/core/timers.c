@@ -2,7 +2,6 @@
 #include "cpu.h"
 #include "defines.h"
 #include "cpu.h"
-#include "hw.h"
 #include <stdio.h>
 
 #define MCS_PER_DIVT 32
@@ -11,14 +10,13 @@ timers_t timers;
 
 static const u16 MCS_PER_TIMA[4] = {0x100, 0x04, 0x10, 0x40};
 
-static hw_event_t div_event = {0};
-static hw_event_t timer_event = {0};
-
+hw_event_t timers_div_event;
+hw_event_t timers_tima_event;
 
 
 static void div_step(int mcs) {
     timers.div++;
-    hw_schedule(&div_event, MCS_PER_DIVT - mcs);
+    hw_schedule(&timers_div_event, MCS_PER_DIVT - mcs);
 }
 
 static void timer_step(int mcs) {
@@ -34,7 +32,7 @@ static void timer_step(int mcs) {
         else
             break;
     }
-    hw_schedule(&timer_event, MCS_PER_TIMA[timers.tac & 0x03] - mcs);
+    hw_schedule(&timers_tima_event, MCS_PER_TIMA[timers.tac & 0x03] - mcs);
 }
 
 void timers_reset() {
@@ -45,20 +43,20 @@ void timers_reset() {
     timers.div_cc = 0;
     timers.tima_cc = 0;
 
-    div_event.callback = div_step;
-    timer_event.callback = timer_step;
+    timers_div_event.callback = div_step;
+    timers_tima_event.callback = timer_step;
 
 #ifdef DEBUG
-    sprintf(div_event.name, "div");
-    sprintf(timer_event.name, "tima");
+    sprintf(timers_div_event.name, "div");
+    sprintf(timers_tima_event.name, "tima");
 #endif
 }
 
 void timers_begin() {
-    hw_unschedule(&timer_event);
-    hw_unschedule(&div_event);
+    hw_unschedule(&timers_tima_event);
+    hw_unschedule(&timers_div_event);
 
-    hw_schedule(&div_event, MCS_PER_DIVT);
+    hw_schedule(&timers_div_event, MCS_PER_DIVT);
 }
 
 void timers_step(int nfcs, int mcs) {
@@ -85,16 +83,16 @@ void timers_step(int nfcs, int mcs) {
 
 void timers_tac(u8 tac) {
     if((timers.tac & 0x04) && !(tac & 0x04)) {
-        hw_unschedule(&timer_event);
+        hw_unschedule(&timers_tima_event);
     }
     else if(!(timers.tac & 0x04) && (tac & 0x04)) {
-        hw_unschedule(&timer_event);
-        hw_schedule(&timer_event, MCS_PER_TIMA[timers.tac & 0x03]);
+        hw_unschedule(&timers_tima_event);
+        hw_schedule(&timers_tima_event, MCS_PER_TIMA[timers.tac & 0x03]);
     }
 
     if((timers.tac & 0x03) != (tac & 0x03)) {
-        hw_unschedule(&timer_event);
-        hw_schedule(&timer_event, MCS_PER_TIMA[tac & 0x03]);
+        hw_unschedule(&timers_tima_event);
+        hw_schedule(&timers_tima_event, MCS_PER_TIMA[tac & 0x03]);
     }
 
     timers.tac = tac;

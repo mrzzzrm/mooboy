@@ -1,7 +1,6 @@
 #include "rtc.h"
 #include <string.h>
 #include "cpu.h"
-#include "hw.h"
 #include "mbc.h"
 
 #undef H
@@ -14,7 +13,7 @@
 
 rtc_t rtc;
 
-static hw_event_t rtc_event = {0};
+hw_event_t rtc_event;
 
 static void rtc_next_day() {
     u16 d = rtc.ticking[DL] | ((rtc.ticking[DH] & 0x01) << 8);

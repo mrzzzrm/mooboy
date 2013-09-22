@@ -19,10 +19,10 @@ env_t env[3];
 wave_t wave;
 noise_t noise;
 
-static hw_event_t mix_event = {0};
-static hw_event_t length_counters_event = {0};
-static hw_event_t sweep_event = {0};
-static hw_event_t envelopes_event = {0};
+hw_event_t sound_mix_event;
+hw_event_t sound_length_counters_event;
+hw_event_t sound_sweep_event;
+hw_event_t sound_envelopes_event;
 
 static inline void tick_length_counter(counter_t *counter, u8 *on) {
     if(counter->length > 0) {
@@ -232,7 +232,7 @@ static void mix(int mcs) {
     sound.mix_threshold = (cpu.freq + sound.remainder) / sound.freq;
     sound.remainder = (cpu.freq + sound.remainder) % sound.freq;
 
-    hw_schedule(&mix_event, sound.mix_threshold - mcs);
+    hw_schedule(&sound_mix_event, sound.mix_threshold - mcs);
 }
 
 static void _length_counters(int mcs) {
@@ -241,7 +241,7 @@ static void _length_counters(int mcs) {
     tick_length_counter(&wave.counter, &wave.on);
     tick_length_counter(&noise.counter, &noise.on);
 
-    hw_schedule(&length_counters_event, 4096 * cpu.freq_factor - mcs);
+    hw_schedule(&sound_length_counters_event, 4096 * cpu.freq_factor - mcs);
 }
 
 static void _sweep(int mcs) {
@@ -259,7 +259,7 @@ static void _sweep(int mcs) {
         }
     }
 
-    hw_schedule(&sweep_event, 9192 * cpu.freq_factor - mcs);
+    hw_schedule(&sound_sweep_event, 9192 * cpu.freq_factor - mcs);
 }
 
 static void _envelopes(int mcs) {
@@ -267,7 +267,7 @@ static void _envelopes(int mcs) {
     tick_envelope(&env[1], &sqw[1].volume);
     tick_envelope(&env[2], &noise.volume);
 
-    hw_schedule(&envelopes_event, 18384 * cpu.freq_factor - mcs);
+    hw_schedule(&sound_envelopes_event, 18384 * cpu.freq_factor - mcs);
 }
 
 void sound_init() {
@@ -300,26 +300,26 @@ void sound_reset() {
 
     noise.lsfr = 0xFFFF;
 
-    mix_event.callback = mix;
-    length_counters_event.callback = _length_counters;
-    sweep_event.callback = _sweep;
-    envelopes_event.callback = _envelopes;
+    sound_mix_event.callback = mix;
+    sound_length_counters_event.callback = _length_counters;
+    sound_sweep_event.callback = _sweep;
+    sound_envelopes_event.callback = _envelopes;
 
 #ifdef DEBUG
-    sprintf(mix_event.name, "mix");
-    sprintf(length_counters_event.name, "length_counters");
-    sprintf(sweep_event.name, "sweep");
-    sprintf(envelopes_event.name, "envelopes");
+    sprintf(sound_mix_event.name, "mix");
+    sprintf(sound_length_counters_event.name, "length_counters");
+    sprintf(sound_sweep_event.name, "sweep");
+    sprintf(sound_envelopes_event.name, "envelopes");
 #endif
 }
 
 void sound_begin() {
     sound.remainder = 0;
 
-    hw_unschedule(&mix_event);             hw_schedule(&mix_event, cpu.freq / sound.freq);
-    hw_unschedule(&length_counters_event); hw_schedule(&length_counters_event, 4096);
-    hw_unschedule(&sweep_event);           hw_schedule(&sweep_event, 4096);
-    hw_unschedule(&envelopes_event);       hw_schedule(&envelopes_event, 18384);
+    hw_unschedule(&sound_mix_event);             hw_schedule(&sound_mix_event, cpu.freq / sound.freq);
+    hw_unschedule(&sound_length_counters_event); hw_schedule(&sound_length_counters_event, 4096);
+    hw_unschedule(&sound_sweep_event);           hw_schedule(&sound_sweep_event, 4096);
+    hw_unschedule(&sound_envelopes_event);       hw_schedule(&sound_envelopes_event, 18384);
 }
 
 void sound_step(int nfcs) {

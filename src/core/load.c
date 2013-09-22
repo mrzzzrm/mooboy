@@ -105,7 +105,7 @@ static void init_card(u8 ref) {
             case 0x5: case 0x6: case 0x7:
                 mbc_set_type(4); // This is weird, as there is no such MBC...
             break;
-            case 0x9: case 0xA: case 0xB: // Alas, no way to emulate rumbling...
+            case 0x9: case 0xA: case 0xB: // Alas, no way to emulate rumbling... or maybe there is? Shake the screen a bit? :D
             case 0xC: case 0xD: case 0xE:
                 mbc_set_type(5);
                 mbc.has_battery = ln == 0xB || ln == 0xE;
@@ -131,20 +131,20 @@ static void init_rom(u8 ref, u8 *rom, u32 romsize) {
         moo_errorf("ROM doesn't fit into banks tightly...");
         return;
     }
-    if(romsize >= sizeof(card.rombanks)) {
-        moo_errorf("ROM is too big for banks");
+    if(romsize > sizeof(card.rombanks)) {
+        moo_errorf("ROM (size = %i bytes) is too big for banks", romsize);
         return;
     }
     memcpy(card.rombanks, rom, romsize);
 
-    fprintf(stderr, "ROM-size set to %d banks [%.2X]\n", card.romsize, ref);
+    printf("ROM-size set to %d banks [%.2X]\n", card.romsize, ref);
 }
 
 static void init_sram(u8 ref) {
     assert(ref <= 0x03);
 
     card.sramsize = (u8[]){1, 1, 1, 4}[ref];
-    fprintf(stderr, "Cardridge-RAM set to %d banks [%i]\n", card.sramsize, ref);
+    printf("Cardridge-RAM set to %d banks [%i]\n", card.sramsize, ref);
 }
 
 void load_rom() {
@@ -167,6 +167,11 @@ void load_rom() {
 
     free(rom);
 
-    moo.state |= MOO_ROM_LOADED_BIT;
+    if(~moo.state & MOO_ERROR_BIT) {
+        moo.state |= MOO_ROM_LOADED_BIT;
+    }
+    else {
+        moo.state &= ~MOO_ROM_LOADED_BIT;
+    }
 }
 

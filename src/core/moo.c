@@ -106,6 +106,7 @@ void moo_load_rom(const char *path) {
     if(moo.state & MOO_ROM_LOADED_BIT) {
         moo_load_rom_config();
         store_rompath();
+        moo_begin();
     }
 }
 

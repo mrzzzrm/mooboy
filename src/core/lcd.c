@@ -4,7 +4,6 @@
 #include "cpu.h"
 #include "sys/sys.h"
 #include "moo.h"
-#include "hw.h"
 #include "mem.h"
 #include "defines.h"
 #include "obj.h"
@@ -39,20 +38,20 @@
 
 lcd_t lcd;
 
-static hw_event_t mode_0_event = {0};
-static hw_event_t mode_1_event = {0};
-static hw_event_t mode_2_event = {0};
-static hw_event_t mode_3_event = {0};
-static hw_event_t vblank_line_event = {0};
+hw_event_t lcd_mode_0_event;
+hw_event_t lcd_mode_1_event;
+hw_event_t lcd_mode_2_event;
+hw_event_t lcd_mode_3_event;
+hw_event_t lcd_vblank_line_event;
 
 static void mode_2(int mcs);
 
 static void unschedule() {
-    hw_unschedule(&mode_0_event);
-    hw_unschedule(&mode_1_event);
-    hw_unschedule(&mode_2_event);
-    hw_unschedule(&mode_3_event);
-    hw_unschedule(&vblank_line_event);
+    hw_unschedule(&lcd_mode_0_event);
+    hw_unschedule(&lcd_mode_1_event);
+    hw_unschedule(&lcd_mode_2_event);
+    hw_unschedule(&lcd_mode_3_event);
+    hw_unschedule(&lcd_vblank_line_event);
 }
 
 static void swap_fb() {
@@ -207,10 +206,10 @@ static void next_line() {
 static void vblank_line(int mcs) {
     next_line();
     if(lcd.ly == 153) {
-        hw_schedule(&mode_2_event, DUR_SCANLINE * cpu.freq_factor - mcs);
+        hw_schedule(&lcd_mode_2_event, DUR_SCANLINE * cpu.freq_factor - mcs);
     }
     else {
-        hw_schedule(&vblank_line_event, DUR_SCANLINE * cpu.freq_factor - mcs);
+        hw_schedule(&lcd_vblank_line_event, DUR_SCANLINE * cpu.freq_factor - mcs);
     }
 }
 
@@ -227,10 +226,10 @@ static void mode_0(int mcs) {
     }
 
     if(lcd.ly == 143) {
-        hw_schedule(&mode_1_event, DUR_MODE_0 * cpu.freq_factor - mcs);
+        hw_schedule(&lcd_mode_1_event, DUR_MODE_0 * cpu.freq_factor - mcs);
     }
     else {
-       hw_schedule(&mode_2_event, DUR_MODE_0 * cpu.freq_factor - mcs);
+       hw_schedule(&lcd_mode_2_event, DUR_MODE_0 * cpu.freq_factor - mcs);
     }
 }
 
@@ -244,7 +243,7 @@ static void mode_1(int mcs) {
     sys_fb_ready();
     swap_fb();
 
-    hw_schedule(&vblank_line_event, DUR_SCANLINE * cpu.freq_factor - mcs);
+    hw_schedule(&lcd_vblank_line_event, DUR_SCANLINE * cpu.freq_factor - mcs);
 }
 
 static void mode_2(int mcs) {
@@ -253,13 +252,13 @@ static void mode_2(int mcs) {
     STAT_SET_MODE(2);
     stat_irq(SIF_OAM);
 
-    hw_schedule(&mode_3_event, DUR_MODE_2 * cpu.freq_factor - mcs);
+    hw_schedule(&lcd_mode_3_event, DUR_MODE_2 * cpu.freq_factor - mcs);
 }
 
 static void mode_3(int mcs) {
     //printf("%i 3\n", cpu.dbg_mcs);
     STAT_SET_MODE(3);
-    hw_schedule(&mode_0_event, DUR_MODE_3 * cpu.freq_factor - mcs);
+    hw_schedule(&lcd_mode_0_event, DUR_MODE_3 * cpu.freq_factor - mcs);
 }
 
 static u8 step_mode(u8 m1) {
@@ -318,25 +317,25 @@ void lcd_reset() {
     lcd_obp0_dirty();
     lcd_obp1_dirty();
 
-    mode_0_event.callback = mode_0;
-    mode_1_event.callback = mode_1;
-    mode_2_event.callback = mode_2;
-    mode_3_event.callback = mode_3;
-    vblank_line_event.callback = vblank_line;
+    lcd_mode_0_event.callback = mode_0;
+    lcd_mode_1_event.callback = mode_1;
+    lcd_mode_2_event.callback = mode_2;
+    lcd_mode_3_event.callback = mode_3;
+    lcd_vblank_line_event.callback = vblank_line;
 
 #ifdef DEBUG
-    sprintf(mode_0_event.name, "lcd-mode-0");
-    sprintf(mode_1_event.name, "lcd-mode-1");
-    sprintf(mode_2_event.name, "lcd-mode-2");
-    sprintf(mode_3_event.name, "lcd-mode-3");
-    sprintf(vblank_line_event.name, "vblank_line");
+    sprintf(lcd_mode_0_event.name, "lcd-mode-0");
+    sprintf(lcd_mode_1_event.name, "lcd-mode-1");
+    sprintf(lcd_mode_2_event.name, "lcd-mode-2");
+    sprintf(lcd_mode_3_event.name, "lcd-mode-3");
+    sprintf(lcd_vblank_line_event.name, "vblank_line");
 #endif
 }
 
 void lcd_begin() {
     unschedule();
 #ifdef NEW_LCD
-    hw_schedule(&vblank_line_event, (DUR_MODE_0 + DUR_MODE_2) * cpu.freq_factor);
+    hw_schedule(&lcd_vblank_line_event, (DUR_MODE_0 + DUR_MODE_2) * cpu.freq_factor);
 #endif
 }
 
@@ -464,7 +463,7 @@ void lcd_reset_ly() {
     stat_irq(SIF_OAM);
 
     unschedule();
-    hw_schedule(&mode_3_event, DUR_MODE_2 * cpu.freq_factor);
+    hw_schedule(&lcd_mode_3_event, DUR_MODE_2 * cpu.freq_factor);
 #else
     lcd.ly = 0x00;
     lcd.cc = 0;
