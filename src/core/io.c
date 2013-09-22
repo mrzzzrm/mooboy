@@ -8,7 +8,6 @@
 #include "timers.h"
 #include "sound.h"
 #include "defines.h"
-#include "defines.h"
 #include "joy.h"
 #include "serial.h"
 
@@ -94,7 +93,7 @@ void io_write(u16 adr, u8 val) {
         case 0x04: timers.div = 0x00; break;
         case 0x05: timers.tima = val; break;
         case 0x06: timers.tma = val; break;
-        case 0x07: timers.tac = val & 0x07; break;
+        case 0x07: timers_tac(val & 0x07); break;
         case 0x0F: cpu.irq = val & 0x1F; break;
 
         case 0x10: case 0x11: case 0x12: case 0x13:
@@ -115,13 +114,10 @@ void io_write(u16 adr, u8 val) {
         case 0x40:
             if(!(lcd.c & val & 0x80)) {
                 if(val & 0x80) {
-                    lcd.stat = (lcd.stat & 0xF8) | 0x04;
-                    lcd.cc = 1;
+                    lcd_enable();
                 }
-                else {
-                    lcd.ly = 0;
-                    lcd.stat = (lcd.stat & 0xF8) | 0x00;
-                    lcd.cc = 114;
+                else if(lcd.c & 0x80) {
+                    lcd_disable();
                 }
             }
 
@@ -131,8 +127,8 @@ void io_write(u16 adr, u8 val) {
         case 0x41: lcd.stat = (lcd.stat & 0x87) | (val & 0x78); break;
         case 0x42: lcd.scy = val; break;
         case 0x43: lcd.scx = val; break;
-        case 0x44: lcd.ly = 0x00; lcd.cc = 0;  break;
-        case 0x45: lcd.lyc = val; break;
+        case 0x44: lcd_reset_ly(); break;
+        case 0x45: lcd_set_lyc(val); break;
         case 0x46: lcd_dma(val); break;
         case 0x47:
             lcd.bgp = val;
@@ -209,3 +205,5 @@ void io_write(u16 adr, u8 val) {
 #endif
     }
 }
+
+

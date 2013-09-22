@@ -20,7 +20,6 @@ typedef struct moo_error_s {
     char text[256];
 } moo_error_t;
 
-
 typedef struct {
     int hw;
     int mode;

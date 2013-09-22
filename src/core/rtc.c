@@ -13,6 +13,8 @@
 
 rtc_t rtc;
 
+hw_event_t rtc_event;
+
 static void rtc_next_day() {
     u16 d = rtc.ticking[DL] | ((rtc.ticking[DH] & 0x01) << 8);
     d++;
@@ -22,7 +24,7 @@ static void rtc_next_day() {
     }
 }
 
-static void rtc_tick(u8 r) {
+static inline void rtc_tick(u8 r) {
     u8 *regs[] = {&rtc.ticking[S], &rtc.ticking[M], &rtc.ticking[H]};
     switch(r) {
         case 0: case 1:
@@ -44,13 +46,32 @@ static void rtc_tick(u8 r) {
     }
 }
 
+static void step(int mcs) {
+    if(~rtc.ticking[DH] & 0x40) {
+        rtc_tick(0);
+    }
+    hw_unschedule(&rtc_event); hw_schedule(&rtc_event, cpu.freq);
+}
+
 void rtc_reset() {
     memset(&rtc, 0x00, sizeof(rtc));
+
+    rtc_event.callback = step;
+
+#ifdef DEBUG
+    sprintf(rtc_event.name, "rtc0");
+#endif
+}
+
+void rtc_begin() {
+    if(mbc.type == 3) {
+      //  hw_schedule(&rtc_event, cpu.freq);
+    }
 }
 
 void rtc_step(int nfcs) {
     if(mbc.type == 3) {
-        rtc.cc += nfcs;//cpu.step_nf_cycles;
+        rtc.cc += nfcs;
         if(rtc.ticking[DH] & 0x40 || rtc.cc < NORMAL_CPU_FREQ) { // Halt bit set or next tick not yet reached
             return;
         }

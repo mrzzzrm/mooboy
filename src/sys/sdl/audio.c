@@ -2,6 +2,7 @@
 #include "core/sound.h"
 #include "core/moo.h"
 #include "sys/sys.h"
+#include <assert.h>
 #include <SDL/SDL.h>
 
 static SDL_mutex *mutex;
@@ -38,11 +39,11 @@ static void handout_buf(void *_unused, Uint8 *stream, int length) {
         memset(stream, 0x00, length);
     }
     else {
-        if(get_available_samples() < requested_samples) {
 #ifdef DEBUG
+        if(get_available_samples() < requested_samples) {
             printf("WARNING: Sound buffer underrun\n");
-#endif
         }
+#endif
 
         while((available_samples = get_available_samples()) < requested_samples) {
             sound_mix();

@@ -35,11 +35,13 @@ void cpu_reset() {
 
     cpu.remainder = 0;
     cpu.freq = NORMAL_CPU_FREQ;
+    cpu.freq_factor = 1;
     cpu.halted = 0;
     cpu.freq_switch = 0x00;
 
+#ifdef DEBUG
     cpu.dbg_mcs = 0;
-    cpu.dbg_nfcs = 0;
+#endif
 }
 
 

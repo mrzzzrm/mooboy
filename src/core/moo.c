@@ -2,12 +2,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <stdarg.h>
 #include "defines.h"
 #include "lcd.h"
 #include "rtc.h"
 #include "serial.h"
 #include "cpu.h"
+#include "hw.h"
 #include "mem.h"
 #include "timers.h"
 #include "joy.h"
@@ -48,6 +50,7 @@ void moo_close() {
 void moo_reset() {
     sys_reset();
     mem_reset();
+    hw_reset();
     cpu_reset();
     lcd_reset();
     timers_reset();
@@ -61,6 +64,10 @@ void moo_reset() {
 
 void moo_begin() {
     moo.state |= MOO_ROM_RUNNING_BIT;
+    rtc_begin();
+    sound_begin();
+    lcd_begin();
+    timers_begin();
     sys_begin();
     framerate_begin();
 }
@@ -99,6 +106,7 @@ void moo_load_rom(const char *path) {
     if(moo.state & MOO_ROM_LOADED_BIT) {
         moo_load_rom_config();
         store_rompath();
+        moo_begin();
     }
 }
 
@@ -120,28 +128,37 @@ void moo_set_hw(int hw) {
 }
 
 void moo_step_hw(int mcs) {
-    int nfcs;
+#ifdef DEBUG
+    assert(mcs <= 10);
+#endif
 
-    if(mcs == 0) {
-        return;
-    }
+//    int nfcs;
+//
+//    if(mcs == 0) {
+//        return;
+//    }
+//
+//    if(cpu.freq == DOUBLE_CPU_FREQ) {
+//        nfcs = (mcs + cpu.remainder) / 2;
+//        cpu.remainder = (mcs + cpu.remainder) % 2;
+//    }
+//    else {
+//        nfcs = mcs;
+//    }
 
-    if(cpu.freq == DOUBLE_CPU_FREQ) {
-        nfcs = (mcs + cpu.remainder) / 2;
-        cpu.remainder = (mcs + cpu.remainder) % 2;
-    }
-    else {
-        nfcs = mcs;
-    }
-
-    timers_step(nfcs, mcs);
-    lcd_step(nfcs);
-    rtc_step(nfcs);
-    sound_step(nfcs);
-    //serial_step();
-
+#ifdef DEBUG
     cpu.dbg_mcs += mcs;
-    cpu.dbg_nfcs += nfcs;
+#endif
+
+    hw_step(mcs);
+
+//    timers_step(nfcs, mcs);
+#ifndef NEW_LCD
+    lcd_step(nfcs);
+#endif
+//    rtc_step(nfcs);
+//    sound_step(nfcs);
+//    serial_step();
 
     sys.invoke_cc += mcs;
 }
@@ -150,7 +167,6 @@ static void moo_cycle(int num) {
     unsigned int t;
 
     sys.invoke_cc = 0;
-
     for(t = 0; t < num; t++) {
         if(cpu.halted) {
             if(ints_handle_standby()) {
