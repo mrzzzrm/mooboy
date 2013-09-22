@@ -13,16 +13,75 @@
 
 typedef struct {
     int is_file;
-    char name[NAME_MAX + 1];
+    char name[64];
 } direntry_t;
 
+typedef struct selected_element_s {
+    char *path;
+    char *selected;
+    struct selected_element_s *next;
+} selected_element_t;
+
 static int finished;
-static char cwd[256] = {'\0'};
+static char cwd[512] = "";
 static menu_list_t *list = NULL;
 static direntry_t **direntries = NULL;
+static selected_element_t *selected_elements = NULL;
 
 static int poll_dir();
 
+
+static void save_selected_element() {
+    selected_element_t *e;
+
+    if(list->selected < 0) {
+        return;
+    }
+    for(e = selected_elements; e != NULL; e = e->next) {
+        if(strcmp(e->path, cwd) == 0) {
+            free(e->selected);
+            e->selected = strdup(direntries[list->selected]->name);
+            break;
+        }
+        if(e->next == NULL) {
+            break;
+        }
+    }
+    if(e != NULL) {
+        e->next = malloc(sizeof(*(e->next)));
+        e = e->next;
+    }
+    else {
+        selected_elements = malloc(sizeof(*(e->next)));
+        e = selected_elements;
+    }
+
+    e->path = strdup(cwd);
+    e->selected = strdup(direntries[list->selected]->name);
+    e->next = NULL;
+}
+
+static void load_selected_element() {
+    selected_element_t *e;
+    int d;
+    char *selected = NULL;
+
+    for(e = selected_elements; e != NULL; e = e->next) {
+        if(strcmp(e->path, cwd) == NULL) {
+            selected = e->selected;
+            break;
+        }
+    }
+
+    if(selected != NULL) {
+        for(d = 0; d < list->num_entries; d++) {
+            if(strcmp(selected, direntries[d]->name) == 0) {
+                list->selected = d;
+                return;
+            }
+        }
+    }
+}
 
 static void to_base_dir() {
     int l;
@@ -136,6 +195,8 @@ static void load_rom() {
 }
 
 static void change_dir() {
+    save_selected_element();
+
     strcpy(&cwd[strlen(cwd)], direntries[list->selected]->name);
     save_dir();
     poll_dir();
@@ -143,6 +204,7 @@ static void change_dir() {
 
 static void parent_dir() {
     int c;
+    save_selected_element();
     for(c = (int)strlen(cwd) - 2; c >=0 && cwd[c] != '/'; c--) {
     }
     if(c <= 0) {
@@ -209,6 +271,8 @@ static int poll_dir() {
     closedir(dir);
     sort_entries();
 
+    load_selected_element();
+
     return 1;
 }
 
@@ -239,7 +303,14 @@ void menu_rom_init() {
 }
 
 void menu_rom_close() {
+    selected_element_t *e;
+
     menu_free_list(list);
+
+    for(e = selected_elements; ; e = e->next) {
+        free(e->path);
+        free(e->selected);
+    }
 }
 
 void menu_rom() {
