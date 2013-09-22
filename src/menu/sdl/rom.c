@@ -67,7 +67,7 @@ static void load_selected_element() {
     char *selected = NULL;
 
     for(e = selected_elements; e != NULL; e = e->next) {
-        if(strcmp(e->path, cwd) == NULL) {
+        if(strcmp(e->path, cwd) == 0) {
             selected = e->selected;
             break;
         }
