@@ -10,6 +10,7 @@ static SDL_Surface *heading_surface;
 static SDL_Surface *footer_surface;
 static menu_word_string_t *msg_string;
 
+
 static void draw() {
     SDL_FillRect(SDL_GetVideoSurface(), NULL, 0);
     menu_blit(heading_surface, 0, 0);

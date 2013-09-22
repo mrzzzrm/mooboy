@@ -17,7 +17,7 @@ void input_init() {
     input.keys.a = SDLK_END;
     input.keys.b = SDLK_PAGEDOWN;
     input.keys.start = SDLK_LALT;
-    input.keys.select = SDLK_RCTRL;
+    input.keys.select = SDLK_LCTRL;
 #else
     input.keys.a = SDLK_a;
     input.keys.b = SDLK_s;

@@ -1,7 +1,8 @@
-#ifndef IO_LCD_H
-#define IO_LCD_H
+#ifndef CORE_LCD_H
+#define CORE_LCD_H
 
 #include "defines.h"
+#include "hw.h"
 
 #define TILE_WIDTH 8
 #define TILE_HEIGHT 8
@@ -54,12 +55,25 @@ typedef struct {
 
 extern lcd_t lcd;
 
+extern hw_event_t lcd_mode_0_event;
+extern hw_event_t lcd_mode_1_event;
+extern hw_event_t lcd_mode_2_event;
+extern hw_event_t lcd_mode_3_event;
+extern hw_event_t lcd_vblank_line_event;
+
+
 void lcd_reset();
+void lcd_begin();
 
 void lcd_step(int nfcs);
 void lcd_dma(u8 v);
 void lcd_gdma();
 void lcd_hdma();
+
+void lcd_enable();
+void lcd_disable();
+void lcd_set_lyc(u8 lyc);
+void lcd_reset_ly();
 
 void lcd_c_dirty();
 void lcd_obp0_dirty();
