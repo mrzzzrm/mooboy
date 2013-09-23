@@ -38,9 +38,9 @@ int ints_handle_standby() {
     u8 i;
     for(i = 0; i < 5; i++) {
         if(cpu.irq & cpu.ie & (1 << i)) {
-            if(cpu.ime != IME_OFF) {
+        //    if(cpu.ime != IME_OFF) {
                 exec_int(i);
-            }
+        //    }
             return 1;
         }
     }

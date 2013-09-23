@@ -41,24 +41,17 @@ static void save_selected_element() {
         if(strcmp(e->path, cwd) == 0) {
             free(e->selected);
             e->selected = strdup(direntries[list->selected]->name);
-            break;
+            return;
         }
         if(e->next == NULL) {
             break;
         }
     }
-    if(e != NULL) {
-        e->next = malloc(sizeof(*(e->next)));
-        e = e->next;
-    }
-    else {
-        selected_elements = malloc(sizeof(*(e->next)));
-        e = selected_elements;
-    }
-
+    e = malloc(sizeof(*e));
     e->path = strdup(cwd);
     e->selected = strdup(direntries[list->selected]->name);
-    e->next = NULL;
+    e->next = selected_elements;
+    selected_elements = e;
 }
 
 static void load_selected_element() {
@@ -240,13 +233,13 @@ static int poll_dir() {
         direntry->is_file = ent->d_type == DT_REG;
 
         if(strcmp(ent->d_name, "..") == 0) {
-            sprintf(direntry->name, "%s", ent->d_name);
+            snprintf(direntry->name, sizeof(direntry->name), "%s", ent->d_name);
             menu_new_listentry_button(list, direntry->name, e, parent_dir);
         }
         else {
             if(direntry->is_file) {
                 if(is_romfile(ent->d_name)) {
-                    sprintf(direntry->name, "%s", ent->d_name);
+                    strncpy(direntry->name, ent->d_name, sizeof(direntry->name));
                     menu_new_listentry_button(list, direntry->name, e, load_rom);
                 }
                 else {
@@ -255,7 +248,7 @@ static int poll_dir() {
             }
             else {
                 if(ent->d_name[0] != '.') {
-                    sprintf(direntry->name, "%s/", ent->d_name);
+                    snprintf(direntry->name, sizeof(direntry->name), "%s/", ent->d_name);
                     menu_new_listentry_button(list, direntry->name, e, change_dir);
                 }
                 else {
@@ -307,7 +300,7 @@ void menu_rom_close() {
 
     menu_free_list(list);
 
-    for(e = selected_elements; ; e = e->next) {
+    for(e = selected_elements; e != NULL; e = e->next) {
         free(e->path);
         free(e->selected);
     }

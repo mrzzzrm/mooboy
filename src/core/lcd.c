@@ -204,6 +204,7 @@ static void next_line() {
 }
 
 static void vblank_line(int mcs) {
+  //  printf("VBlank\n");
     next_line();
     if(lcd.ly == 153) {
         hw_schedule(&lcd_mode_2_event, DUR_SCANLINE * cpu.freq_factor - mcs);
