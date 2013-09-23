@@ -24,7 +24,7 @@ hw_event_t sound_length_counters_event;
 hw_event_t sound_sweep_event;
 hw_event_t sound_envelopes_event;
 
-static inline void tick_length_counter(counter_t *counter, u8 *on) {
+static inline void step_length_counter(counter_t *counter, u8 *on) {
     if(counter->length > 0) {
         counter->length--;
         if(counter->expires && counter->length == 0) {
@@ -33,7 +33,7 @@ static inline void tick_length_counter(counter_t *counter, u8 *on) {
     }
 }
 
-static void tick_envelope(env_t *env, u8 *volume) {
+static void step_envelope(env_t *env, u8 *volume) {
     if(env->sweep != 0) {
         env->tick++;
         if(env->tick >= env->sweep) {
@@ -61,14 +61,14 @@ static sample_t sqw_mix(sqw_t *ch) {
     if(!ch->on) {
         return r;
     }
-    ch->cc = hw_events.cc - ch->cc_reset;
+    ch->cc = hw.cc - ch->cc_reset;
 
     wavefreq = 131072 / (2048 - ch->freq);
     wavelen = cpu.freq / wavefreq;
 
     if(ch->cc >= wavelen) {
         ch->cc %= wavelen;
-        ch->cc_reset = hw_events.cc - ch->cc;
+        ch->cc_reset = hw.cc - ch->cc;
     }
 
     switch(ch->duty) {
@@ -95,7 +95,7 @@ static sample_t wave_mix() {
     if(!wave.on || wave.shift == 0) {
         return r;
     }
-    wave.cc = hw_events.cc - wave.cc_reset;
+    wave.cc = hw.cc - wave.cc_reset;
     wavelen = (cpu.freq/65536) * (2048 - wave.freq);
 
     if(wave.cc >= wavelen) {
@@ -103,7 +103,7 @@ static sample_t wave_mix() {
             printf("Null! %i\n", wave.freq);
         }
         wave.cc %= wavelen;
-        wave.cc_reset = hw_events.cc - wave.cc;
+        wave.cc_reset = hw.cc - wave.cc;
     }
 
     realsam = (wave.cc*0x20) / wavelen;
@@ -131,7 +131,7 @@ static sample_t noise_mix() {
     if(!noise.on || noise.volume == 0) {
         return r;
     }
-    noise.cc = hw_events.cc - noise.cc_reset;
+    noise.cc = hw.cc - noise.cc_reset;
 
     if(noise.divr == 0) {
         freq = (524288 * 2) >> (noise.shift+1);
@@ -154,7 +154,7 @@ static sample_t noise_mix() {
             noise.lsfr |= b << 6;
         }
         noise.cc %= wavelen;
-        noise.cc_reset = hw_events.cc - noise.cc;
+        noise.cc_reset = hw.cc - noise.cc;
     }
 
     amp = noise.lsfr & 0x0001 ? 0x0 : noise.volume;
@@ -178,16 +178,16 @@ static void mix(int mcs) {
     hw_schedule(&sound_mix_event, sound.mix_threshold - mcs);
 }
 
-static void _length_counters(int mcs) {
-    tick_length_counter(&sqw[0].counter, &sqw[0].on);
-    tick_length_counter(&sqw[1].counter, &sqw[1].on);
-    tick_length_counter(&wave.counter, &wave.on);
-    tick_length_counter(&noise.counter, &noise.on);
+static void step_length_counters(int mcs) {
+    step_length_counter(&sqw[0].counter, &sqw[0].on);
+    step_length_counter(&sqw[1].counter, &sqw[1].on);
+    step_length_counter(&wave.counter, &wave.on);
+    step_length_counter(&noise.counter, &noise.on);
 
     hw_schedule(&sound_length_counters_event, 4096 * cpu.freq_factor - mcs);
 }
 
-static void _sweep(int mcs) {
+static void step_sweep(int mcs) {
     if(sweep.period != 0) {
         sweep.tick++;
         if(sweep.tick >= sweep.period) {
@@ -205,10 +205,10 @@ static void _sweep(int mcs) {
     hw_schedule(&sound_sweep_event, 9192 * cpu.freq_factor - mcs);
 }
 
-static void _envelopes(int mcs) {
-    tick_envelope(&env[0], &sqw[0].volume);
-    tick_envelope(&env[1], &sqw[1].volume);
-    tick_envelope(&env[2], &noise.volume);
+static void step_envelopes(int mcs) {
+    step_envelope(&env[0], &sqw[0].volume);
+    step_envelope(&env[1], &sqw[1].volume);
+    step_envelope(&env[2], &noise.volume);
 
     hw_schedule(&sound_envelopes_event, 18384 * cpu.freq_factor - mcs);
 }
@@ -243,9 +243,9 @@ void sound_reset() {
     noise.lsfr = 0xFFFF;
 
     sound_mix_event.callback = mix;
-    sound_length_counters_event.callback = _length_counters;
-    sound_sweep_event.callback = _sweep;
-    sound_envelopes_event.callback = _envelopes;
+    sound_length_counters_event.callback = step_length_counters;
+    sound_sweep_event.callback = step_sweep;
+    sound_envelopes_event.callback = step_envelopes;
 
 #ifdef DEBUG
     sprintf(sound_mix_event.name, "mix");
@@ -322,7 +322,7 @@ void sound_write(u8 sadr, u8 val) {
             sqw[0].counter.expires = val & 0x40;
             if(val & 0x80) {
                 sqw[0].on = 1;
-                sqw[0].cc_reset = hw_events.cc;
+                sqw[0].cc_reset = hw.cc;
             }
         break;
         case 0x16:
@@ -344,7 +344,7 @@ void sound_write(u8 sadr, u8 val) {
             sqw[1].counter.expires = val & 0x40;
             if(val & 0x80) {
                 sqw[1].on = 1;
-                sqw[1].cc_reset = hw_events.cc;
+                sqw[1].cc_reset = hw.cc;
             }
         break;
         case 0x1A:
@@ -365,7 +365,7 @@ void sound_write(u8 sadr, u8 val) {
             wave.freq |= (val&0x07)<<8;
             wave.counter.expires = val & 0x40;
             if(val & 0x80) {
-                wave.cc_reset = hw_events.cc;
+                wave.cc_reset = hw.cc;
             }
         break;
         case 0x20:
@@ -385,7 +385,7 @@ void sound_write(u8 sadr, u8 val) {
             noise.counter.expires = val & 0x40;
             if(val & 0x80) {
                 noise.on = 1;
-                noise.cc_reset = hw_events.cc;
+                noise.cc_reset = hw.cc;
                 noise.counter.length = noise.counter.length == 0 ? 0x40 : noise.counter.length;
             }
         break;

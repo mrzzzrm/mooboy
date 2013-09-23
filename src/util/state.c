@@ -471,10 +471,10 @@ static void save_hw_queue(hw_event_t *q) {
 }
 
 static void save_hw() {
-    S(hw_events.cc);
-    save_hw_queue(hw_events.first);
+    S(hw.cc);
+    save_hw_queue(hw.queue);
     set_checkpoint();
-    save_hw_queue(hw_events.sched);
+    save_hw_queue(hw.sched);
     set_checkpoint();
 }
 
@@ -505,14 +505,14 @@ static void load_hw_queue() {
         event->dbg_queued = 0;
 #endif
         R(mcs);
-        hw_schedule(event, mcs - hw_events.cc);
+        hw_schedule(event, mcs - hw.cc);
     }
 }
 
 static void load_hw() {
     hw_reset();
 
-    R(hw_events.cc);
+    R(hw.cc);
     load_hw_queue();
     assert_checkpoint();
     load_hw_queue();

@@ -24,7 +24,6 @@ typedef struct {
     int hw;
     int mode;
     int state;
-    char title[17];
     moo_error_t *error;
 } moo_t;
 

@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-hw_events_t hw_events;
+hw_t hw;
 
 void hw_reset() {
 #ifdef DEBUG
@@ -29,15 +29,15 @@ void hw_reset() {
     timers_tima_event.dbg_queued = 0;
 #endif
 
-    hw_events.cc = 0;
-    hw_events.first = NULL;
-    hw_events.sched = NULL;
+    hw.cc = 0;
+    hw.queue = NULL;
+    hw.sched = NULL;
 }
 
 #ifdef DEBUG
 //void hw_print_queue(hw_event_t *e) {
 //    hw_event_t *c;
-//    printf("%i: ", hw_events.cc);
+//    printf("%i: ", hw.cc);
 //    for(c = e; c != NULL; c = c->next) {
 //        fprintf(stdout, "[%s %i] ", c->name, c->mcs);
 //        assert(c != c->next);
@@ -54,21 +54,21 @@ void hw_step(int mcs) {
     cpu.dbg_mcs += mcs;
 #endif
 
-    while(hw_events.sched != NULL) {
-        next_sched = hw_events.sched->next;
+    while(hw.sched != NULL) {
+        next_sched = hw.sched->next;
         prev = NULL;
 
-        for(event = hw_events.first; event != NULL;) {
+        for(event = hw.queue; event != NULL;) {
             next = event->next;
             assert(next != event);
 
-            if((hw_cycle_t)(hw_events.sched->mcs - hw_events.cc) <= (hw_cycle_t)(event->mcs - hw_events.cc)) {
-                hw_events.sched->next = event;
+            if((hw_cycle_t)(hw.sched->mcs - hw.cc) <= (hw_cycle_t)(event->mcs - hw.cc)) {
+                hw.sched->next = event;
                 if(prev == NULL) {
-                    hw_events.first = hw_events.sched;
+                    hw.queue = hw.sched;
                 }
                 else {
-                    prev->next = hw_events.sched;
+                    prev->next = hw.sched;
                 }
                 break;
             }
@@ -79,38 +79,38 @@ void hw_step(int mcs) {
 
         if(event == NULL) {
             if(prev == NULL) {
-                hw_events.first = hw_events.sched;
+                hw.queue = hw.sched;
             }
             else {
-                prev->next = hw_events.sched;
+                prev->next = hw.sched;
             }
-            hw_events.sched->next = NULL;
+            hw.sched->next = NULL;
         }
-        hw_events.sched = next_sched;
+        hw.sched = next_sched;
     }
 
-    if(hw_events.first != NULL) {
-        hw_events.cc += mcs;
+    if(hw.queue != NULL) {
+        hw.cc += mcs;
 
-        while(hw_events.first != NULL) {
-            hw_cycle_t dist = hw_events.cc - hw_events.first->mcs;
+        while(hw.queue != NULL) {
+            hw_cycle_t dist = hw.cc - hw.queue->mcs;
             if(dist <= mcs) {
-                next = hw_events.first->next;
+                next = hw.queue->next;
 #ifdef DEBUG
-                assert(hw_events.first->dbg_queued);
-                hw_events.first->dbg_queued = 0;
+                assert(hw.queue->dbg_queued);
+                hw.queue->dbg_queued = 0;
 #endif
-                hw_events.first->callback(dist);
-                hw_events.first = next;
+                hw.queue->callback(dist);
+                hw.queue = next;
             }
             else {
                 break;
             }
         }
 
-        if(hw_events.defered > 0) {
-            hw_cycle_t mcs = hw_events.defered;
-            hw_events.defered = 0;
+        if(hw.defered > 0) {
+            hw_cycle_t mcs = hw.defered;
+            hw.defered = 0;
             hw_step(mcs);
         }
     }
@@ -127,9 +127,9 @@ void hw_schedule(hw_event_t *sched, int mcs) {
     sched->dbg_queued = 1;
 #endif
 
-    sched->mcs = hw_events.cc + mcs;
-    sched->next = hw_events.sched;
-    hw_events.sched = sched;
+    sched->mcs = hw.cc + mcs;
+    sched->next = hw.sched;
+    hw.sched = sched;
 }
 
 static void unschedule_from_queue(hw_event_t **q, hw_event_t *del) {
@@ -152,10 +152,10 @@ void hw_unschedule(hw_event_t *del) {
     del->dbg_queued = 0;
 #endif
 
-    unschedule_from_queue(&hw_events.first, del);
-    unschedule_from_queue(&hw_events.sched, del);
+    unschedule_from_queue(&hw.queue, del);
+    unschedule_from_queue(&hw.sched, del);
 }
 
 void hw_defer(hw_cycle_t mcs) {
-    hw_events.defered += mcs;
+    hw.defered += mcs;
 }

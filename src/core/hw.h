@@ -20,11 +20,10 @@ typedef struct {
     hw_cycle_t cc;
     hw_cycle_t defered;
     hw_event_t *first, *sched;
-} hw_events_t;
+} hw_t;
 
-extern hw_events_t hw_events;
+extern hw_t hw;
 
-void hw_print_queue(hw_event_t *q);
 
 void hw_reset();
 
