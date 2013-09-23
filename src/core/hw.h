@@ -19,7 +19,7 @@ typedef struct hw_event_s {
 typedef struct {
     hw_cycle_t cc;
     hw_cycle_t defered;
-    hw_event_t *first, *sched;
+    hw_event_t *queue, *sched;
 } hw_t;
 
 extern hw_t hw;

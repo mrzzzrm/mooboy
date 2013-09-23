@@ -48,9 +48,9 @@ void sys_init(int argc, const char** argv) {
     }
 #else
     if(SDL_SetVideoMode(800, 480, sys.bits_per_pixel, 0) == NULL) {
-#endif
         moo_fatalf("Setting of SDL video-mode failed");
     }
+#endif
 
 
     sys.scalingmode = 0;
