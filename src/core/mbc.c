@@ -155,12 +155,12 @@ void mbc_set_type(u8 type) {
 }
 
 u8 mbc_upper_read(u16 adr) {
-    if(!mbc.ram_selected) {
 #ifdef DEBUG
+    if(!mbc.ram_selected) {
         printf("Denied RAM access!\n");
-#endif
         return 0x00;
     }
+#endif
 
     if(mbc.type == 3 && mbc3.mode == MBC3_MAP_RTC) {
         return rtc.latched[rtc.mapped];
@@ -176,12 +176,12 @@ void mbc_lower_write(u16 adr, u8 val) {
 }
 
 void mbc_upper_write(u16 adr, u8 val) {
-    if(!mbc.ram_selected) {
 #ifdef DEBUG
+    if(!mbc.ram_selected) {
         printf("Denied RAM access!\n");
-#endif
         return;
     }
+#endif
 
     if(mbc.type == 3 && mbc3.mode == MBC3_MAP_RTC) {
         rtc_write(val);

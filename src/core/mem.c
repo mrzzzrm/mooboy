@@ -13,14 +13,14 @@ card_t card;
 
 static u8 read_locked_mem(u16 adr) {
 #ifdef DEBUG
-  //  printf("Denied read from locked memory location %.4X\n", adr);
+    printf("Denied read from locked memory location %.4X\n", adr);
 #endif
     return 0xFF;
 }
 
 static void write_locked_mem(u16 adr, u8 val) {
 #ifdef DEBUG
-  //  printf("Denied write of %.2X to locked memory location %.4X\n", val, adr);
+    printf("Denied write of %.2X to locked memory location %.4X\n", val, adr);
 #endif
 }
 

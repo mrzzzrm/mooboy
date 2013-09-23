@@ -97,8 +97,6 @@ void sound_close();
 void sound_reset();
 void sound_begin();
 
-void sound_step(int nfcs);
-
 void sound_lock();
 void sound_unlock();
 void sound_mix();

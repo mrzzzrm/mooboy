@@ -21,7 +21,6 @@ extern hw_event_t timers_tima_event;
 void timers_reset();
 void timers_begin();
 
-void timers_step(int nfcs, int mcs);
 void timers_tac(u8 tac);
 
 #endif

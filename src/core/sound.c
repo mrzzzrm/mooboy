@@ -32,30 +32,7 @@ static inline void tick_length_counter(counter_t *counter, u8 *on) {
         }
     }
 }
-//
-//static void tick_length_counters() {
-//    tick_length_counter(&sqw[0].counter, &sqw[0].on);
-//    tick_length_counter(&sqw[1].counter, &sqw[1].on);
-//    tick_length_counter(&wave.counter, &wave.on);
-//    tick_length_counter(&noise.counter, &noise.on);
-//}
-//
-//static void tick_sweep() {
-//    if(sweep.period != 0) {
-//        sweep.tick++;
-//        if(sweep.tick >= sweep.period) {
-//            if(sweep.dir) {
-//                sqw[0].freq -= sqw[0].freq >> sweep.shift;
-//            }
-//            else {
-//                sqw[0].freq += sqw[0].freq >> sweep.shift;
-//            }
-//            sqw[0].freq &= 0x07FF;
-//            sweep.tick = 0;
-//        }
-//    }
-//}
-//
+
 static void tick_envelope(env_t *env, u8 *volume) {
     if(env->sweep != 0) {
         env->tick++;
@@ -75,30 +52,6 @@ static void tick_envelope(env_t *env, u8 *volume) {
     }
 }
 
-//static void tick_envelopes() {
-//    tick_envelope(&env[0], &sqw[0].volume);
-//    tick_envelope(&env[1], &sqw[1].volume);
-//    tick_envelope(&env[2], &noise.volume);
-// }
-
-//static void timer_step(int nfcs) {
-//    sound.tick_cc += nfcs;
-//    sound.tick_cc &= 0x3FFF;
-//
-//    u8 step = (sound.tick_cc >> 11) & 0x07;
-//    if(step != sound.last_timer_step) {
-//        switch(step) {
-//            case 0: tick_length_counters();               break;
-//            case 2: tick_length_counters(); tick_sweep(); break;
-//            case 4: tick_length_counters();               break;
-//            case 6: tick_length_counters(); tick_sweep(); break;
-//            case 7: tick_envelopes();                     break;
-//        }
-//        sound.last_timer_step = step;
-//    }
-//}
-
-
 static sample_t sqw_mix(sqw_t *ch) {
     sample_t r = {0,0};
     int wavefreq;
@@ -106,7 +59,6 @@ static sample_t sqw_mix(sqw_t *ch) {
     u16 amp = 0;
 
     if(!ch->on) {
-//        ch->cc = 0;
         return r;
     }
     ch->cc = hw_events.cc - ch->cc_reset;
@@ -131,10 +83,6 @@ static sample_t sqw_mix(sqw_t *ch) {
     r.l = ch->l ? amp : 0;
     r.r = ch->r ? amp : 0;
 
-//    if(ch->cc >= wavelen) {
-//        ch->cc -= wavelen;
-//    }
-
     return r;
 }
 
@@ -145,14 +93,11 @@ static sample_t wave_mix() {
     int realsam;
 
     if(!wave.on || wave.shift == 0) {
-//        wave.cc = 0;
         return r;
     }
     wave.cc = hw_events.cc - wave.cc_reset;
-
     wavelen = (cpu.freq/65536) * (2048 - wave.freq);
 
-//    wave.cc %= wavelen;
     if(wave.cc >= wavelen) {
         if(wavelen == 0) {
             printf("Null! %i\n", wave.freq);
@@ -184,7 +129,6 @@ static sample_t noise_mix() {
     hw_cycle_t wavelen;
 
     if(!noise.on || noise.volume == 0) {
-//        noise.cc = 0;
         return r;
     }
     noise.cc = hw_events.cc - noise.cc_reset;
@@ -209,7 +153,6 @@ static sample_t noise_mix() {
             noise.lsfr &= 0xFFBF;
             noise.lsfr |= b << 6;
         }
-//        noise.cc %= wavelen;
         noise.cc %= wavelen;
         noise.cc_reset = hw_events.cc - noise.cc;
     }
@@ -321,26 +264,6 @@ void sound_begin() {
     hw_unschedule(&sound_envelopes_event);       hw_schedule(&sound_envelopes_event, 18384);
 }
 
-void sound_step(int nfcs) {
-//    timer_step(nfcs);
-//
-//    sound.cc += nfcs;
-
-//    sqw[0].cc += nfcs;
-//    sqw[1].cc += nfcs;
-//    wave.cc += nfcs;
- //   noise.cc += nfcs;
-
-//    if(sound.cc >= sound.mix_threshold) {
-//        sys_lock_audiobuf();
-//        sound_mix();
-//        sys_unlock_audiobuf();
-//
-//        sound.cc -= sound.mix_threshold;
-//        sound.mix_threshold = (NORMAL_CPU_FREQ + sound.remainder) / sound.freq;
-//        sound.remainder = (NORMAL_CPU_FREQ + sound.remainder) % sound.freq;
-//    }
-}
 
 // TODO: Handle userdefined on/off elsewhere, sound-off shouldn't use resources
 void sound_mix() {
@@ -399,7 +322,6 @@ void sound_write(u8 sadr, u8 val) {
             sqw[0].counter.expires = val & 0x40;
             if(val & 0x80) {
                 sqw[0].on = 1;
-//                sqw[0].cc = 0;
                 sqw[0].cc_reset = hw_events.cc;
             }
         break;
@@ -422,7 +344,6 @@ void sound_write(u8 sadr, u8 val) {
             sqw[1].counter.expires = val & 0x40;
             if(val & 0x80) {
                 sqw[1].on = 1;
-//                sqw[1].cc = 0;
                 sqw[1].cc_reset = hw_events.cc;
             }
         break;
@@ -444,7 +365,6 @@ void sound_write(u8 sadr, u8 val) {
             wave.freq |= (val&0x07)<<8;
             wave.counter.expires = val & 0x40;
             if(val & 0x80) {
-//                wave.cc = 0;
                 wave.cc_reset = hw_events.cc;
             }
         break;
@@ -465,7 +385,6 @@ void sound_write(u8 sadr, u8 val) {
             noise.counter.expires = val & 0x40;
             if(val & 0x80) {
                 noise.on = 1;
-//                noise.cc = 0;
                 noise.cc_reset = hw_events.cc;
                 noise.counter.length = noise.counter.length == 0 ? 0x40 : noise.counter.length;
             }

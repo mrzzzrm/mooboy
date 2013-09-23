@@ -65,7 +65,6 @@ extern hw_event_t lcd_vblank_line_event;
 void lcd_reset();
 void lcd_begin();
 
-void lcd_step(int nfcs);
 void lcd_dma(u8 v);
 void lcd_gdma();
 void lcd_hdma();

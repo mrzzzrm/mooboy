@@ -35,19 +35,24 @@ void hw_reset() {
 }
 
 #ifdef DEBUG
-void hw_print_queue(hw_event_t *e) {
-    hw_event_t *c;
-    printf("%i: ", hw_events.cc);
-    for(c = e; c != NULL; c = c->next) {
-        fprintf(stdout, "[%s %i] ", c->name, c->mcs);
-        assert(c != c->next);
-    }
-    printf("\n");
-}
+//void hw_print_queue(hw_event_t *e) {
+//    hw_event_t *c;
+//    printf("%i: ", hw_events.cc);
+//    for(c = e; c != NULL; c = c->next) {
+//        fprintf(stdout, "[%s %i] ", c->name, c->mcs);
+//        assert(c != c->next);
+//    }
+//    printf("\n");
+//}
 #endif
 
 void hw_step(int mcs) {
     hw_event_t *next_sched, *next, *event, *prev;
+
+#ifdef DEBUG
+    assert(mcs <= 10);
+    cpu.dbg_mcs += mcs;
+#endif
 
     while(hw_events.sched != NULL) {
         next_sched = hw_events.sched->next;
@@ -109,6 +114,8 @@ void hw_step(int mcs) {
             hw_step(mcs);
         }
     }
+
+    sys.invoke_cc += mcs;
 }
 
 void hw_schedule(hw_event_t *sched, int mcs) {

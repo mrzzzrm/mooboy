@@ -45,8 +45,6 @@ void moo_load_rom_config();
 
 void moo_run();
 
-void moo_step_hw(int mcs);
-
 void moo_set_joy_button(u8 button, u8 state);
 
 void moo_set_hw(int hw);

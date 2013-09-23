@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "cpu.h"
 #include "moo.h"
+#include "hw.h"
 #include "mem.h"
 #include "defines.h"
 
@@ -128,27 +129,27 @@ static inline u16 fetch_word() {
 }
 
 static inline void write_byte(u16 adr, u8 val) {
-    moo_step_hw(prewrite_mcs[cpu.op]);
+    hw_step(prewrite_mcs[cpu.op]);
     mem_write_byte(adr, val);
 }
 
 static inline void cb_write_byte(u16 adr, u8 val) {
-    moo_step_hw(cb_prewrite_mcs[cpu.cb]);
+    hw_step(cb_prewrite_mcs[cpu.cb]);
     mem_write_byte(adr, val);
 }
 
 static inline void write_word(u16 adr, u16 val) {
-    moo_step_hw(prewrite_mcs[cpu.op]);
+    hw_step(prewrite_mcs[cpu.op]);
     mem_write_word(adr, val);
 }
 
 static inline u8 read_byte(u16 adr) {
-    moo_step_hw(preread_mcs[cpu.op]);
+    hw_step(preread_mcs[cpu.op]);
     return mem_read_byte(adr);
 }
 
 static inline u8 cb_read_byte(u16 adr) {
-    moo_step_hw(cb_preread_mcs[cpu.cb]);
+    hw_step(cb_preread_mcs[cpu.cb]);
     return mem_read_byte(adr);
 }
 

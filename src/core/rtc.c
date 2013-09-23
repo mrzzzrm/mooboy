@@ -60,7 +60,7 @@ void rtc_reset() {
     rtc_event.callback = step;
 
 #ifdef DEBUG
-    sprintf(rtc_event.name, "rtc0");
+    sprintf(rtc_event.name, "rtc");
 #endif
 }
 
