@@ -22,6 +22,7 @@
 #include "util/framerate.h"
 #include "util/config.h"
 #include "util/card.h"
+#include "util/state.h"
 #include "sound.h"
 
 
@@ -64,6 +65,7 @@ void moo_reset() {
 
 void moo_begin() {
     moo.state |= MOO_ROM_RUNNING_BIT;
+
     rtc_begin();
     sound_begin();
     lcd_begin();
@@ -77,6 +79,16 @@ void moo_continue() {
     sys_continue();
 }
 
+void moo_rom_over() {
+    char *ext = ".continue.sav";
+    char *state_path = malloc(strlen(sys.rompath) + strlen(ext) + 1);
+    sprintf(state_path, "%s%s", sys.rompath, ext);
+    state_save(state_path);
+    free(state_path);
+
+    card_save();
+}
+
 void moo_pause() {
     moo.state ^= MOO_ROM_RUNNING_BIT;
     sys_pause();
@@ -86,13 +98,13 @@ void moo_quit() {
     moo.state &= ~MOO_RUNNING_BIT;
 
     if(moo.state & MOO_ROM_LOADED_BIT) {
-        card_save();
+        moo_rom_over();
     }
 }
 
 void moo_load_rom(const char *path) {
     if(moo.state & MOO_ROM_LOADED_BIT) {
-        card_save();
+        moo_rom_over();
     }
     if(path != sys.rompath) {
         strcpy(sys.rompath, path);

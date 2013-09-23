@@ -12,6 +12,7 @@
 #include "ops.h"
 #include "defines.h"
 #include "timers.h"
+#include "sys/sys.h"
 
 cpu_t cpu;
 

@@ -99,6 +99,7 @@ void save_cpu() {
     S(cpu.ime); S(cpu.irq); S(cpu.ie);
     S(cpu.remainder);
     S(cpu.freq);
+    S(cpu.freq_factor);
     S(cpu.freq_switch);
     S(cpu.halted);
 
@@ -112,6 +113,7 @@ static void load_cpu() {
     R(cpu.ime); R(cpu.irq); R(cpu.ie);
     R(cpu.remainder);
     R(cpu.freq);
+    R(cpu.freq_factor);
     R(cpu.freq_switch);
     R(cpu.halted);
 
@@ -319,12 +321,116 @@ static void load_rtc() {
     assert_checkpoint();
 }
 
-static void save_sound() {
+static void save_sqw(sqw_t *c) {
+    S(c->on);
+    S(c->l); S(c->r);
+    S(c->freq); S(c->duty); S(c->volume);
+    S(c->cc); S(c->cc_reset);
+    S(c->counter.length); S(c->counter.expires);
+}
 
+static void save_env(env_t *e) {
+    S(e->sweep); S(e->tick); S(e->dir);
+}
+
+static void save_sweep() {
+    S(sweep.period); S(sweep.dir); S(sweep.shift); S(sweep.tick);
+}
+
+static void save_wave() {
+    S(wave.on);
+    S(wave.cc); S(wave.cc_reset);
+    S(wave.l); S(wave.r);
+    S(wave.freq);
+    S(wave.shift);
+    SV(wave.data);
+    S(wave.counter.length); S(wave.counter.expires);
+}
+
+static void save_noise() {
+    S(noise.on);
+    S(noise.cc); S(noise.cc_reset);
+    S(noise.l); S(noise.r);
+    S(noise.volume);
+    S(noise.shift);
+    S(noise.width);
+    S(noise.divr);
+    S(noise.lsfr);
+    S(noise.counter.length); S(noise.counter.expires);
+}
+
+static void save_sound() {
+    S(sound.on);
+    S(sound.so1_volume); S(sound.so2_volume);
+    S(sound.mix_threshold);
+    S(sound.cc_reset);
+    S(sound.remainder);
+    set_checkpoint();
+
+    save_sqw(&sqw[0]); save_sqw(&sqw[1]);
+    set_checkpoint();
+    save_env(&env[0]); save_env(&env[1]); save_env(&env[2]);
+    set_checkpoint();
+    save_sweep();
+    save_wave();
+    save_noise();
+    set_checkpoint();
+}
+
+static void load_sqw(sqw_t *c) {
+    R(c->on);
+    R(c->l); R(c->r);
+    R(c->freq); R(c->duty); R(c->volume);
+    R(c->cc); R(c->cc_reset);
+    R(c->counter.length); R(c->counter.expires);
+}
+
+static void load_env(env_t *e) {
+    R(e->sweep); R(e->tick); R(e->dir);
+}
+
+static void load_sweep() {
+    R(sweep.period); R(sweep.dir); R(sweep.shift); R(sweep.tick);
+}
+
+static void load_wave() {
+    R(wave.on);
+    R(wave.cc); R(wave.cc_reset);
+    R(wave.l); R(wave.r);
+    R(wave.freq);
+    R(wave.shift);
+    RV(wave.data);
+    R(wave.counter.length); R(wave.counter.expires);
+}
+
+static void load_noise() {
+    R(noise.on);
+    R(noise.cc); R(noise.cc_reset);
+    R(noise.l); R(noise.r);
+    R(noise.volume);
+    R(noise.shift);
+    R(noise.width);
+    R(noise.divr);
+    R(noise.lsfr);
+    R(noise.counter.length); R(noise.counter.expires);
 }
 
 static void load_sound() {
+    R(sound.on);
+    R(sound.so1_volume); R(sound.so2_volume);
+    R(sound.mix_threshold);
+    R(sound.cc_reset);
+    R(sound.remainder);
+    assert_checkpoint();
 
+    load_sqw(&sqw[0]); load_sqw(&sqw[1]);
+    assert_checkpoint();
+    load_env(&env[0]); load_env(&env[1]); load_env(&env[2]);
+    assert_checkpoint();
+    load_sweep();
+    load_wave();
+    load_noise();
+    assert_checkpoint();
 }
 
 static void save_timers() {
@@ -388,40 +494,60 @@ static hw_event_t *hw_id_to_event(u8 id) {
     assert(0);
 }
 
-static hw_event_t *load_hw_queue() {
+static void load_hw_queue() {
     u8 id;
-    hw_event_t *event = NULL, *begin = NULL;
+    hw_cycle_t mcs;
+    hw_event_t *event;
 
-    R(id);
-    if(id != 0xFF) {
-        event = begin = hw_id_to_event(id);
-        R(event->mcs);
-        for(R(id); id != 0xFF; R(id)) {
-            event->next = hw_id_to_event(id);
-            R(event->mcs);
-            event = event->next;
-        }
-        event->next = NULL;
+    for(R(id); id != 0xFF; R(id)) {
+        event = hw_id_to_event(id);
+#ifdef DEBUG
+        event->dbg_queued = 0;
+#endif
+        R(mcs);
+        hw_schedule(event, mcs - hw_events.cc);
     }
-
-    return begin;
 }
 
 static void load_hw() {
+    hw_reset();
+
     R(hw_events.cc);
-    hw_events.first = load_hw_queue();
+    load_hw_queue();
     assert_checkpoint();
-    hw_events.sched = load_hw_queue();
+    load_hw_queue();
     assert_checkpoint();
 }
 
 static void save_sys() {
     S(sys.ticks);
+    S(sys.invoke_cc);
     set_checkpoint();
 }
 
 static void load_sys() {
     R(sys.ticks);
+    R(sys.invoke_cc);
+    assert_checkpoint();
+}
+
+static void save_util() {
+    S(framerate.cc_ahead);
+    S(framerate.skipped);
+    S(framerate.delay_threshold);
+    S(framerate.first_frame_ticks);
+    S(framerate.framecount);
+    S(framerate.last_curb_ticks);
+    set_checkpoint();
+}
+
+static void load_util() {
+    R(framerate.cc_ahead);
+    R(framerate.skipped);
+    R(framerate.delay_threshold);
+    R(framerate.first_frame_ticks);
+    R(framerate.framecount);
+    R(framerate.last_curb_ticks);
     assert_checkpoint();
 }
 
@@ -473,6 +599,7 @@ void state_save(const char *filename) {
     save_hw();
 
     save_sys();
+    save_util();
 
     fclose(f);
 }
@@ -498,6 +625,7 @@ int state_load(const char *filename) {
     load_hw();
 
     load_sys();
+    load_util();
 
 #ifdef DEBUG
     if(fread(&byte, 1, 1, f) != 0) {
@@ -506,6 +634,10 @@ int state_load(const char *filename) {
 #endif
 
     fclose(f);
+
+    if(~moo.state & MOO_ERROR_BIT) {
+        moo_continue();
+    }
 
     return ~moo.state & MOO_ERROR_BIT;
 }

@@ -37,6 +37,7 @@ void moo_close();
 void moo_begin();
 void moo_pause();
 void moo_continue();
+void moo_rom_over();
 void moo_quit();
 
 void moo_load_rom(const char *path);

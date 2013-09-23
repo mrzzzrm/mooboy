@@ -44,6 +44,8 @@ void sys_init(int argc, const char** argv) {
 #ifdef PANDORA
     SDL_ShowCursor(0);
     if(SDL_SetVideoMode(800, 480, sys.bits_per_pixel, SDL_FULLSCREEN) == NULL) {
+        moo_fatalf("Setting of SDL video-mode failed");
+    }
 #else
     if(SDL_SetVideoMode(800, 480, sys.bits_per_pixel, 0) == NULL) {
 #endif
@@ -96,7 +98,7 @@ void sys_begin() {
 }
 
 void sys_continue() {
-    sys.ticks_diff -= (long long)SDL_GetTicks() - sys.pause_start;
+    sys.ticks_diff = (long long)sys.ticks - (long long)SDL_GetTicks();
     sys_play_audio(sys.sound_on);
     video_switch_display_mode();
 }
@@ -217,3 +219,4 @@ void sys_set_scalingmode(int mode) {
 
     video_set_area(area);
 }
+

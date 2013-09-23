@@ -287,7 +287,6 @@ void sound_reset() {
     sound.on = 1;
     sound.so1_volume = 7;
     sound.so2_volume = 7;
-    sound.last_timer_step = 0;
     sound.buf_start = 0;
     sound.buf_end = 0;
     sound.remainder = 0;

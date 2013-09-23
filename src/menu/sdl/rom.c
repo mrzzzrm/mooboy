@@ -218,6 +218,7 @@ static int poll_dir() {
     int e;
 
     clear();
+
     dir = opendir(cwd);
     if(dir == NULL) {
         return 0;
@@ -269,6 +270,23 @@ static int poll_dir() {
     return 1;
 }
 
+static int select_beginning_with_from(menu_list_t *list, int from, char first_char) {
+    int e;
+    for(e = from; e < list->num_entries; e++) {
+        if(direntries[e]->name[0] == first_char) {
+            menu_list_select(list, e);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static void select_beginning_with(char first_char) {
+    if(!select_beginning_with_from(list, list->selected + 1, first_char)) {
+        select_beginning_with_from(list, 0, first_char);
+    }
+}
+
 static void rom_input_event(int type, int key) {
     menu_list_input(list, type, key);
 
@@ -282,6 +300,9 @@ static void rom_input_event(int type, int key) {
             case SDLK_LEFT:
                 parent_dir();
             break;
+        }
+        if(isprint(key)) {
+            select_beginning_with(key);
         }
     }
 }

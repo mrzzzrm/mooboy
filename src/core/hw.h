@@ -24,6 +24,7 @@ typedef struct {
 
 extern hw_events_t hw_events;
 
+void hw_print_queue(hw_event_t *q);
 
 void hw_reset();
 

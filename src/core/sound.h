@@ -17,12 +17,12 @@ typedef struct {
     u8 so1_volume;
     u8 so2_volume;
 
-    u8 last_timer_step;
+ //   u8 last_timer_step;
 
     int mix_threshold;
-    int cc;
+ //   int cc;
     hw_cycle_t cc_reset;
-    int tick_cc;
+//    int tick_cc;
     int remainder;
 } sound_t;
 

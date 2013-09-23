@@ -339,6 +339,12 @@ void menu_list_select_first(menu_list_t *list) {
     }
 }
 
+void menu_list_select(menu_list_t *list, int id) {
+    list->selected = id;
+    list->first_visible = max(0, list->selected - list->num_visible/2);
+    list->first_visible = min(list->first_visible, max(0, list->num_entries - list->num_visible));
+}
+
 static void hide_entry(menu_list_t *list, int idx) {
     int e;
     list->entries[idx]->is_visible = 0;
@@ -374,6 +380,21 @@ void menu_listentry_visible(menu_list_t *list, int id, int visible) {
             return;
         }
     }
+}
+
+void menu_listentry_textf(menu_list_t *list, int key, const char *format, ...) {
+    va_list args;
+    char buf[256];
+
+    va_start(args, format);
+    vsnprintf(buf, sizeof(buf), format, args);
+    va_end(args);
+
+    menu_label_t **label = &list->entries[menu_listentry_index(list, key)]->text;
+    if(*label != NULL) {
+        menu_free_label(*label);
+    }
+    *label = menu_label(buf);
 }
 
 void menu_collect_list_garbage(menu_list_t *list) {

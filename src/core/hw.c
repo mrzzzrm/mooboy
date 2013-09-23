@@ -1,5 +1,9 @@
 #include "hw.h"
 #include "cpu.h"
+#include "lcd.h"
+#include "rtc.h"
+#include "sound.h"
+#include "timers.h"
 #include "sys/sys.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -10,50 +14,40 @@
 hw_events_t hw_events;
 
 void hw_reset() {
+#ifdef DEBUG
+    lcd_mode_0_event.dbg_queued = 0;
+    lcd_mode_1_event.dbg_queued = 0;
+    lcd_mode_2_event.dbg_queued = 0;
+    lcd_mode_3_event.dbg_queued = 0;
+    lcd_vblank_line_event.dbg_queued = 0;
+    rtc_event.dbg_queued = 0;
+    sound_mix_event.dbg_queued = 0;
+    sound_envelopes_event.dbg_queued = 0;
+    sound_length_counters_event.dbg_queued = 0;
+    sound_sweep_event.dbg_queued = 0;
+    timers_div_event.dbg_queued = 0;
+    timers_tima_event.dbg_queued = 0;
+#endif
+
     hw_events.cc = 0;
     hw_events.first = NULL;
     hw_events.sched = NULL;
 }
 
 #ifdef DEBUG
-static void print_queue(hw_event_t *e) {
+void hw_print_queue(hw_event_t *e) {
     hw_event_t *c;
+    printf("%i: ", hw_events.cc);
     for(c = e; c != NULL; c = c->next) {
         fprintf(stdout, "[%s %i] ", c->name, c->mcs);
         assert(c != c->next);
     }
+    printf("\n");
 }
 #endif
 
 void hw_step(int mcs) {
     hw_event_t *next_sched, *next, *event, *prev;
-
-
-    if(hw_events.first != NULL) {
-        hw_events.cc += mcs;
-
-        while(hw_events.first != NULL) {
-            hw_cycle_t dist = hw_events.cc - hw_events.first->mcs;
-            if(dist <= mcs) {
-                next = hw_events.first->next;
-#ifdef DEBUG
-                assert(hw_events.first->dbg_queued);
-                hw_events.first->dbg_queued = 0;
-#endif
-                hw_events.first->callback(dist);
-                hw_events.first = next;
-            }
-            else {
-                break;
-            }
-        }
-
-        if(hw_events.defered > 0) {
-            hw_cycle_t mcs = hw_events.defered;
-            hw_events.defered = 0;
-            hw_step(mcs);
-        }
-    }
 
     while(hw_events.sched != NULL) {
         next_sched = hw_events.sched->next;
@@ -88,6 +82,32 @@ void hw_step(int mcs) {
             hw_events.sched->next = NULL;
         }
         hw_events.sched = next_sched;
+    }
+
+    if(hw_events.first != NULL) {
+        hw_events.cc += mcs;
+
+        while(hw_events.first != NULL) {
+            hw_cycle_t dist = hw_events.cc - hw_events.first->mcs;
+            if(dist <= mcs) {
+                next = hw_events.first->next;
+#ifdef DEBUG
+                assert(hw_events.first->dbg_queued);
+                hw_events.first->dbg_queued = 0;
+#endif
+                hw_events.first->callback(dist);
+                hw_events.first = next;
+            }
+            else {
+                break;
+            }
+        }
+
+        if(hw_events.defered > 0) {
+            hw_cycle_t mcs = hw_events.defered;
+            hw_events.defered = 0;
+            hw_step(mcs);
+        }
     }
 }
 

@@ -85,7 +85,7 @@ void audio_init() {
     mutex = SDL_CreateMutex();
 
     if (SDL_OpenAudio(&format, NULL) < 0 ) {
-        fprintf(stderr, "Couldn't open audio device: %s\n", SDL_GetError());
+        moo_fatalf("Couldn't open audio device: %s", SDL_GetError());
         exit(1);
     }
 }

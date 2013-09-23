@@ -11,6 +11,7 @@ void framerate_init() {
     framerate.frameskip = -1;
     framerate.max_frameskip = 5;
     framerate.delay_threshold = 3;
+
     framerate.cc_ahead = 0;
     framerate.last_curb_ticks = 0;
     framerate.skipped = 0;
@@ -56,12 +57,18 @@ int framerate_skip() {
 void framerate_curb() {
     int period = sys.ticks - (long)framerate.last_curb_ticks;
 
+    //printf("%i %i %i", framerate.cc_ahead, (period * cpu.freq)/1000, sys.invoke_cc);
+
     framerate.cc_ahead += sys.invoke_cc;
     framerate.cc_ahead -= (period * cpu.freq)/1000;
 
+   // printf(" => %i", framerate.cc_ahead);
+
     int ms_ahead = framerate.cc_ahead / ((long)cpu.freq/1000);
+    //printf(" => %i \n", ms_ahead);
 
     if(ms_ahead >= framerate.delay_threshold) {
+      //  printf("Delaying %i\n", framerate.delay_threshold);
         sys_delay(framerate.delay_threshold);
         performance.counting.slept += framerate.delay_threshold;
     }

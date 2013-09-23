@@ -7,8 +7,8 @@ typedef struct {
     int limit_framerate;
     int frameskip;
     int max_frameskip;
-    int cc_ahead;
 
+    int cc_ahead;
     int skipped;
     int delay_threshold;
     time_t first_frame_ticks;
