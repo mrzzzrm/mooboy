@@ -13,7 +13,7 @@
 
 typedef struct {
     int is_file;
-    char name[64];
+    char *name;
 } direntry_t;
 
 typedef struct selected_element_s {
@@ -23,7 +23,7 @@ typedef struct selected_element_s {
 } selected_element_t;
 
 static int finished;
-static char cwd[512] = "";
+static char cwd[PATH_MAX] = "";
 static menu_list_t *list = NULL;
 static direntry_t **direntries = NULL;
 static selected_element_t *selected_elements = NULL;
@@ -79,13 +79,13 @@ static void load_selected_element() {
 static void to_base_dir() {
     int l;
 
-    if(!getcwd(cwd, sizeof(cwd))) {
+    if(getcwd(cwd, sizeof(cwd)) == NULL) {
         moo_errorf("Couldn't fetch CWD");
         return;
     }
 
     l = strlen(cwd);
-    if(cwd[l - 1] != '/') {
+    if(cwd[l - 1] != '/') { // TODO: Is this really needed?
         cwd[l] = '/';
         cwd[l + 1] = '\0';
     }
@@ -170,6 +170,7 @@ static void clear() {
     if(direntries != NULL) {
         int e;
         for(e = 0; e < list->num_entries; e++) {
+            free(direntries[e]->name);
             free(direntries[e]);
         }
         free(direntries);
@@ -234,13 +235,13 @@ static int poll_dir() {
         direntry->is_file = ent->d_type == DT_REG;
 
         if(strcmp(ent->d_name, "..") == 0) {
-            snprintf(direntry->name, sizeof(direntry->name), "%s", ent->d_name);
+            direntry->name = strdup(ent->d_name);
             menu_new_listentry_button(list, direntry->name, e, parent_dir);
         }
         else {
             if(direntry->is_file) {
                 if(is_romfile(ent->d_name)) {
-                    strncpy(direntry->name, ent->d_name, sizeof(direntry->name));
+                    direntry->name = strdup(ent->d_name);
                     menu_new_listentry_button(list, direntry->name, e, load_rom);
                 }
                 else {
@@ -249,7 +250,8 @@ static int poll_dir() {
             }
             else {
                 if(ent->d_name[0] != '.') {
-                    snprintf(direntry->name, sizeof(direntry->name), "%s/", ent->d_name);
+                    direntry->name = malloc(strlen(ent->d_name) + 1 + 1);
+                    sprintf(direntry->name, "%s/", ent->d_name);
                     menu_new_listentry_button(list, direntry->name, e, change_dir);
                 }
                 else {
@@ -270,21 +272,15 @@ static int poll_dir() {
     return 1;
 }
 
-static int select_beginning_with_from(menu_list_t *list, int from, char first_char) {
+static int jump_to(int start, char first_char) {
     int e;
-    for(e = from; e < list->num_entries; e++) {
+    for(e = start; e < list->num_entries; e++) {
         if(direntries[e]->name[0] == first_char) {
             menu_list_select(list, e);
             return 1;
         }
     }
     return 0;
-}
-
-static void select_beginning_with(char first_char) {
-    if(!select_beginning_with_from(list, list->selected + 1, first_char)) {
-        select_beginning_with_from(list, 0, first_char);
-    }
 }
 
 static void rom_input_event(int type, int key) {
@@ -302,7 +298,9 @@ static void rom_input_event(int type, int key) {
             break;
         }
         if(isprint(key)) {
-            select_beginning_with(key);
+            if(!jump_to(list->selected + 1, key)) {
+                jump_to(0, key);
+            }
         }
     }
 }

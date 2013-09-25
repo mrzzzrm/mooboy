@@ -105,6 +105,7 @@ void config_save(const char *path) {
 
     save_int("sound_on", sys.sound_on);
     save_int("scalingmode", sys.scalingmode);
+    save_int("show_statusbar", sys.scalingmode);
 
     fclose(file);
 }
@@ -139,4 +140,6 @@ int config_load(const char *path) {
 void config_default() {
     sys.sound_on = 1;
     sys.scalingmode = 0;
+    sys.show_statusbar = 0;
 }
+

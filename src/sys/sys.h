@@ -7,14 +7,18 @@
 typedef struct {
     time_t ticks;
     long long ticks_diff;
-    time_t pause_start;
+
     int fb_ready;
+
     int sound_on;
     int sound_freq;
+
     int invoke_cc;
 
     int running;
     int state;
+
+    int show_statusbar;
 
     char rompath[256];
 

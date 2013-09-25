@@ -35,6 +35,7 @@ void sys_init(int argc, const char** argv) {
     sys.sound_freq = 22050;
     sys.quantum_length = 1000;
     sys.bits_per_pixel = 16;
+    sys.show_statusbar = 0;
     moo.state = MOO_RUNNING_BIT;
 
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
@@ -67,7 +68,7 @@ void sys_init(int argc, const char** argv) {
     input_init();
 
     statuslabel = SDL_CreateRGBSurface(0, SDL_GetVideoSurface()->w, 8, sys.bits_per_pixel, 0, 0, 0, 0);
-    assert(statuslabel);
+    assert(statuslabel != NULL);
 }
 
 void sys_reset() {
@@ -87,7 +88,6 @@ void sys_close() {
 
 void sys_pause() {
     sys_play_audio(0);
-    sys.pause_start = SDL_GetTicks();
     video_switch_display_mode();
 }
 
@@ -149,7 +149,9 @@ SDL_Rect streched_scaling_area() {
 
 static void render() {
     video_render(SDL_GetVideoSurface());
-    SDL_BlitSurface(statuslabel, NULL, SDL_GetVideoSurface(), NULL);
+    if(sys.show_statusbar) {
+        SDL_BlitSurface(statuslabel, NULL, SDL_GetVideoSurface(), NULL);
+    }
     SDL_Flip(SDL_GetVideoSurface());
 }
 
