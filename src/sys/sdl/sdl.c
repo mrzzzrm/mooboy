@@ -44,7 +44,7 @@ void sys_init(int argc, const char** argv) {
 
 #ifdef PANDORA
     SDL_ShowCursor(0);
-    if(SDL_SetVideoMode(800, 480, sys.bits_per_pixel, SDL_FULLSCREEN) == NULL) {
+    if(SDL_SetVideoMode(320, 288, sys.bits_per_pixel, 0) == NULL) {
         moo_fatalf("Setting of SDL video-mode failed");
     }
 #else

@@ -116,9 +116,13 @@ void moo_load_rom(const char *path) {
     load_rom();
 
     if(moo.state & MOO_ROM_LOADED_BIT) {
+        printf("ROM loaded successfully\n");
         moo_load_rom_config();
         store_rompath();
         moo_begin();
+    }
+    else {
+        printf("There was an error during ROM-load\n");
     }
 }
 

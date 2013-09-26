@@ -100,7 +100,8 @@ void config_save(const char *path) {
 
     file = fopen(path, "w");
     if(file == NULL) {
-        moo_errorf("Couln't open file");
+        moo_errorf("Couldn't write to .conf file '%s'", path);
+        return;
     }
 
     save_int("sound_on", sys.sound_on);

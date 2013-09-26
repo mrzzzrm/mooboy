@@ -7,9 +7,17 @@
 #include "core/rtc.h"
 #include "core/moo.h"
 
+char *get_sramfile() {
+    char *sramfile;
+
+    sramfile = malloc(strlen(sys.rompath) + strlen(".card" + 1));
+    sprintf(sramfile, "%s.card",  sys.rompath);
+
+    return sramfile;
+}
 
 void card_save() {
-    char sramfile[256];
+    char *sramfile;
     FILE *file;
     size_t written;
 
@@ -17,35 +25,36 @@ void card_save() {
         return;
     }
 
-    sprintf(sramfile, "%s.card",  sys.rompath);
-
+    sramfile = get_sramfile();
     printf("Saving card '%s'\n", sramfile);
 
     file = fopen(sramfile, "wb");
     if(file == NULL) {
-        moo_errorf("Couldn't save card #1");
+        moo_errorf("Couldn't write to sram file");
+        return;
     }
 
     if(mbc.has_ram) {
         written = fwrite(card.srambanks, 1, card.sramsize * sizeof(*card.srambanks), file);
         if(written != card.sramsize * sizeof(*card.srambanks)) {
-            moo_errorf("Couldn't save card #2");
+            moo_errorf("Error writing to sram file #1");
         }
     }
 
     if(mbc.has_rtc) {
-        written = fwrite(rtc.latched,     1, sizeof(rtc.latched), file);    if (written != sizeof(rtc.latched)) moo_errorf("Couldn't save card #2");
-        written = fwrite(rtc.ticking,     1, sizeof(rtc.ticking), file);    if (written != sizeof(rtc.ticking)) moo_errorf("Couldn't save card #3");
-        written = fwrite(&rtc.mapped,     1, sizeof(rtc.mapped), file);     if (written != sizeof(rtc.mapped)) moo_errorf("Couldn't save card #4");
-        written = fwrite(&rtc.prelatched, 1, sizeof(rtc.prelatched), file); if (written != sizeof(rtc.prelatched)) moo_errorf("Couldn't save card #5");
-        written = fwrite(&rtc.cc,         1, sizeof(rtc.cc), file);         if (written != sizeof(rtc.cc)) moo_errorf("Couldn't save card #6");
+        written = fwrite(rtc.latched,     1, sizeof(rtc.latched), file);    if (written != sizeof(rtc.latched)) moo_errorf("Error writing to sram file #2");
+        written = fwrite(rtc.ticking,     1, sizeof(rtc.ticking), file);    if (written != sizeof(rtc.ticking)) moo_errorf("Error writing to sram file #3");
+        written = fwrite(&rtc.mapped,     1, sizeof(rtc.mapped), file);     if (written != sizeof(rtc.mapped)) moo_errorf("Error writing to sram file #4");
+        written = fwrite(&rtc.prelatched, 1, sizeof(rtc.prelatched), file); if (written != sizeof(rtc.prelatched)) moo_errorf("Error writing to sram file #5");
+        written = fwrite(&rtc.cc,         1, sizeof(rtc.cc), file);         if (written != sizeof(rtc.cc)) moo_errorf("Error writing to sram file #6");
     }
 
+    free(sramfile);
     fclose(file);
 }
 
 void card_load() {
-    char sramfile[256];
+    char *sramfile;
     FILE *file;
     size_t read;
     u8 dummy;
@@ -54,9 +63,9 @@ void card_load() {
         return;
     }
 
-    sprintf(sramfile, "%s.card",  sys.rompath);
-    file = fopen(sramfile, "rb");
+    sramfile = get_sramfile();
 
+    file = fopen(sramfile, "rb");
     if(file == NULL) {
         printf("No .card-file found\n");
         return;

@@ -582,7 +582,7 @@ void state_save(const char *filename) {
 
     f = fopen(filename, "wb");
     if(f == NULL) {
-        moo_errorf("Couln't open file");
+        moo_errorf("Couln't write to .sav file '%s'", filename);
         return;
     }
 

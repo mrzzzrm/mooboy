@@ -132,7 +132,7 @@ static void load_state() {
 
 static void save_state() {
     char *sav_file = malloc(strlen(sys.rompath) + strlen(".sav") + 1 + 1);
-    snprintf(sav_file, sizeof(sav_file), "%s.sav%i", sys.rompath, save_slot);
+    sprintf(sav_file, "%s.sav%i", sys.rompath, save_slot);
     state_save(sav_file);
     free(sav_file);
 }
