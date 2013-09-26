@@ -83,6 +83,7 @@ void sys_close() {
     }
     free(sys.scalingmode_names);
 
+    SDL_PauseAudio(1);
     SDL_Quit();
 }
 

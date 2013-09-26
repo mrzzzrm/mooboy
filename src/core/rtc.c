@@ -52,7 +52,7 @@ static void step(int mcs) {
     if(~rtc.ticking[DH] & 0x40) {
         rtc_tick(0);
     }
-    hw_unschedule(&rtc_event); hw_schedule(&rtc_event, cpu.freq);
+    hw_schedule(&rtc_event, cpu.freq);
 }
 
 void rtc_reset() {

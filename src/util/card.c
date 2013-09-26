@@ -1,6 +1,8 @@
 #include "card.h"
+#include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 #include "sys/sys.h"
 #include "core/mbc.h"
 #include "core/mem.h"
@@ -10,7 +12,7 @@
 char *get_sramfile() {
     char *sramfile;
 
-    sramfile = malloc(strlen(sys.rompath) + strlen(".card" + 1));
+    sramfile = malloc(strlen(sys.rompath) + strlen(".card") + 1);
     sprintf(sramfile, "%s.card",  sys.rompath);
 
     return sramfile;

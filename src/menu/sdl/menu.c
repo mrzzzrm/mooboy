@@ -121,7 +121,7 @@ static void set_slot(int label, int i) {
 
 static void load_state() {
     char *sav_file = malloc(strlen(sys.rompath) + strlen(".sav") + 1 + 1);
-    snprintf(sav_file, sizeof(sav_file), "%s.sav%i", sys.rompath, load_slot);
+    sprintf(sav_file, "%s.sav%i", sys.rompath, load_slot);
     if(state_load(sav_file)) {
         if((~moo.state & MOO_ERROR_BIT)) {
             moo_begin();
