@@ -1,10 +1,8 @@
 [Emulator]
-    - General sound sounds strange at times
     - Remove sys/sdl/video.c::buf with dynamic sized array
-    - Select key on pandora doesn't work
-    - Optimize step-system to event-queue
-    - Optimize scan-system - not every pixel should have separate layer-tests
-    
+    - Jump to key on pandora doesn't work
+    - Optimize scan-system - not every pixel should have separate layer-tests    
+    - Why is tima working for cgb? It should be too fast the way it is
     
 [Game Bugs]
     - MrDriller: Blocks not shown
@@ -12,12 +10,8 @@
     - Aladdin: Messed up graphics
     - Alfred's Adventure: Messed up graphics
     - Alice in Wonderland: Messed up graphics
-    - Donkeykong doesn't load
-    - Sound to slow in Zelda Oracle of Seasons
 
 [Menu]  
-	- Dirup in rom per key
-	- Per key to roms starting with a specific letter
     
 [Misc]
 	- Icon

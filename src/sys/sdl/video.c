@@ -6,7 +6,7 @@
 #include "core/lcd.h"
 
 
-static u8 buf[32768];
+static u8 buf[32768]; // TODO: Dynamic
 static u16 cgb_to_rgb_buf[0x8000];
 static int acolumns_in_fbpixel_buf[160];
 static int line_length;
@@ -57,9 +57,7 @@ static void cgb_fw_render_fbline(int line) {
     fbx = 0;
 
     for(ax = 0; ax < area.w; fbx++) {
-        //s_color = cgb_to_rgb(lcd.clean_fb[fb_pixel++]);
         s_color = cgb_to_rgb_buf[lcd.clean_fb[fb_pixel++]];
-        //pixels_to_set = acolumns_in_fbpixel(ax, area.w, fbx);
         pixels_to_set = acolumns_in_fbpixel_buf[fbx];
         ax += pixels_to_set;
 

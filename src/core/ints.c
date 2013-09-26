@@ -25,7 +25,11 @@ void ints_handle() {
             assert(0);
     }
 
-    u8 i;
+    if((cpu.irq & cpu.ie) == 0x00) {
+        return;
+    }
+
+    int i;
     for(i = 0; i < 5; i++) {
         if(cpu.irq & cpu.ie & (1 << i)) {
             exec_int(i);
@@ -35,7 +39,11 @@ void ints_handle() {
 }
 
 int ints_handle_standby() {
-    u8 i;
+    if((cpu.irq & cpu.ie) == 0x00) {
+        return 0;
+    }
+
+    int i;
     for(i = 0; i < 5; i++) {
         if(cpu.irq & cpu.ie & (1 << i)) {
             if(cpu.ime != IME_OFF) {

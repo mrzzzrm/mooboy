@@ -7,13 +7,13 @@
 #include <assert.h>
 #include <ctype.h>
 
-typedef struct {
+typedef struct { // TODO: Dynamic
     char key[64];
     char val[64];
-} tuple_t;
+} pair_t;
 
 static FILE *file;
-static tuple_t **tuples = NULL;
+static pair_t **tuples = NULL;
 static int num_tuples;
 
 static void trim(char *str) {
@@ -27,7 +27,7 @@ static void save(const char *key, const char *val) {
 }
 
 static void save_int(const char *key, int ival) {
-    char val[64];
+    char val[64]; // TODO: Dynamic, or at least synced to pair/pair_t
     sprintf(val, "%i", ival);
     save(key, val);
 }
@@ -78,7 +78,7 @@ static void parse() {
         val = strchr(line, '=');
 
         if(val != NULL) {
-            tuple_t *tuple;
+            pair_t *tuple;
 
             *val = '\0';
             val++;
