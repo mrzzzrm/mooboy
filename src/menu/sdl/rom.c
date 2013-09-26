@@ -275,7 +275,7 @@ static int poll_dir() {
 static int jump_to(int start, char first_char) {
     int e;
     for(e = start; e < list->num_entries; e++) {
-        if(direntries[e]->name[0] == first_char) {
+        if(tolower(direntries[e]->name[0]) == tolower(first_char)) {
             menu_list_select(list, e);
             return 1;
         }
