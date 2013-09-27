@@ -143,7 +143,6 @@ static void resume() {
 
 static void reset() {
     moo_load_rom(sys.rompath);
-    moo_begin();
 }
 
 static void quit() {

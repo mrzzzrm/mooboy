@@ -66,6 +66,7 @@ void rtc_reset() {
 }
 
 void rtc_begin() {
+    printf("RTC: %i\n", rtc_event.dbg_queued);
     if(mbc.type == 3) {
         hw_schedule(&rtc_event, cpu.freq);
     }
