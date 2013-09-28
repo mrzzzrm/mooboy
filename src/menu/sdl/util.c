@@ -13,8 +13,6 @@
 #define SCROLL_TO_THRESHOLD 1
 #define SCROLL_ACTIVE 2
 
-#define ALIGN_LEFTBOUND 0
-#define ALIGN_RIGHTBOUND 1
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #define max(a, b) ((a) > (b) ? (a) : (b))
@@ -167,8 +165,14 @@ void menu_blit_label(menu_label_t *label, int align, int selected, int x, int y)
 
     SDL_Surface *s = label->surfaces[selected];
 
-    if(align == ALIGN_RIGHTBOUND) {
-        x -= s->w;
+    switch(align) {
+        case ALIGN_RIGHTBOUND:
+            x -= s->w;
+        break;
+        case ALIGN_CENTER:
+            x -= s->w/2;
+            y -= s->h/2;
+        break;
     }
 
     menu_blit(s, x, y);

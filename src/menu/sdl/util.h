@@ -19,6 +19,10 @@
 #define MENU_LISTENTRY_SELECTION 1
 #define MENU_LISTENTRY_SPACER 2
 
+#define ALIGN_LEFTBOUND 0
+#define ALIGN_RIGHTBOUND 1
+#define ALIGN_CENTER 2
+
 typedef struct {
     SDL_Surface *surfaces[2];
     char text[64];

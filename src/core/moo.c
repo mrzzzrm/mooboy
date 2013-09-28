@@ -23,6 +23,7 @@
 #include "util/config.h"
 #include "util/card.h"
 #include "util/state.h"
+#include "util/continue.h"
 #include "sound.h"
 
 
@@ -115,10 +116,25 @@ void moo_load_rom(const char *path) {
     moo_reset();
     load_rom();
 
-    if(moo.state & MOO_ROM_LOADED_BIT) {
-        moo_load_rom_config();
-        store_rompath();
-        moo_begin();
+    if(~moo.state & MOO_ROM_LOADED_BIT) {
+        printf("Failed to load ROM\n");
+        return;
+    }
+
+    moo_load_rom_config();
+    store_rompath();
+    moo_begin();
+
+    if(continue_state_exists()) {
+        switch(sys.auto_continue) {
+            case SYS_AUTO_CONTINUE_YES:
+                continue_state_load();
+            break;
+            case SYS_AUTO_CONTINUE_ASK:
+                moo_pause();
+                menu_continue();
+            break;
+        }
     }
 }
 

@@ -36,6 +36,7 @@ void sys_init(int argc, const char** argv) {
     sys.quantum_length = 1000;
     sys.bits_per_pixel = 16;
     sys.show_statusbar = 0;
+    sys.auto_continue = SYS_AUTO_CONTINUE_ASK;
     moo.state = MOO_RUNNING_BIT;
 
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {

@@ -2,18 +2,19 @@
 #include "error.h"
 #include "rom.h"
 #include "options.h"
+#include "continue.h"
 #include "core/moo.h"
 #include "sys/sys.h"
 #include "sys/sdl/input.h"
 #include "sys/sdl/video.h"
 #include "util/state.h"
+#include "util/last_rom.h"
 #include <assert.h>
 #include "util.h"
 #include <SDL/SDL.h>
 
 
 #define LABEL_RESUME            0
-#define LABEL_CONTINUE_LAST_ROM 1
 #define LABEL_LOAD_LAST_ROM     2
 #define LABEL_LOAD_ROM          3
 #define LABEL_RESET             4
@@ -28,75 +29,6 @@ static menu_list_t *list = NULL;
 static int load_slot = 0;
 static int save_slot = 0;
 
-static int exists(const char *path) {
-    FILE *f = fopen(path, "r");
-    if(f != NULL) {
-        fclose(f);
-    }
-    return f != NULL;
-}
-
-static char *last_rom_path() {
-    FILE *f = fopen("lastrom.txt", "r");
-    if(f == NULL) {
-        return NULL;
-    }
-    fseek(f, 0, SEEK_END);
-    long pathlen = ftell(f);
-    char *path = malloc(pathlen + 1);
-    fseek(f, 0, SEEK_SET);
-    fread(path, 1, pathlen, f);
-    fclose(f);
-    path[pathlen] = '\0';
-    return path;
-}
-
-static char *last_state_path() {
-    char *rom_path = last_rom_path();
-    if(rom_path == NULL) {
-        return NULL;
-    }
-
-    char *ext = ".continue.sav";
-    int state_path_len = strlen(rom_path) + strlen(ext);
-    char *state_path = malloc(state_path_len + 1);
-    sprintf(state_path, "%s%s", rom_path, ext);
-
-    return state_path;
-}
-
-static int have_last_state() {
-    char *state_path = last_state_path();
-
-    if(state_path == NULL) {
-        return 0;
-    }
-
-    int re = exists(state_path);
-    free(state_path);
-
-    return re;
-}
-
-static int have_last_rom() {
-    char *path = last_rom_path();
-    int re = exists(path);
-    free(path);
-    return re;
-}
-
-static void load_last_rom() {
-    char *path = last_rom_path();
-    moo_load_rom(path);
-    free(path);
-}
-
-static void continue_last_rom() {
-    load_last_rom();
-    char *state_path = last_state_path();
-    state_load(state_path);
-    free(state_path);
-}
 
 static void back() {
     if(moo.state & MOO_ROM_LOADED_BIT) {
@@ -123,9 +55,9 @@ static void load_state() {
     char *sav_file = malloc(strlen(sys.rompath) + strlen(".sav") + 1 + 1);
     sprintf(sav_file, "%s.sav%i", sys.rompath, load_slot);
     if(state_load(sav_file)) {
-        if((~moo.state & MOO_ERROR_BIT)) {
-            moo_begin();
-        }
+//        if((~moo.state & MOO_ERROR_BIT)) {
+//            moo_begin();
+//        }
     }
     free(sav_file);
 }
@@ -158,11 +90,9 @@ static const char *filename(const char *filepath) {
 }
 
 static void setup() {
-    int _have_last_rom = have_last_rom();
-    int _have_last_state = have_last_state();
+    int have_last_rom = last_rom_exists();
 
-    menu_listentry_visible(list, LABEL_CONTINUE_LAST_ROM, (~moo.state & MOO_ROM_LOADED_BIT) && _have_last_rom && _have_last_state);
-    menu_listentry_visible(list, LABEL_LOAD_LAST_ROM, (~moo.state & MOO_ROM_LOADED_BIT) && _have_last_rom);
+    menu_listentry_visible(list, LABEL_LOAD_LAST_ROM, (~moo.state & MOO_ROM_LOADED_BIT) && have_last_rom);
     menu_listentry_visible(list, LABEL_RESUME, moo.state & MOO_ROM_LOADED_BIT);
     menu_listentry_visible(list, LABEL_RESET, moo.state & MOO_ROM_LOADED_BIT);
     menu_listentry_visible(list, LABEL_LOAD_STATE, moo.state & MOO_ROM_LOADED_BIT);
@@ -170,13 +100,10 @@ static void setup() {
 
     menu_list_select_first(list);
 
-    if(_have_last_rom) {
+    if(have_last_rom) {
         char *_last_rom_path = last_rom_path();
         const char *rom_filename = filename(_last_rom_path);
         menu_listentry_textf(list, LABEL_LOAD_LAST_ROM, "Load %s", rom_filename);
-        if(_have_last_state) {
-            menu_listentry_textf(list, LABEL_CONTINUE_LAST_ROM, "Continue with %s", rom_filename);
-        }
         free(_last_rom_path);
     }
 }
@@ -221,11 +148,11 @@ void menu_init() {
     menu_rom_init();
     menu_options_init();
     menu_error_init();
+    menu_continue_init();
 
     list = menu_new_list("Main Menu");
     list->back_func = back;
 
-    menu_new_listentry_button(list, "", LABEL_CONTINUE_LAST_ROM, continue_last_rom);
     menu_new_listentry_button(list, "", LABEL_LOAD_LAST_ROM, load_last_rom);
     menu_new_listentry_button(list, "Resume", LABEL_RESUME, resume);
     menu_new_listentry_button(list, "Load ROM", LABEL_LOAD_ROM, menu_rom);

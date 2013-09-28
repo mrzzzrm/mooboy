@@ -8,11 +8,12 @@
 #define LABEL_SOUND 0
 #define LABEL_SCALING 1
 #define LABEL_STATUSBAR 2
-#define LABEL_SAVE_LOCAL 3
-#define LABEL_LOAD_LOCAL 4
-#define LABEL_SAVE_GLOBAL 5
-#define LABEL_LOAD_GLOBAL 6
-#define LABEL_RESET 7
+#define LABEL_AUTO_CONTINUE 3
+#define LABEL_SAVE_LOCAL 4
+#define LABEL_LOAD_LOCAL 5
+#define LABEL_SAVE_GLOBAL 6
+#define LABEL_LOAD_GLOBAL 7
+#define LABEL_RESET 8
 
 
 static menu_list_t *list;
@@ -38,10 +39,17 @@ static void change_statusbar(int dir) {
     menu_listentry_val(list, LABEL_STATUSBAR, sys.show_statusbar ? "show" : "hide");
 }
 
+static void change_auto_continue(int dir) {
+    sys.auto_continue += dir;
+    sys.auto_continue = sys.auto_continue < 0 ? SYS_AUTO_CONTINUE_YES : sys.auto_continue % 3;
+    menu_listentry_val(list, LABEL_AUTO_CONTINUE, sys.auto_continue == SYS_AUTO_CONTINUE_YES ? "yes" : sys.auto_continue == SYS_AUTO_CONTINUE_NO ? "no" : "ask me");
+}
+
 static void update_options() {
     change_sound(0);
     change_scaling(0);
     change_statusbar(0);
+    change_auto_continue(0);
 }
 
 static void reset() {
@@ -84,6 +92,7 @@ void menu_options_init() {
     menu_new_listentry_selection(list, "Sound", LABEL_SOUND, change_sound);
     menu_new_listentry_selection(list, "Scaling", LABEL_SCALING, change_scaling);
     menu_new_listentry_selection(list, "Statusbar", LABEL_STATUSBAR, change_statusbar);
+    menu_new_listentry_selection(list, "Auto-Continue", LABEL_AUTO_CONTINUE, change_auto_continue);
 
     menu_new_listentry_spacer(list);
 

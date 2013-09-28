@@ -3,7 +3,6 @@
 
 #include <time.h>
 
-
 typedef struct {
     time_t ticks;
     long long ticks_diff;
@@ -26,9 +25,15 @@ typedef struct {
     int num_scalingmodes;
     char **scalingmode_names;
 
+    int auto_continue;
+
     unsigned int bits_per_pixel;
     unsigned int quantum_length;
 } sys_t;
+
+#define SYS_AUTO_CONTINUE_NO 0
+#define SYS_AUTO_CONTINUE_ASK 1
+#define SYS_AUTO_CONTINUE_YES 2
 
 extern sys_t sys;
 

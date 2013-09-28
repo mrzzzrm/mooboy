@@ -106,7 +106,8 @@ void config_save(const char *path) {
 
     save_int("sound_on", sys.sound_on);
     save_int("scalingmode", sys.scalingmode);
-    save_int("show_statusbar", sys.scalingmode);
+    save_int("show_statusbar", sys.show_statusbar);
+    save_int("auto_continue", sys.auto_continue);
 
     fclose(file);
 }
@@ -131,16 +132,20 @@ int config_load(const char *path) {
         return 0;
     }
 
+    sys.show_statusbar = load_int("show_statusbar");
+    sys.auto_continue = load_int("auto_continue");
+
+
     fclose(file);
     clear();
 
     return 1;
 }
 
-
 void config_default() {
     sys.sound_on = 1;
     sys.scalingmode = 0;
     sys.show_statusbar = 0;
+    sys.auto_continue = SYS_AUTO_CONTINUE_ASK;
 }
 
