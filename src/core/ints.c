@@ -25,31 +25,27 @@ void ints_handle() {
             assert(0);
     }
 
-    if((cpu.irq & cpu.ie) == 0x00) {
-        return;
-    }
-
-    int i;
-    for(i = 0; i < 5; i++) {
-        if(cpu.irq & cpu.ie & (1 << i)) {
-            exec_int(i);
-            return;
+    if((cpu.irq & cpu.ie) != 0x00) {
+        int i;
+        for(i = 0; i < 5; i++) {
+            if(cpu.irq & cpu.ie & (1 << i)) {
+                exec_int(i);
+                return;
+            }
         }
     }
 }
 
 int ints_handle_standby() {
-    if((cpu.irq & cpu.ie) == 0x00) {
-        return 0;
-    }
-
-    int i;
-    for(i = 0; i < 5; i++) {
-        if(cpu.irq & cpu.ie & (1 << i)) {
-            if(cpu.ime != IME_OFF) {
-                exec_int(i);
+    if((cpu.irq & cpu.ie) != 0x00) {
+        int i;
+        for(i = 0; i < 5; i++) {
+            if(cpu.irq & cpu.ie & (1 << i)) {
+                if(cpu.ime != IME_OFF) {
+                    exec_int(i);
+                }
+                return 1;
             }
-            return 1;
         }
     }
 

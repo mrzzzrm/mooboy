@@ -51,9 +51,6 @@ void sys_delay(int ticks);
 void sys_invoke();
 void sys_fb_ready();
 
-void sys_save_card();
-void sys_load_card();
-
 void sys_play_audio(int on);
 void sys_lock_audiobuf();
 void sys_unlock_audiobuf();

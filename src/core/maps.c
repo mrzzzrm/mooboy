@@ -35,23 +35,25 @@ static inline void init_scan(u8 mx, u8 my) {
 static inline u8 render(u8 *line, u8 rshift) {
     u8 lsb = (line[0] >> rshift) & 0x01;
     u8 msb = (line[1] >> rshift) & 0x01;
-    return (lsb + (msb << 1)) | palette | priority;
+    return (lsb | (msb << 1))/* | palette | priority*/;
 }
 
 static inline void scan_tile_line(u8 *scan, u8 *line) {
     u8 rshift = 7 - tx;
+    u8 pixel = palette | priority;
 
     for(; tx < TILE_WIDTH && sx < LCD_WIDTH; tx++, sx++, rshift--) {
-        scan[sx] = render(line, rshift);
+        scan[sx] = pixel | render(line, rshift);
     }
     tx = 0;
 }
 
 static void inline scan_tile_line_flipped(u8 *scan, u8 *line) {
     u8 rshift = tx;
+    u8 pixel = palette | priority;
 
     for(; tx < TILE_WIDTH && sx < LCD_WIDTH; tx++, sx++, rshift++) {
-        scan[sx] = render(line, rshift);
+        scan[sx] = pixel | render(line, rshift);
     }
     tx = 0;
 }

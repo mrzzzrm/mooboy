@@ -37,6 +37,7 @@ void sys_init(int argc, const char** argv) {
     sys.bits_per_pixel = 16;
     sys.show_statusbar = 0;
     sys.auto_continue = SYS_AUTO_CONTINUE_ASK;
+    sys.fb_ready = 0;
     moo.state = MOO_RUNNING_BIT;
 
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
@@ -45,7 +46,7 @@ void sys_init(int argc, const char** argv) {
 
 #ifdef PANDORA
     SDL_ShowCursor(0);
-    if(SDL_SetVideoMode(320, 288, sys.bits_per_pixel, 0) == NULL) {
+    if(SDL_SetVideoMode(800, 480, sys.bits_per_pixel, SDL_FULLSCREEN) == NULL) {
         moo_fatalf("Setting of SDL video-mode failed");
     }
 #else
@@ -161,6 +162,10 @@ void sys_delay(int ticks) {
     SDL_Delay(ticks);
 }
 
+void sys_fb_ready() {
+    sys.fb_ready = 1;
+}
+
 void sys_handle_events(void (*input_handle)(int, int)) {
    SDL_Event event;
 
@@ -174,14 +179,12 @@ void sys_handle_events(void (*input_handle)(int, int)) {
     }
 }
 
+
 void sys_invoke() {
     sys.ticks = SDL_GetTicks() + sys.ticks_diff;
 
-    if(sys.fb_ready) {
-        if(!framerate_skip()) {
-            render();
-        }
-
+    if(framerate_next_frame()) {
+        render();
         sys.fb_ready = 0;
         performance.counting.frames++;
     }
@@ -191,10 +194,6 @@ void sys_invoke() {
     sys_handle_events(input_event);
     performance_invoked();
     //sys_serial_step();
-}
-
-void sys_fb_ready() {
-    sys.fb_ready = 1;
 }
 
 void sys_play_audio(int on) {

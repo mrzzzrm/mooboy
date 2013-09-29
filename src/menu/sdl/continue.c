@@ -1,6 +1,7 @@
 #include "continue.h"
 #include "core/moo.h"
 #include "menu/menu.h"
+#include "sys/sys.h"
 #include "sys/sdl/input.h"
 #include "util/continue.h"
 #include "util.h"
