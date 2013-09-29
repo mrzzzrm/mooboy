@@ -63,86 +63,36 @@ static void swap_fb() {
 static void draw_line_dmg(u8 *maps_scan, u8 *obj_scan) {
     u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
     u8 x;
+    int bg_priority;
 
     for(x = 0; x < LCD_WIDTH; x++, pixel++) {
-        if(OBJ_PRIORITY(obj_scan[x])) {
-            if(maps_scan[x] != 0) {
-                *pixel = lcd.bgp_map[maps_scan[x]];
-            }
-            else {
-                *pixel = lcd.obp_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
-            }
-        }
-        else {
-            if(OBJ_DATA(obj_scan[x]) != 0) {
-                *pixel = lcd.obp_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
-            }
-            else {
-                *pixel = lcd.bgp_map[maps_scan[x]];
-            }
-        }
+        bg_priority = (OBJ_PRIORITY(obj_scan[x]) && maps_scan[x] != 0) || (OBJ_DATA(obj_scan[x]) == 0);
+        *pixel = bg_priority ?  lcd.bgp_map[maps_scan[x]] : lcd.obp_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
     }
 }
 
 static void draw_line_cgb_mode(u8 *maps_scan, u8 *obj_scan) {
     u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
     u8 x;
+    int bg_priority, draw_bg;
 
     for(x = 0; x < LCD_WIDTH; x++, pixel++) {
-        u8 bg_priority;
+        bg_priority = (lcd.c & LCDC_BG_ENABLE_BIT) &&
+                      ((maps_scan[x] & MAPS_PRIORITY_BIT) || (obj_scan[x] & OBJ_PRIORITY_BIT));
+        draw_bg = (bg_priority && MAPS_DATA(maps_scan[x]) != 0) || OBJ_DATA(obj_scan[x]) == 0;
 
-        if(lcd.c & LCDC_BG_ENABLE_BIT) {
-            if(maps_scan[x] & MAPS_PRIORITY_BIT) {
-                bg_priority = 1;
-            }
-            else {
-                bg_priority = obj_scan[x] & OBJ_PRIORITY_BIT ? 1 : 0;
-            }
-        }
-        else {
-            bg_priority = 0;
-        }
-
-        if(bg_priority) {
-            if(MAPS_DATA(maps_scan[x]) != 0 || OBJ_DATA(obj_scan[x]) == 0) {
-                *pixel = lcd.bgpd_map[MAPS_PALETTE(maps_scan[x])][MAPS_DATA(maps_scan[x])];
-            }
-            else {
-                *pixel = lcd.obpd_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
-            }
-        }
-        else {
-            if(OBJ_DATA(obj_scan[x]) != 0) {
-                *pixel = lcd.obpd_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
-            }
-            else {
-                *pixel = lcd.bgpd_map[MAPS_PALETTE(maps_scan[x])][MAPS_DATA(maps_scan[x])];
-            }
-        }
+        *pixel = draw_bg ? lcd.bgpd_map[MAPS_PALETTE(maps_scan[x])][MAPS_DATA(maps_scan[x])] : lcd.obpd_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
     }
 }
 
 static void draw_line_non_cgb_mode(u8 *maps_scan, u8 *obj_scan) {
     u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
     u8 x;
+    int bg_priority;
 
     for(x = 0; x < LCD_WIDTH; x++, pixel++) {
-        if(OBJ_PRIORITY(obj_scan[x])) {
-            if(maps_scan[x] != 0) {
-                *pixel = lcd.bgp_map[maps_scan[x]];
-            }
-            else {
-                *pixel = lcd.obp_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
-            }
-        }
-        else {
-            if(OBJ_DATA(obj_scan[x]) != 0) {
-                *pixel = lcd.obp_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
-            }
-            else {
-                *pixel = lcd.bgp_map[maps_scan[x]];
-            }
-        }
+        bg_priority = (OBJ_PRIORITY(obj_scan[x]) && maps_scan[x] != 0) ||  (OBJ_DATA(obj_scan[x]) == 0);
+        *pixel = bg_priority ? lcd.bgp_map[maps_scan[x]] : lcd.obp_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
     }
 }
 
