@@ -19,6 +19,7 @@ typedef struct {
 extern framerate_t framerate;
 
 void framerate_init();
+void framerate_reset();
 void framerate_begin();
 int framerate_next_frame();
 void framerate_curb();

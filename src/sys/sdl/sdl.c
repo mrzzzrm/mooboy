@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_gfxPrimitives.h>
+#include <SDL/SDL_image.h>
 #include <assert.h>
 #include "core/cpu.h"
 #include "core/rtc.h"
@@ -44,6 +45,10 @@ void sys_init(int argc, const char** argv) {
         moo_fatalf("Couln't initialize SDL");
     }
 
+    IMG_Init(IMG_INIT_PNG);
+    SDL_Surface *icon = IMG_Load("icon.png");
+    SDL_WM_SetIcon(icon, 0);
+
 #ifdef PANDORA
     SDL_ShowCursor(0);
     if(SDL_SetVideoMode(800, 480, sys.bits_per_pixel, SDL_FULLSCREEN) == NULL) {
@@ -54,6 +59,8 @@ void sys_init(int argc, const char** argv) {
         moo_fatalf("Setting of SDL video-mode failed");
     }
 #endif
+
+
 
 
     sys.scalingmode = 0;

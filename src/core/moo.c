@@ -14,6 +14,7 @@
 #include "timers.h"
 #include "joy.h"
 #include "ints.h"
+#include "ints.h"
 #include "load.h"
 #include "serial.h"
 #include "sys/sys.h"
@@ -62,6 +63,7 @@ void moo_reset() {
     //serial_reset();
 
     performance_reset();
+    framerate_reset();
 }
 
 void moo_begin() {

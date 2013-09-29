@@ -19,11 +19,14 @@ void framerate_init() {
     framerate.framecount = 0;
 }
 
+void framerate_reset() {
+    framerate.framecount = 0;
+}
+
 void framerate_begin() {
     framerate.first_frame_ticks = sys.ticks;
     framerate.cc_ahead = 0;
     framerate.last_curb_ticks = 0;
-    framerate.framecount = 0;
 }
 
 

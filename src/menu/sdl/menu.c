@@ -54,11 +54,7 @@ static void set_slot(int label, int i) {
 static void load_state() {
     char *sav_file = malloc(strlen(sys.rompath) + strlen(".sav") + 1 + 1);
     sprintf(sav_file, "%s.sav%i", sys.rompath, load_slot);
-    if(state_load(sav_file)) {
-//        if((~moo.state & MOO_ERROR_BIT)) {
-//            moo_begin();
-//        }
-    }
+    state_load(sav_file);
     free(sav_file);
 }
 
@@ -150,7 +146,7 @@ void menu_init() {
     menu_error_init();
     menu_continue_init();
 
-    list = menu_new_list("Main Menu");
+    list = menu_new_list("mooBoy");
     list->back_func = back;
 
     menu_new_listentry_button(list, "", LABEL_LOAD_LAST_ROM, load_last_rom);
