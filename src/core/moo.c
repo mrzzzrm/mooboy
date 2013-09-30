@@ -144,8 +144,10 @@ void moo_load_rom_config() {
     char configpath[sizeof(sys.rompath) + 5];
     sprintf(configpath, "%s.conf", sys.rompath);
 
-    if(config_load(configpath)) {
-        config_load("global.conf");
+    if(!config_load(configpath)) {
+        if(!config_load("global.conf")) {
+            config_default();
+        }
     }
 }
 

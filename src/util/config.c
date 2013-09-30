@@ -125,12 +125,13 @@ int config_load(const char *path) {
 
     sys.sound_on = load_int("sound_on");
 
-    sys.scalingmode = load_int("scalingmode");
-    if(sys.scalingmode < 0 || sys.scalingmode >= sys.num_scalingmodes) {
+    int scalingmode = load_int("scalingmode");
+    if(scalingmode < 0 || scalingmode >= sys.num_scalingmodes) {
         moo_errorf("No such scalingmode %i, please delete config or insert a valid value", sys.scalingmode);
-        sys.scalingmode = 0;
+        sys_set_scalingmode(0);
         return 0;
     }
+    sys_set_scalingmode(scalingmode);
 
     sys.show_statusbar = load_int("show_statusbar");
     sys.auto_continue = load_int("auto_continue");
@@ -144,7 +145,7 @@ int config_load(const char *path) {
 
 void config_default() {
     sys.sound_on = 1;
-    sys.scalingmode = 0;
+    sys_set_scalingmode(sys.scalingmode);
     sys.show_statusbar = 0;
     sys.auto_continue = SYS_AUTO_CONTINUE_ASK;
 }

@@ -45,9 +45,6 @@ void sys_init(int argc, const char** argv) {
         moo_fatalf("Couln't initialize SDL");
     }
 
-    IMG_Init(IMG_INIT_PNG);
-    SDL_Surface *icon = IMG_Load("icon.png");
-    SDL_WM_SetIcon(icon, 0);
 
 #ifdef PANDORA
     SDL_ShowCursor(0);
