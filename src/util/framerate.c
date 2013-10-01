@@ -29,7 +29,6 @@ void framerate_begin() {
     framerate.last_curb_ticks = 0;
 }
 
-
 int framerate_next_frame() {
     unsigned int should_framecount;
     int next_frame;

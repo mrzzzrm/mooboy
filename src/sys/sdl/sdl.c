@@ -56,10 +56,6 @@ void sys_init(int argc, const char** argv) {
         moo_fatalf("Setting of SDL video-mode failed");
     }
 #endif
-
-
-
-
     sys.scalingmode = 0;
     sys.num_scalingmodes = 4;
     sys.scalingmode_names = malloc(sizeof(*sys.scalingmode_names) * sys.num_scalingmodes);

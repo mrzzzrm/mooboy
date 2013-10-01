@@ -92,6 +92,11 @@ void moo_rom_over() {
     card_save();
 }
 
+void moo_restart_rom() {
+    moo_reset();
+    moo_begin();
+}
+
 void moo_pause() {
     moo.state ^= MOO_ROM_RUNNING_BIT;
     sys_pause();
@@ -104,7 +109,7 @@ void moo_quit() {
         moo_rom_over();
     }
 }
-#include "sys/sdl/input.h"
+
 void moo_load_rom(const char *path) {
     if(moo.state & MOO_ROM_LOADED_BIT) {
         moo_rom_over();

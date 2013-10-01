@@ -69,10 +69,6 @@ static void resume() {
     moo_continue();
 }
 
-static void reset() {
-    moo_load_rom(sys.rompath);
-}
-
 static void quit() {
     moo_quit();
 }
@@ -152,7 +148,7 @@ void menu_init() {
     menu_new_listentry_button(list, "", LABEL_LOAD_LAST_ROM, load_last_rom);
     menu_new_listentry_button(list, "Resume", LABEL_RESUME, resume);
     menu_new_listentry_button(list, "Load ROM", LABEL_LOAD_ROM, menu_rom);
-    menu_new_listentry_button(list, "Reset", LABEL_RESET, reset);
+    menu_new_listentry_button(list, "Reset", LABEL_RESET, moo_restart_rom);
     menu_new_listentry_button(list, "Load state", LABEL_LOAD_STATE, load_state);
     menu_new_listentry_button(list, "Save state", LABEL_SAVE_STATE, save_state);
     menu_new_listentry_button(list, "Options", LABEL_OPTIONS, menu_options);
