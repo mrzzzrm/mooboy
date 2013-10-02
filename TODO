@@ -1,6 +1,5 @@
 [Emulator]
     - Remove sys/sdl/video.c::buf with dynamic sized array
-    - Jump to key on pandora doesn't work
     - Optimize scan-system - not every pixel should have separate layer-tests    
     - Why is tima working for cgb? It should be too fast the way it is
     
