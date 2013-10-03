@@ -134,6 +134,15 @@ void moo_load_rom(const char *path) {
     store_rompath();
     moo_begin();
 
+    if(mbc.has_rtc && !sys.warned_rtc_sav_conflict) {
+        moo_pause();
+        menu_warn_rtc_sav_conflict();
+        sys.auto_continue = SYS_AUTO_CONTINUE_NO;
+        sys.warned_rtc_sav_conflict = 1;
+        config_save_local();
+        moo_continue();
+    }
+
     if(continue_state_exists()) {
         switch(sys.auto_continue) {
             case SYS_AUTO_CONTINUE_YES:
@@ -142,15 +151,9 @@ void moo_load_rom(const char *path) {
             case SYS_AUTO_CONTINUE_ASK:
                 moo_pause();
                 menu_continue();
+                moo_continue();
             break;
         }
-    }
-
-    if(mbc.has_rtc && !sys.warned_rtc_sav_conflict) {
-        menu_warn_rtc_sav_conflict();
-        sys.auto_continue = 0;
-        sys.warned_rtc_sav_conflict = 1;
-        config_save_local();
     }
 }
 
