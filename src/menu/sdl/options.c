@@ -1,5 +1,6 @@
 #include "options.h"
 #include "util/config.h"
+#include "core/mbc.h"
 #include "sys/sys.h"
 #include "util.h"
 #include "core/moo.h"
@@ -9,11 +10,12 @@
 #define LABEL_SCALING 1
 #define LABEL_STATUSBAR 2
 #define LABEL_AUTO_CONTINUE 3
-#define LABEL_SAVE_LOCAL 4
-#define LABEL_LOAD_LOCAL 5
-#define LABEL_SAVE_GLOBAL 6
-#define LABEL_LOAD_GLOBAL 7
-#define LABEL_RESET 8
+#define LABEL_AUTO_RTC 4
+#define LABEL_SAVE_LOCAL 5
+#define LABEL_LOAD_LOCAL 6
+#define LABEL_SAVE_GLOBAL 7
+#define LABEL_LOAD_GLOBAL 8
+#define LABEL_RESET 9
 
 
 static menu_list_t *list;
@@ -45,11 +47,17 @@ static void change_auto_continue(int dir) {
     menu_listentry_val(list, LABEL_AUTO_CONTINUE, sys.auto_continue == SYS_AUTO_CONTINUE_YES ? "yes" : sys.auto_continue == SYS_AUTO_CONTINUE_NO ? "no" : "ask me");
 }
 
+static void change_auto_rtc(int dir) {
+    sys.auto_rtc = dir ? !sys.auto_rtc : sys.auto_rtc;
+    menu_listentry_val(list, LABEL_AUTO_RTC, sys.auto_rtc ? "yes" : "no");
+}
+
 static void update_options() {
     change_sound(0);
     change_scaling(0);
     change_statusbar(0);
     change_auto_continue(0);
+    change_auto_rtc(0);
 }
 
 static void reset() {
@@ -93,6 +101,7 @@ void menu_options_init() {
     menu_new_listentry_selection(list, "Scaling", LABEL_SCALING, change_scaling);
     menu_new_listentry_selection(list, "Statusbar", LABEL_STATUSBAR, change_statusbar);
     menu_new_listentry_selection(list, "Auto-Continue", LABEL_AUTO_CONTINUE, change_auto_continue);
+    menu_new_listentry_selection(list, "Tick RTC when ROM not loaded", LABEL_AUTO_RTC, change_auto_rtc);
 
     menu_new_listentry_spacer(list);
 
@@ -120,6 +129,7 @@ static void options_input_event(int type, int key) {
 static void setup() {
     finished = 0;
 
+    menu_listentry_visible(list, LABEL_AUTO_RTC, mbc.has_rtc);
     menu_listentry_visible(list, LABEL_SAVE_LOCAL, moo.state & MOO_ROM_LOADED_BIT);
     menu_listentry_visible(list, LABEL_LOAD_LOCAL, moo.state & MOO_ROM_LOADED_BIT);
 

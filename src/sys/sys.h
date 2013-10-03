@@ -26,6 +26,7 @@ typedef struct {
     char **scalingmode_names;
 
     int auto_continue;
+    int auto_rtc;
 
     unsigned int bits_per_pixel;
     unsigned int quantum_length;

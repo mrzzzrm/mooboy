@@ -71,19 +71,6 @@ void rtc_begin() {
     }
 }
 
-void rtc_step(int nfcs) {
-    if(mbc.type == 3) {
-        rtc.cc += nfcs;
-        if(rtc.ticking[DH] & 0x40 || rtc.cc < NORMAL_CPU_FREQ) { // Halt bit set or next tick not yet reached
-            return;
-        }
-        else {
-            rtc.cc -= NORMAL_CPU_FREQ;
-            rtc_tick(0);
-        }
-    }
-}
-
 void rtc_map_register(u8 val) {
     rtc.mapped = val - 0x08;
 }
@@ -109,3 +96,12 @@ void rtc_write(u8 val) {
     rtc.ticking[rtc.mapped] = val;
 }
 
+void rtc_advance_seconds(time_t seconds) {
+    time_t s;
+    if(rtc.ticking[DH] & 0x40) {
+        return;
+    }
+    for(s = 0; s < seconds; s++) {
+        rtc_tick(0);
+    }
+}

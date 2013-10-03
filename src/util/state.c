@@ -446,10 +446,10 @@ static void load_timers() {
 }
 
 static u8 hw_event_to_id(hw_event_t *event) {
-    if(event == &lcd_mode_0_event) return LCD_MODE_0_EVENT_ID;
-    if(event == &lcd_mode_1_event) return LCD_MODE_1_EVENT_ID;
-    if(event == &lcd_mode_2_event) return LCD_MODE_2_EVENT_ID;
-    if(event == &lcd_mode_3_event) return LCD_MODE_3_EVENT_ID;
+    if(event == &lcd_mode_event[0]) return LCD_MODE_0_EVENT_ID;
+    if(event == &lcd_mode_event[1]) return LCD_MODE_1_EVENT_ID;
+    if(event == &lcd_mode_event[2]) return LCD_MODE_2_EVENT_ID;
+    if(event == &lcd_mode_event[3]) return LCD_MODE_3_EVENT_ID;
     if(event == &lcd_vblank_line_event) return LCD_VBLANK_LINE_EVENT_ID;
     if(event == &sound_mix_event) return SOUND_MIX_EVENT_ID;
     if(event == &sound_sweep_event) return SOUND_SWEEP_EVENT_ID;
@@ -479,10 +479,10 @@ static void save_hw() {
 }
 
 static hw_event_t *hw_id_to_event(u8 id) {
-    if(id == LCD_MODE_0_EVENT_ID) return &lcd_mode_0_event;
-    if(id == LCD_MODE_1_EVENT_ID) return &lcd_mode_1_event;
-    if(id == LCD_MODE_2_EVENT_ID) return &lcd_mode_2_event;
-    if(id == LCD_MODE_3_EVENT_ID) return &lcd_mode_3_event;
+    if(id == LCD_MODE_0_EVENT_ID) return &lcd_mode_event[0];
+    if(id == LCD_MODE_1_EVENT_ID) return &lcd_mode_event[1];
+    if(id == LCD_MODE_2_EVENT_ID) return &lcd_mode_event[2];
+    if(id == LCD_MODE_3_EVENT_ID) return &lcd_mode_event[3];
     if(id == LCD_VBLANK_LINE_EVENT_ID) return &lcd_vblank_line_event;
     if(id == SOUND_MIX_EVENT_ID) return &sound_mix_event;
     if(id == SOUND_SWEEP_EVENT_ID) return &sound_sweep_event;

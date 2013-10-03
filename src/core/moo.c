@@ -94,6 +94,8 @@ void moo_rom_over() {
 
 void moo_restart_rom() {
     moo_reset();
+    moo_load_rom_config();
+    card_load();
     moo_begin();
 }
 
@@ -121,6 +123,7 @@ void moo_load_rom(const char *path) {
     printf("Loading ROM '%s'\n", sys.rompath);
 
     moo_reset();
+    moo_load_rom_config();
     load_rom();
 
     if(~moo.state & MOO_ROM_LOADED_BIT) {
@@ -128,7 +131,6 @@ void moo_load_rom(const char *path) {
         return;
     }
 
-    moo_load_rom_config();
     store_rompath();
     moo_begin();
 
@@ -158,7 +160,7 @@ void moo_load_rom_config() {
 
 void moo_set_hw(int hw) {
     moo.hw = hw;
-    if(!moo.hw == CGB_HW) {
+    if(moo.hw == DMG_HW) {
         moo.mode = NON_CGB_MODE;
     }
     //serial_update_internal_period();

@@ -35,3 +35,4 @@ void load_last_rom() {
     moo_load_rom(path);
     free(path);
 }
+

@@ -29,6 +29,8 @@ sys_t sys;
 
 static SDL_Surface *statuslabel;
 
+static char *scalingmode_names[] = {"Proportional", "Streched", "Full Proportional", "None"};
+
 void sys_init(int argc, const char** argv) {
     memset(&sys, 0x00, sizeof(sys));
 
@@ -45,7 +47,6 @@ void sys_init(int argc, const char** argv) {
         moo_fatalf("Couln't initialize SDL");
     }
 
-
 #ifdef PANDORA
     SDL_ShowCursor(0);
     if(SDL_SetVideoMode(800, 480, sys.bits_per_pixel, SDL_FULLSCREEN) == NULL) {
@@ -58,11 +59,7 @@ void sys_init(int argc, const char** argv) {
 #endif
     sys.scalingmode = 0;
     sys.num_scalingmodes = 4;
-    sys.scalingmode_names = malloc(sizeof(*sys.scalingmode_names) * sys.num_scalingmodes);
-    sys.scalingmode_names[SCALING_STRECHED] = strdup("Streched");
-    sys.scalingmode_names[SCALING_PROPORTIONAL] = strdup("Proportional");
-    sys.scalingmode_names[SCALING_PROPORTIONAL_FULL] = strdup("Full Proportional");
-    sys.scalingmode_names[SCALING_NONE] = strdup("None");
+    sys.scalingmode_names = scalingmode_names;
 
     audio_init();
     video_init();
@@ -178,7 +175,6 @@ void sys_handle_events(void (*input_handle)(int, int)) {
         }
     }
 }
-
 
 void sys_invoke() {
     sys.ticks = SDL_GetTicks() + sys.ticks_diff;

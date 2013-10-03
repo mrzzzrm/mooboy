@@ -55,10 +55,7 @@ typedef struct {
 
 extern lcd_t lcd;
 
-extern hw_event_t lcd_mode_0_event;
-extern hw_event_t lcd_mode_1_event;
-extern hw_event_t lcd_mode_2_event;
-extern hw_event_t lcd_mode_3_event;
+extern hw_event_t lcd_mode_event[4];
 extern hw_event_t lcd_vblank_line_event;
 
 

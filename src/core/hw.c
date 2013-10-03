@@ -15,10 +15,10 @@ hw_t hw;
 
 void hw_reset() {
 #ifdef DEBUG
-    lcd_mode_0_event.dbg_queued = 0;
-    lcd_mode_1_event.dbg_queued = 0;
-    lcd_mode_2_event.dbg_queued = 0;
-    lcd_mode_3_event.dbg_queued = 0;
+    lcd_mode_event[0].dbg_queued = 0;
+    lcd_mode_event[1].dbg_queued = 0;
+    lcd_mode_event[2].dbg_queued = 0;
+    lcd_mode_event[3].dbg_queued = 0;
     lcd_vblank_line_event.dbg_queued = 0;
     rtc_event.dbg_queued = 0;
     sound_mix_event.dbg_queued = 0;

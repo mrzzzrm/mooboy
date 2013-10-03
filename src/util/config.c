@@ -108,6 +108,7 @@ void config_save(const char *path) {
     save_int("scalingmode", sys.scalingmode);
     save_int("show_statusbar", sys.show_statusbar);
     save_int("auto_continue", sys.auto_continue);
+    save_int("auto_rtc", sys.auto_rtc);
 
     fclose(file);
 }
@@ -135,6 +136,7 @@ int config_load(const char *path) {
 
     sys.show_statusbar = load_int("show_statusbar");
     sys.auto_continue = load_int("auto_continue");
+    sys.auto_rtc = load_int("auto_rtc");
 
 
     fclose(file);
@@ -148,5 +150,6 @@ void config_default() {
     sys_set_scalingmode(sys.scalingmode);
     sys.show_statusbar = 0;
     sys.auto_continue = SYS_AUTO_CONTINUE_ASK;
+    sys.auto_rtc = 1;
 }
 
