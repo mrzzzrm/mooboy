@@ -14,7 +14,7 @@ static menu_word_string_t *msg_string;
 static void draw() {
     SDL_FillRect(SDL_GetVideoSurface(), NULL, 0);
     menu_blit(heading_surface, 0, 0);
-    menu_blit_word_string(msg_string, 0, 100);
+    menu_blit_word_string(msg_string, SDL_GetVideoSurface()->w,  SDL_GetVideoSurface()->w/3);
     menu_blit(footer_surface, 0, 400);
     SDL_Flip(SDL_GetVideoSurface());
 }

@@ -134,6 +134,7 @@ void moo_load_rom(const char *path) {
     store_rompath();
     moo_begin();
 
+    printf("I have warned you: %i\n", sys.warned_rtc_sav_conflict);
     if(mbc.has_rtc && !sys.warned_rtc_sav_conflict) {
         moo_pause();
         menu_warn_rtc_sav_conflict();
