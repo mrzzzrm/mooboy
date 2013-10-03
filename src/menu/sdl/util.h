@@ -75,7 +75,6 @@ void menu_blit(SDL_Surface *s, int x, int y);
 void menu_blit_label(menu_label_t *label, int align, int selected, int x, int y);
 void menu_blit_word_string(menu_word_string_t *string, int x, int y);
 
-
 menu_list_t *menu_new_list(const char *title);
 void menu_list_update(menu_list_t *list);
 void menu_free_list(menu_list_t *list);

@@ -14,7 +14,7 @@
 #include "timers.h"
 #include "joy.h"
 #include "ints.h"
-#include "ints.h"
+#include "mbc.h"
 #include "load.h"
 #include "serial.h"
 #include "sys/sys.h"
@@ -145,14 +145,18 @@ void moo_load_rom(const char *path) {
             break;
         }
     }
+
+    if(mbc.has_rtc && !sys.warned_rtc_sav_conflict) {
+        menu_warn_rtc_sav_conflict();
+        sys.auto_continue = 0;
+        sys.warned_rtc_sav_conflict = 1;
+        config_save_local();
+    }
 }
 
 void moo_load_rom_config() {
-    char configpath[sizeof(sys.rompath) + 5];
-    sprintf(configpath, "%s.conf", sys.rompath);
-
-    if(!config_load(configpath)) {
-        if(!config_load("global.conf")) {
+    if(!config_load_local()) {
+        if(!config_load_global()) {
             config_default();
         }
     }

@@ -20,7 +20,6 @@
 
 static menu_list_t *list;
 static int finished;
-static char *rom_config_path = NULL;
 
 static void back() {
     finished = 1;
@@ -66,22 +65,22 @@ static void reset() {
 }
 
 static void save_local() {
-    config_save(rom_config_path);
+    config_save_local();
     update_options();
 }
 
 static void load_local() {
-    config_load(rom_config_path);
+    config_load_local();
     update_options();
 }
 
 static void save_global() {
-    config_save("mooboy.conf");
+    config_save_global();
     update_options();
 }
 
 static void load_global() {
-    if(!config_load("mooboy.conf")) {
+    if(!config_load_global()) {
         reset();
     }
     update_options();
@@ -116,10 +115,6 @@ void menu_options_init() {
 
 void menu_options_close() {
     menu_free_list(list);
-
-    if(rom_config_path != NULL) {
-        free(rom_config_path);
-    }
 }
 
 static void options_input_event(int type, int key) {
@@ -134,11 +129,6 @@ static void setup() {
     menu_listentry_visible(list, LABEL_LOAD_LOCAL, moo.state & MOO_ROM_LOADED_BIT);
 
     update_options();
-
-    if(moo.state & MOO_ROM_LOADED_BIT) {
-        rom_config_path = realloc(rom_config_path, strlen(sys.rompath) + strlen(".conf") + 1);
-        sprintf(rom_config_path, "%s.conf", sys.rompath);
-    }
 }
 
 void menu_options() {

@@ -65,7 +65,7 @@ void card_save() {
                   fwrite(&rtc.prelatched, 1, sizeof(rtc.prelatched), file) +
                   fwrite(&rtc.cc, 1, sizeof(rtc.cc), file) +
                   fwrite(&timestamp, 1, sizeof(timestamp), file);
-        printf("Saving RTC at "); print_time(timestamp);
+        printf("Saving RTC at "); print_time(timestamp); printf("\n");
         if(written != sizeof(rtc.latched) + sizeof(rtc.ticking) + sizeof(rtc.mapped) +
                       sizeof(rtc.prelatched) + sizeof(rtc.cc) + sizeof(timestamp)) {
             moo_errorf("Error writing to sram file #2");
@@ -120,7 +120,7 @@ void card_load() {
             now_ts = time(NULL);
             printf("Saved time is "); print_time(card_ts); printf(", we now have "); print_time(now_ts); printf("\n");
             if(now_ts > card_ts) {
-                printf("  Advancing RTC by "); print_time(now_ts - card_ts);
+                printf("  Advancing RTC by "); print_time(now_ts - card_ts); printf("\n");
                 rtc_advance_seconds(now_ts - card_ts);
             }
         }

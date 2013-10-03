@@ -133,7 +133,6 @@ menu_word_string_t *menu_word_string(const char *_text) {
         next_word = word;
         mark_word_end(&text[word], &next_word);
         string->word = TTF_RenderText_Blended(font, &text[word], color);
-
         word = next_word;
         string->next = word < 0 ? NULL : malloc(sizeof(*result));
     }
@@ -180,25 +179,61 @@ void menu_blit_label(menu_label_t *label, int align, int selected, int x, int y)
 
 void menu_blit_word_string(menu_word_string_t *string, int x, int y) {
     int cx, cy, sw, lh;
+    menu_word_string_t *iter;
+    int *words_per_line = NULL;
+    int *line_width = NULL;
+    int num_lines = 0;
+    int max_w = 0;
+    int l, w;
 
-    cx = x;
-    cy = y;
     TTF_GlyphMetrics(font, ' ', NULL, NULL, NULL, NULL, &sw);
     lh = TTF_FontLineSkip(font);
 
-    for(; string != NULL;) {
-        menu_blit(string->word, cx, cy);
-        cx += string->word->w;
+    cx = 0;
+
+    if(string == NULL) {
+        return;
+    }
+
+    for(iter = string; iter != NULL; iter = iter->next) {
+        if(cx == 0) {
+            num_lines++;
+            words_per_line = realloc(words_per_line, num_lines * sizeof(*words_per_line));
+            line_width = realloc(line_width, num_lines * sizeof(*line_width));
+            words_per_line[num_lines-1] = 0;
+            line_width[num_lines-1] = 0;
+        }
+        words_per_line[num_lines-1]++;
+
+        cx += iter->word->w;
+        if(cx > max_w) {
+            max_w = cx;
+        }
         cx += sw;
 
-        if(string->next != NULL) {
-            if(cx + string->next->word->w > SDL_GetVideoSurface()->w) {
-                cx = x;
-                cy += lh;
+        if(iter->next != NULL) {
+            if(cx + iter->next->word->w > SDL_GetVideoSurface()->w) {
+                line_width[num_lines-1] = cx - sw;
+                cx = 0;
             }
         }
+        else {
+            line_width[num_lines-1] = cx - sw;
+        }
+    }
 
-        string = string->next;
+
+    cy = y - (lh * num_lines)/2;
+    for(l = 0; l < num_lines; l++) {
+        cx = x - line_width[l]/2;
+
+        for(w = 0; w < words_per_line[l]; w++) {
+            menu_blit(string->word, cx, cy);
+            cx += string->word->w;
+            cx += sw;
+            string = string->next;
+        }
+        cy += lh;
     }
 }
 

@@ -19,14 +19,16 @@ typedef struct {
 
     int show_statusbar;
 
-    char rompath[256];
+    char rompath[256]; // TODO: Dynamic
 
     int scalingmode;
     int num_scalingmodes;
     char **scalingmode_names;
 
     int auto_continue;
+
     int auto_rtc;
+    int warned_rtc_sav_conflict;
 
     unsigned int bits_per_pixel;
     unsigned int quantum_length;

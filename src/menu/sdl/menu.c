@@ -2,7 +2,7 @@
 #include "error.h"
 #include "rom.h"
 #include "options.h"
-#include "continue.h"
+#include "dialogs.h"
 #include "core/moo.h"
 #include "sys/sys.h"
 #include "sys/sdl/input.h"
@@ -140,7 +140,7 @@ void menu_init() {
     menu_rom_init();
     menu_options_init();
     menu_error_init();
-    menu_continue_init();
+    menu_dialogs_init();
 
     list = menu_new_list("mooBoy");
     list->back_func = back;
@@ -167,6 +167,7 @@ void menu_close() {
     menu_options_close();
     menu_error_close();
     menu_util_close();
+    menu_dialogs_close();
 }
 
 void menu_run() {

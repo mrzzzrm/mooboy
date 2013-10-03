@@ -28,7 +28,7 @@ static void save(const char *key, const char *val) {
 
 static void save_int(const char *key, int ival) {
     char val[64]; // TODO: Dynamic, or at least synced to pair/pair_t
-    sprintf(val, "%i", ival);
+    snprintf(val, sizeof(val), "%i", ival);
     save(key, val);
 }
 
@@ -95,7 +95,7 @@ static void parse() {
     }
 }
 
-void config_save(const char *path) {
+static void config_save(const char *path) {
     printf("Saving config to '%s'\n", path);
 
     file = fopen(path, "w");
@@ -109,11 +109,12 @@ void config_save(const char *path) {
     save_int("show_statusbar", sys.show_statusbar);
     save_int("auto_continue", sys.auto_continue);
     save_int("auto_rtc", sys.auto_rtc);
+    save_int("warned_rtc_sav_conflict", sys.warned_rtc_sav_conflict);
 
     fclose(file);
 }
 
-int config_load(const char *path) {
+static int config_load(const char *path) {
 
     file = fopen(path, "r");
     if(file == NULL) {
@@ -137,6 +138,7 @@ int config_load(const char *path) {
     sys.show_statusbar = load_int("show_statusbar");
     sys.auto_continue = load_int("auto_continue");
     sys.auto_rtc = load_int("auto_rtc");
+    sys.warned_rtc_sav_conflict = load_int("warned_rtc_sav_conflict");
 
 
     fclose(file);
@@ -151,5 +153,26 @@ void config_default() {
     sys.show_statusbar = 0;
     sys.auto_continue = SYS_AUTO_CONTINUE_ASK;
     sys.auto_rtc = 1;
+    sys.warned_rtc_sav_conflict = 0;
+}
+
+void config_save_local() {
+    char rom_config_path[sizeof(sys.rompath) + 5 + 1];
+    sprintf(rom_config_path, "%s.conf", sys.rompath);
+    config_save(rom_config_path);
+}
+
+int config_load_local() {
+    char rom_config_path[sizeof(sys.rompath) + 5 + 1];
+    sprintf(rom_config_path, "%s.conf", sys.rompath);
+    return config_load(rom_config_path);
+}
+
+void config_save_global() {
+    config_save("mooboy.conf");
+}
+
+int config_load_global() {
+    return config_load("mooboy.conf");
 }
 

@@ -76,12 +76,6 @@ void sys_reset() {
 }
 
 void sys_close() {
-    int s;
-    for(s = 0; s < sys.num_scalingmodes; s++) {
-        free(sys.scalingmode_names[s]);
-    }
-    free(sys.scalingmode_names);
-
     SDL_PauseAudio(1);
     SDL_Quit();
 }
