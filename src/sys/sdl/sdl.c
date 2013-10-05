@@ -65,6 +65,7 @@ void sys_init(int argc, const char** argv) {
     audio_init();
     framerate_init();
     input_init();
+    video_init();
 
     statuslabel = SDL_CreateRGBSurface(0, SDL_GetVideoSurface()->w, 8, sys.bits_per_pixel, 0, 0, 0, 0);
     assert(statuslabel != NULL);
@@ -76,6 +77,7 @@ void sys_reset() {
 }
 
 void sys_close() {
+    video_close();
     SDL_PauseAudio(1);
     SDL_Quit();
 }

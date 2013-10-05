@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "sys/sdl/input.h"
+
 hw_t hw;
 
 void hw_reset() {
@@ -33,18 +34,6 @@ void hw_reset() {
     hw.queue = NULL;
     hw.sched = NULL;
 }
-
-#ifdef DEBUG
-//void hw_print_queue(hw_event_t *e) {
-//    hw_event_t *c;
-//    printf("%i: ", hw.cc);
-//    for(c = e; c != NULL; c = c->next) {
-//        fprintf(stdout, "[%s %i] ", c->name, c->mcs);
-//        assert(c != c->next);
-//    }
-//    printf("\n");
-//}
-#endif
 
 static inline void schedule() {
     hw_event_t *next_sched, *next, *event, *prev;
@@ -118,6 +107,7 @@ void hw_step(int mcs) {
     assert(mcs <= 10);
     cpu.dbg_mcs += mcs;
 #endif
+
     schedule();
     poll_queue(mcs);
 
@@ -165,3 +155,4 @@ void hw_unschedule(hw_event_t *del) {
 void hw_defer(hw_cycle_t mcs) {
     hw.defered += mcs;
 }
+

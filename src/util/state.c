@@ -493,7 +493,7 @@ static hw_event_t *hw_id_to_event(u8 id) {
     if(id == TIMER_DIV_EVENT_ID) return &timers_div_event;
     if(id == RTC_EVENT_ID) return &rtc_event;
 
-    moo_errorf("Savestate is corrupt #1");
+    moo_errorf("Savestate is corrupt #3");
     return NULL;
 }
 
@@ -639,11 +639,9 @@ int state_load(const char *filename) {
     load_sys();
     load_util();
 
-#ifdef DEBUG
     if(fread(&byte, 1, 1, f) != 0) {
         moo_errorf("Savestate file is too big. Is this really an error?");
     }
-#endif
 
     fclose(f);
 

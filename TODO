@@ -4,7 +4,7 @@
     - Why is tima working for cgb? It should be too fast the way it is
     - Magic-Number replacement, especially for bitchecks
     - Take care of byte-order and datatype size, especially for savestates
-    - .sav: Asure sanity of hw-events queue
+    - Pixel-Depth independant rendering
     
 [Game Bugs]
     - MrDriller: Blocks not shown

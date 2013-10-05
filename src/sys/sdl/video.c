@@ -176,6 +176,15 @@ void video_switch_display_mode() {
     SDL_FillRect(SDL_GetVideoSurface(), NULL, 0);
 }
 
+void video_init() {
+    linebuf_size = SDL_GetVideoSurface()->w * sys.bytes_per_pixel * (SDL_GetVideoSurface()->h/144 + 1);
+    linebuf = realloc(linebuf, linebuf_size * sizeof(*linebuf));
+}
+
+void video_close() {
+    free(linebuf);
+}
+
 void video_set_area(SDL_Rect _area) {
     int fbx, ax;
     area = _area;
@@ -184,8 +193,6 @@ void video_set_area(SDL_Rect _area) {
         ax += acolumns_in_fbpixel_buf[fbx];
     }
 
-    linebuf_size = area.w * sys.bytes_per_pixel * (area.h/144 + 1);
-    linebuf = realloc(linebuf, linebuf_size * sizeof(*linebuf));
 }
 
 void video_render(SDL_Surface *surface) {
