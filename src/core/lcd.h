@@ -53,10 +53,19 @@ typedef struct {
     u32 cc;
 } lcd_t;
 
+typedef struct {
+    u16 color;
+    u8 priority;
+} scan_pixel_t;
+
+
 extern lcd_t lcd;
 
 extern hw_event_t lcd_mode_event[4];
 extern hw_event_t lcd_vblank_line_event;
+
+extern scan_pixel_t bg_scan_cache[256][256];
+extern scan_pixel_t wnd_scan_cache[256][256];
 
 
 void lcd_reset();

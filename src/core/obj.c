@@ -140,20 +140,20 @@ static inline void render_obj(u8 *obj, u8 *scan) {
 }
 
 
-void lcd_scan_obj(u8 *scan) {
-    int o;
-    unsigned int obj_count;
-    u8 *obj_indexes[OAM_OBJ_COUNT];
-
-    obj_size_mode = lcd.c & LCDC_OBJ_SIZE_BIT;
-    obj_height = (obj_size_mode ? 15 : 7);
-
-    obj_count = select_obj_indexes(obj_indexes);
-    obj_count = establish_render_priority(obj_indexes, obj_count);
-
-    for(o = obj_count - 1; o >= 0; o--) {
-        render_obj(obj_indexes[o], scan);
-    }
+void lcd_scan_obj(scan_pixel_t *scan) {
+//    int o;
+//    unsigned int obj_count;
+//    u8 *obj_indexes[OAM_OBJ_COUNT];
+//
+//    obj_size_mode = lcd.c & LCDC_OBJ_SIZE_BIT;
+//    obj_height = (obj_size_mode ? 15 : 7);
+//
+//    obj_count = select_obj_indexes(obj_indexes);
+//    obj_count = establish_render_priority(obj_indexes, obj_count);
+//
+//    for(o = obj_count - 1; o >= 0; o--) {
+//        render_obj(obj_indexes[o], scan);
+//    }
 }
 
 

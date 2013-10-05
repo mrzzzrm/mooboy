@@ -35,7 +35,7 @@ static inline void init_scan(u8 mx, u8 my) {
 static inline u8 render(u8 *line, u8 rshift) {
     u8 lsb = (line[0] >> rshift) & 0x01;
     u8 msb = (line[1] >> rshift) & 0x01;
-    return (lsb | (msb << 1))/* | palette | priority*/;
+    return (lsb | (msb << 1));
 }
 
 static inline void scan_tile_line(u8 *scan, u8 *line) {
@@ -125,19 +125,19 @@ static inline void scan_wnd(u8 *scan) {
     }
 }
 
-void lcd_scan_maps(u8 *scan) {
-    if(moo.hw == CGB_HW) {
-        bank = 0;
-        priority = 0;
-        palette = 0;
-    }
-
-    if((lcd.c & LCDC_BG_ENABLE_BIT) || (moo.hw == CGB_HW)) {
-        scan_bg(scan);
-    }
-    if(lcd.c & LCDC_WND_ENABLE_BIT) {
-        scan_wnd(scan);
-    }
+void lcd_scan_maps(scan_pixel_t *scan) {
+//    if(moo.hw == CGB_HW) {
+//        bank = 0;
+//        priority = 0;
+//        palette = 0;
+//    }
+//
+//    if((lcd.c & LCDC_BG_ENABLE_BIT) || (moo.hw == CGB_HW)) {
+//        scan_bg(scan);
+//    }
+//    if(lcd.c & LCDC_WND_ENABLE_BIT) {
+//        scan_wnd(scan);
+//    }
 }
 
 

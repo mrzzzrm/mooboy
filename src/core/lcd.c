@@ -41,7 +41,9 @@ lcd_t lcd;
 hw_event_t lcd_mode_event[4];
 hw_event_t lcd_vblank_line_event;
 
-static void mode_2(int mcs);
+scan_pixel_t bg_scan_cache[256][256];
+scan_pixel_t wnd_scan_cache[256][256];
+
 
 static void unschedule() {
     hw_unschedule(&lcd_mode_event[0]);
@@ -57,36 +59,33 @@ static void swap_fb() {
     lcd.working_fb = tmp;
 }
 
-static void draw_line_cgb_mode(u8 *maps_scan, u8 *obj_scan) {
+static void draw_line_cgb_mode(scan_pixel_t *obj_scan, scan_pixel_t *maps_scan) {
     u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
-    u8 x;
-    int bg_priority, draw_bg;
+    int x, bg_priority, draw_bg;
 
     for(x = 0; x < LCD_WIDTH; x++, pixel++) {
-        bg_priority = (lcd.c & LCDC_BG_ENABLE_BIT) &&
-                      ((maps_scan[x] & MAPS_PRIORITY_BIT) || (obj_scan[x] & OBJ_PRIORITY_BIT));
-        draw_bg = (bg_priority && MAPS_DATA(maps_scan[x]) != 0) || OBJ_DATA(obj_scan[x]) == 0;
+        bg_priority = (lcd.c & LCDC_BG_ENABLE_BIT) && (maps_scan[x].priority || obj_scan[x].priority);
 
-        *pixel = draw_bg ? lcd.bgpd_map[MAPS_PALETTE(maps_scan[x])][MAPS_DATA(maps_scan[x])] : lcd.obpd_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
+        *pixel = bg_priority ? maps_scan[x].color : obj_scan[x].color;
     }
 }
 
-static void draw_line_non_cgb_mode(u8 *maps_scan, u8 *obj_scan) {
-    u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
-    u8 x;
-    int bg_priority;
+//static void draw_line_non_cgb_mode(u8 *maps_scan, u8 *obj_scan) {
+//    u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
+//    u8 x;
+//    int bg_priority;
+//
+//    for(x = 0; x < LCD_WIDTH; x++, pixel++) {
+//        bg_priority = (OBJ_PRIORITY(obj_scan[x]) && maps_scan[x] != 0) ||  (OBJ_DATA(obj_scan[x]) == 0);
+//        *pixel = bg_priority ? lcd.bgp_map[maps_scan[x]] : lcd.obp_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
+//    }
+//}
 
-    for(x = 0; x < LCD_WIDTH; x++, pixel++) {
-        bg_priority = (OBJ_PRIORITY(obj_scan[x]) && maps_scan[x] != 0) ||  (OBJ_DATA(obj_scan[x]) == 0);
-        *pixel = bg_priority ? lcd.bgp_map[maps_scan[x]] : lcd.obp_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
-    }
-}
 
 static void draw_line() {
-    u8 maps_scan[LCD_WIDTH];
-    u8 obj_scan[LCD_WIDTH];
+    scan_pixel_t obj_scan[LCD_WIDTH];
+    scan_pixel_t maps_scan[LCD_WIDTH];
 
-    memset(maps_scan, 0x00, sizeof(maps_scan));
     memset(obj_scan, 0x00, sizeof(obj_scan));
 
     if(lcd.c & LCDC_OBJ_ENABLE_BIT) {
@@ -95,10 +94,10 @@ static void draw_line() {
     lcd_scan_maps(maps_scan);
 
     if(moo.mode == CGB_MODE) {
-        draw_line_cgb_mode(maps_scan, obj_scan);
+        draw_line_cgb_mode(obj_scan, maps_scan);
     }
     else {
-        draw_line_non_cgb_mode(maps_scan, obj_scan);
+        //draw_line_non_cgb_mode(obj_scan);
     }
 }
 
