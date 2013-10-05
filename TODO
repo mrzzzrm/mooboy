@@ -1,12 +1,13 @@
 [Emulator]
-    - Remove sys/sdl/video.c::buf with dynamic sized array
+    - Reaplce sys/sdl/video.c::buf with dynamic sized array
     - Optimize scan-system - not every pixel should have separate layer-tests  
     - Optimize scan-system - cache scans, only need to be updated un vram change   
     - Why is tima working for cgb? It should be too fast the way it is
     - Magic-Number replacement, especially for bitchecks
     - Take care of byte-order and datatype size, especially for savestates
     - Error menu to dialog
-    
+    - .sav: Asure sanity of hw-events queue
+    - Dialogs during emulation should be shown using a moo_paused_do(func) mechanism
     
 [Game Bugs]
     - MrDriller: Blocks not shown
