@@ -14,6 +14,7 @@
 #include "timers.h"
 #include "joy.h"
 #include "ints.h"
+#include "mbc.h"
 #include "load.h"
 #include "serial.h"
 #include "sys/sys.h"
@@ -23,10 +24,22 @@
 #include "util/config.h"
 #include "util/card.h"
 #include "util/state.h"
+#include "util/continue.h"
 #include "sound.h"
 
 
 moo_t moo;
+
+
+static void on_rom_over() {
+    char *ext = ".continue.sav";
+    char *state_path = malloc(strlen(sys.rompath) + strlen(ext) + 1);
+    sprintf(state_path, "%s%s", sys.rompath, ext);
+    state_save(state_path);
+    free(state_path);
+
+    card_save();
+}
 
 static void store_rompath() {
     FILE *f = fopen("lastrom.txt", "w");
@@ -61,6 +74,7 @@ void moo_reset() {
     //serial_reset();
 
     performance_reset();
+    framerate_reset();
 }
 
 void moo_begin() {
@@ -79,14 +93,11 @@ void moo_continue() {
     sys_continue();
 }
 
-void moo_rom_over() {
-    char *ext = ".continue.sav";
-    char *state_path = malloc(strlen(sys.rompath) + strlen(ext) + 1);
-    sprintf(state_path, "%s%s", sys.rompath, ext);
-    state_save(state_path);
-    free(state_path);
-
-    card_save();
+void moo_restart_rom() {
+    moo_reset();
+    moo_load_rom_config();
+    card_load();
+    moo_begin();
 }
 
 void moo_pause() {
@@ -98,13 +109,26 @@ void moo_quit() {
     moo.state &= ~MOO_RUNNING_BIT;
 
     if(moo.state & MOO_ROM_LOADED_BIT) {
-        moo_rom_over();
+        on_rom_over();
     }
+}
+
+void moo_paused_do(void (*func)()) {
+    moo_pause();
+    func();
+    moo_continue();
+}
+
+static void warn_rtc_sav_conflict() {
+    menu_warn_rtc_sav_conflict();
+    sys.auto_continue = SYS_AUTO_CONTINUE_NO;
+    sys.warned_rtc_sav_conflict = 1;
+    config_save_local();
 }
 
 void moo_load_rom(const char *path) {
     if(moo.state & MOO_ROM_LOADED_BIT) {
-        moo_rom_over();
+        on_rom_over();
     }
     if(path != sys.rompath) {
         strcpy(sys.rompath, path);
@@ -113,30 +137,44 @@ void moo_load_rom(const char *path) {
     printf("Loading ROM '%s'\n", sys.rompath);
 
     moo_reset();
+    moo_load_rom_config();
     load_rom();
 
-    if(moo.state & MOO_ROM_LOADED_BIT) {
-        moo_load_rom_config();
-        store_rompath();
-        moo_begin();
+    if(~moo.state & MOO_ROM_LOADED_BIT) {
+        printf("Failed to load ROM\n");
+        return;
     }
 
-    printf("Load process complete. %s\n", (moo.state & MOO_ERROR_BIT) ? "There were errors" : "Everything went fine")
-    ;
+    store_rompath();
+    moo_begin();
+
+    if(mbc.has_rtc && !sys.warned_rtc_sav_conflict) {
+        moo_paused_do(warn_rtc_sav_conflict);
+    }
+
+    if(continue_state_exists()) {
+        switch(sys.auto_continue) {
+            case SYS_AUTO_CONTINUE_YES:
+                continue_state_load();
+            break;
+            case SYS_AUTO_CONTINUE_ASK:
+                moo_paused_do(menu_continue);
+            break;
+        }
+    }
 }
 
 void moo_load_rom_config() {
-    char configpath[sizeof(sys.rompath) + 5];
-    sprintf(configpath, "%s.conf", sys.rompath);
-
-    if(config_load(configpath)) {
-        config_load("global.conf");
+    if(!config_load_local()) {
+        if(!config_load_global()) {
+            config_default();
+        }
     }
 }
 
 void moo_set_hw(int hw) {
     moo.hw = hw;
-    if(!moo.hw == CGB_HW) {
+    if(moo.hw == DMG_HW) {
         moo.mode = NON_CGB_MODE;
     }
     //serial_update_internal_period();
@@ -160,7 +198,7 @@ static void moo_cycle(int num) {
     }
 }
 
-void moo_run() {
+void moo_main() {
     while(moo.state & MOO_RUNNING_BIT) {
         if(moo.state & MOO_ERROR_BIT){
             menu_error();

@@ -10,15 +10,15 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-
+#include "sys/sdl/input.h"
 hw_t hw;
 
 void hw_reset() {
 #ifdef DEBUG
-    lcd_mode_0_event.dbg_queued = 0;
-    lcd_mode_1_event.dbg_queued = 0;
-    lcd_mode_2_event.dbg_queued = 0;
-    lcd_mode_3_event.dbg_queued = 0;
+    lcd_mode_event[0].dbg_queued = 0;
+    lcd_mode_event[1].dbg_queued = 0;
+    lcd_mode_event[2].dbg_queued = 0;
+    lcd_mode_event[3].dbg_queued = 0;
     lcd_vblank_line_event.dbg_queued = 0;
     rtc_event.dbg_queued = 0;
     sound_mix_event.dbg_queued = 0;
@@ -46,13 +46,8 @@ void hw_reset() {
 //}
 #endif
 
-void hw_step(int mcs) {
+static inline void schedule() {
     hw_event_t *next_sched, *next, *event, *prev;
-
-#ifdef DEBUG
-    assert(mcs <= 10);
-    cpu.dbg_mcs += mcs;
-#endif
 
     while(hw.sched != NULL) {
         next_sched = hw.sched->next;
@@ -88,32 +83,43 @@ void hw_step(int mcs) {
         }
         hw.sched = next_sched;
     }
+}
 
-    if(hw.queue != NULL) {
-        hw.cc += mcs;
+static void poll_queue(int mcs) {
+    hw_event_t *next;
 
-        while(hw.queue != NULL) {
-            hw_cycle_t dist = hw.cc - hw.queue->mcs;
-            if(dist <= mcs) {
-                next = hw.queue->next;
+    hw.cc += mcs;
+
+    while(hw.queue != NULL) {
+        hw_cycle_t dist = hw.cc - hw.queue->mcs;
+        if(dist <= mcs) {
+            next = hw.queue->next;
 #ifdef DEBUG
-                assert(hw.queue->dbg_queued);
-                hw.queue->dbg_queued = 0;
+            assert(hw.queue->dbg_queued);
+            hw.queue->dbg_queued = 0;
 #endif
-                hw.queue->callback(dist);
-                hw.queue = next;
-            }
-            else {
-                break;
-            }
+            hw.queue->callback(dist);
+            hw.queue = next;
         }
-
-        if(hw.defered > 0) {
-            hw_cycle_t mcs = hw.defered;
-            hw.defered = 0;
-            hw_step(mcs);
+        else {
+            break;
         }
     }
+
+    if(hw.defered > 0) {
+        hw_cycle_t mcs = hw.defered;
+        hw.defered = 0;
+        hw_step(mcs);
+    }
+}
+
+void hw_step(int mcs) {
+#ifdef DEBUG
+    assert(mcs <= 10);
+    cpu.dbg_mcs += mcs;
+#endif
+    schedule();
+    poll_queue(mcs);
 
     sys.invoke_cc += mcs;
 }

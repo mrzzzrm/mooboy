@@ -3,6 +3,7 @@
 
 #include "defines.h"
 #include "hw.h"
+#include <time.h>
 
 typedef struct {
     u8 latched[5];
@@ -19,9 +20,10 @@ extern hw_event_t rtc_event;
 void rtc_reset();
 void rtc_begin();
 
-void rtc_step(int nfcs);
 void rtc_map_register(u8 val);
 void rtc_latch(u8 val);
 void rtc_write(u8 val);
+
+void rtc_advance_seconds(time_t seconds);
 
 #endif

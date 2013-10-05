@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_gfxPrimitives.h>
+#include <SDL/SDL_image.h>
 #include <assert.h>
 #include "core/cpu.h"
 #include "core/rtc.h"
@@ -28,6 +29,8 @@ sys_t sys;
 
 static SDL_Surface *statuslabel;
 
+static char *scalingmode_names[] = {"Proportional", "Streched", "Full Proportional", "None"};
+
 void sys_init(int argc, const char** argv) {
     memset(&sys, 0x00, sizeof(sys));
 
@@ -35,7 +38,10 @@ void sys_init(int argc, const char** argv) {
     sys.sound_freq = 22050;
     sys.quantum_length = 1000;
     sys.bits_per_pixel = 16;
+    sys.bytes_per_pixel = 2;
     sys.show_statusbar = 0;
+    sys.auto_continue = SYS_AUTO_CONTINUE_ASK;
+    sys.fb_ready = 0;
     moo.state = MOO_RUNNING_BIT;
 
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
@@ -44,7 +50,7 @@ void sys_init(int argc, const char** argv) {
 
 #ifdef PANDORA
     SDL_ShowCursor(0);
-    if(SDL_SetVideoMode(320, 288, sys.bits_per_pixel, 0) == NULL) {
+    if(SDL_SetVideoMode(800, 480, sys.bits_per_pixel, SDL_FULLSCREEN) == NULL) {
         moo_fatalf("Setting of SDL video-mode failed");
     }
 #else
@@ -52,18 +58,11 @@ void sys_init(int argc, const char** argv) {
         moo_fatalf("Setting of SDL video-mode failed");
     }
 #endif
-
-
     sys.scalingmode = 0;
     sys.num_scalingmodes = 4;
-    sys.scalingmode_names = malloc(sizeof(*sys.scalingmode_names) * sys.num_scalingmodes);
-    sys.scalingmode_names[SCALING_STRECHED] = strdup("Streched");
-    sys.scalingmode_names[SCALING_PROPORTIONAL] = strdup("Proportional");
-    sys.scalingmode_names[SCALING_PROPORTIONAL_FULL] = strdup("Full Proportional");
-    sys.scalingmode_names[SCALING_NONE] = strdup("None");
+    sys.scalingmode_names = scalingmode_names;
 
     audio_init();
-    video_init();
     framerate_init();
     input_init();
 
@@ -77,12 +76,6 @@ void sys_reset() {
 }
 
 void sys_close() {
-    int s;
-    for(s = 0; s < sys.num_scalingmodes; s++) {
-        free(sys.scalingmode_names[s]);
-    }
-    free(sys.scalingmode_names);
-
     SDL_PauseAudio(1);
     SDL_Quit();
 }
@@ -160,6 +153,10 @@ void sys_delay(int ticks) {
     SDL_Delay(ticks);
 }
 
+void sys_fb_ready() {
+    sys.fb_ready = 1;
+}
+
 void sys_handle_events(void (*input_handle)(int, int)) {
    SDL_Event event;
 
@@ -176,11 +173,8 @@ void sys_handle_events(void (*input_handle)(int, int)) {
 void sys_invoke() {
     sys.ticks = SDL_GetTicks() + sys.ticks_diff;
 
-    if(sys.fb_ready) {
-        if(!framerate_skip()) {
-            render();
-        }
-
+    if(framerate_next_frame()) {
+        render();
         sys.fb_ready = 0;
         performance.counting.frames++;
     }
@@ -190,10 +184,6 @@ void sys_invoke() {
     sys_handle_events(input_event);
     performance_invoked();
     //sys_serial_step();
-}
-
-void sys_fb_ready() {
-    sys.fb_ready = 1;
 }
 
 void sys_play_audio(int on) {

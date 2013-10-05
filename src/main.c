@@ -24,7 +24,7 @@ static void init(int argc, const char **argv) {
 
 int main(int argc, const char **argv) {
     init(argc, argv);
-    moo_run();
+    moo_main();
 
     return EXIT_SUCCESS;
 }

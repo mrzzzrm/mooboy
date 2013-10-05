@@ -36,13 +36,14 @@ void moo_close();
 void moo_begin();
 void moo_pause();
 void moo_continue();
-void moo_rom_over();
+void moo_restart_rom();
 void moo_quit();
+void moo_paused_do(void (*func)());
 
 void moo_load_rom(const char *path);
 void moo_load_rom_config();
 
-void moo_run();
+void moo_main();
 
 void moo_set_joy_button(u8 button, u8 state);
 

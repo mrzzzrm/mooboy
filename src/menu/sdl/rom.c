@@ -184,7 +184,7 @@ static void load_rom() {
 
     snprintf(new_rompath, sizeof(new_rompath), "%s%s", cwd, direntries[list->selected]->name);
     moo_load_rom(new_rompath);
-    moo_begin();
+
     finished = 1;
 }
 

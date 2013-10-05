@@ -108,9 +108,11 @@ static void mbc5_lower_write(u16 adr, u8 val) {
         case 2:  // Select lower 8 bit of ROM bank
             mbc5.rombank &= 0xFF00;
             mbc5.rombank |= val;
+
             if(mbc5.rombank >= card.romsize) {
-                assert(0);
+                moo_errorf("Illegal request of ROM-bank %i, card only provides %i", mbc5.rombank, card.romsize);
             }
+
             mbc.rombank = card.rombanks[mbc5.rombank];
         break;
         case 3: // Select upper 1 bit of ROM bank
@@ -119,8 +121,7 @@ static void mbc5_lower_write(u16 adr, u8 val) {
             mbc5.rombank |= ((u16)val&0x01)<<8;
 
             if(mbc5.rombank >= card.romsize) {
-                moo_errorf("Setting ROM-bank out of range");
-                mbc5.rombank = 0;
+                moo_errorf("Illegal request of ROM-bank %i, card only provides %i", mbc5.rombank, card.romsize);
             }
 
             mbc.rombank = card.rombanks[mbc5.rombank];
@@ -149,7 +150,7 @@ void mbc_set_type(u8 type) {
         case 3: mbc.lower_write_func = mbc3_lower_write; break;
         case 5: mbc.lower_write_func = mbc5_lower_write; break;
         default:
-            assert(0);
+            moo_errorf("No such MBC-type %i", type);
     }
     printf("MBC-type is %i\n", (int)type);
 }

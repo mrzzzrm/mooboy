@@ -1,7 +1,10 @@
 [Emulator]
-    - Remove sys/sdl/video.c::buf with dynamic sized array
-    - Optimize scan-system - not every pixel should have separate layer-tests    
+    - Optimize scan-system - not every pixel should have separate layer-tests  
+    - Optimize scan-system - cache scans, only need to be updated un vram change   
     - Why is tima working for cgb? It should be too fast the way it is
+    - Magic-Number replacement, especially for bitchecks
+    - Take care of byte-order and datatype size, especially for savestates
+    - .sav: Asure sanity of hw-events queue
     
 [Game Bugs]
     - MrDriller: Blocks not shown
@@ -9,11 +12,20 @@
     - Aladdin: Messed up graphics
     - Alfred's Adventure: Messed up graphics
     - Alice in Wonderland: Messed up graphics
+    - Animorphs: Crash during first battle
+    - Quest for Camelot: gfx trouble in mainmenu 
+    - Donkey Kong GB: Minor gfx dissortions around character
+    - Donkey Kong GBC: Music too low?
 
 [Menu]  
+    - Frameskip chooseable
     
 [Misc]
-	- Icon
-	- Build system
-	- Pandora scripts
+	- Build system, autotools
+	
+[Refactoring]
+	- cards and states should use templated code
+	- move config state into own struct
+	- decide between mainloop based state and pause->do_something_else->continue
+	- Lazy initialize menu components? Reduces spaghetti...
 	

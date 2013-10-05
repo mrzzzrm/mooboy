@@ -19,6 +19,10 @@
 #define MENU_LISTENTRY_SELECTION 1
 #define MENU_LISTENTRY_SPACER 2
 
+#define ALIGN_LEFTBOUND 0
+#define ALIGN_RIGHTBOUND 1
+#define ALIGN_CENTER 2
+
 typedef struct {
     SDL_Surface *surfaces[2];
     char text[64];
@@ -70,7 +74,6 @@ void menu_free_word_string(menu_word_string_t *string);
 void menu_blit(SDL_Surface *s, int x, int y);
 void menu_blit_label(menu_label_t *label, int align, int selected, int x, int y);
 void menu_blit_word_string(menu_word_string_t *string, int x, int y);
-
 
 menu_list_t *menu_new_list(const char *title);
 void menu_list_update(menu_list_t *list);

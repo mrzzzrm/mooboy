@@ -6,7 +6,8 @@
 #include "core/lcd.h"
 
 
-static u8 buf[32768]; // TODO: Dynamic
+static u8 *linebuf = NULL;
+static int linebuf_size = 0;
 static u16 cgb_to_rgb_buf[0x8000];
 static int acolumns_in_fbpixel_buf[160];
 static int line_length;
@@ -62,8 +63,8 @@ static void cgb_fw_render_fbline(int line) {
         ax += pixels_to_set;
 
         for(ppos = 0; ppos < pixels_to_set; ppos++) {
-            buf[buf_pos++] = s_color & 0x00FF;
-            buf[buf_pos++] = s_color >> 8;
+            linebuf[buf_pos++] = s_color & 0x00FF;
+            linebuf[buf_pos++] = s_color >> 8;
         }
     }
 }
@@ -82,8 +83,8 @@ static void dmg_fw_render_fbline(int line) {
         pixels_to_set = acolumns_in_fbpixel(ax, area.w, fbx);
 
         for(ppos = 0; ppos < pixels_to_set; ppos++, ax++) {
-            buf[buf_pos++] = s_color & 0x00FF;
-            buf[buf_pos++] = s_color >> 8;
+            linebuf[buf_pos++] = s_color & 0x00FF;
+            linebuf[buf_pos++] = s_color >> 8;
         }
     }
 }
@@ -113,12 +114,12 @@ static void fullwidth_render(SDL_Surface *surface) {
             render_fbline_to_buffer(fbline);
 
             for(buflines = 1; alines_to_fill >= buflines * 2; buflines *= 2) {
-                memcpy(&buf[buflines * bytes_per_line], buf, buflines * bytes_per_line);
+                memcpy(&linebuf[buflines * bytes_per_line], linebuf, buflines * bytes_per_line);
             }
-            fw_render_buffer(surface, buf, buflines, aline);
+            fw_render_buffer(surface, linebuf, buflines, aline);
             aline += buflines;
             if(alines_to_fill > buflines) {
-                fw_render_buffer(surface, buf, alines_to_fill - buflines, aline);
+                fw_render_buffer(surface, linebuf, alines_to_fill - buflines, aline);
             }
             aline += alines_to_fill - buflines;
         }
@@ -142,20 +143,16 @@ static void area_render(SDL_Surface *surface) {
             render_fbline_to_buffer(fbline);
 
             for(buflines = 1; alines_to_fill >= buflines * 2; buflines *= 2) {
-                memcpy(&buf[buflines * bytes_per_line], buf, buflines * bytes_per_line);
+                memcpy(&linebuf[buflines * bytes_per_line], linebuf, buflines * bytes_per_line);
             }
-            fw_render_buffer(surface, buf, buflines, aline + area.y);
+            fw_render_buffer(surface, linebuf, buflines, aline + area.y);
             aline += buflines;
             if(alines_to_fill > buflines) {
-                fw_render_buffer(surface, buf, alines_to_fill - buflines, aline + area.y);
+                fw_render_buffer(surface, linebuf, alines_to_fill - buflines, aline + area.y);
             }
             aline += alines_to_fill - buflines;
         }
     }
-}
-
-void video_init() {
-
 }
 
 void video_switch_display_mode() {
@@ -175,7 +172,7 @@ void video_switch_display_mode() {
         cgb_to_rgb_buf[c] = cgb_to_rgb(c);
     }
 
-    memset(buf, 0x00, sizeof(buf));
+    memset(linebuf, 0x00, linebuf_size);
     SDL_FillRect(SDL_GetVideoSurface(), NULL, 0);
 }
 
@@ -186,6 +183,9 @@ void video_set_area(SDL_Rect _area) {
         acolumns_in_fbpixel_buf[fbx] = acolumns_in_fbpixel(ax, area.w, fbx);
         ax += acolumns_in_fbpixel_buf[fbx];
     }
+
+    linebuf_size = area.w * sys.bytes_per_pixel * (area.h/144 + 1);
+    linebuf = realloc(linebuf, linebuf_size * sizeof(*linebuf));
 }
 
 void video_render(SDL_Surface *surface) {

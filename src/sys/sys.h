@@ -3,7 +3,6 @@
 
 #include <time.h>
 
-
 typedef struct {
     time_t ticks;
     long long ticks_diff;
@@ -20,15 +19,25 @@ typedef struct {
 
     int show_statusbar;
 
-    char rompath[256];
+    char rompath[256]; // TODO: Dynamic
 
     int scalingmode;
     int num_scalingmodes;
     char **scalingmode_names;
 
+    int auto_continue;
+
+    int auto_rtc;
+    int warned_rtc_sav_conflict;
+
     unsigned int bits_per_pixel;
+    unsigned int bytes_per_pixel;
     unsigned int quantum_length;
 } sys_t;
+
+#define SYS_AUTO_CONTINUE_NO 0
+#define SYS_AUTO_CONTINUE_ASK 1
+#define SYS_AUTO_CONTINUE_YES 2
 
 extern sys_t sys;
 
@@ -45,9 +54,6 @@ void sys_delay(int ticks);
 
 void sys_invoke();
 void sys_fb_ready();
-
-void sys_save_card();
-void sys_load_card();
 
 void sys_play_audio(int on);
 void sys_lock_audiobuf();
