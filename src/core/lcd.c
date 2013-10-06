@@ -38,19 +38,13 @@
 
 lcd_t lcd;
 
-hw_event_t lcd_mode_event[4];
-hw_event_t lcd_vblank_line_event;
-
-scan_pixel_t bg_scan_cache[256][256];
-scan_pixel_t wnd_scan_cache[256][256];
-
 
 static void unschedule() {
-    hw_unschedule(&lcd_mode_event[0]);
-    hw_unschedule(&lcd_mode_event[1]);
-    hw_unschedule(&lcd_mode_event[2]);
-    hw_unschedule(&lcd_mode_event[3]);
-    hw_unschedule(&lcd_vblank_line_event);
+    int e;
+    for(e = 0; e < 4; e++) {
+        hw_unschedule(&lcd.mode_event[e]);
+    }
+    hw_unschedule(&lcd.vblank_line_event);
 }
 
 static void swap_fb() {
@@ -61,30 +55,32 @@ static void swap_fb() {
 
 static void draw_line_cgb_mode(scan_pixel_t *obj_scan, scan_pixel_t *maps_scan) {
     u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
-    int x, bg_priority, draw_bg;
+    int x, bg_priority,draw_bg;
 
     for(x = 0; x < LCD_WIDTH; x++, pixel++) {
-        bg_priority = (lcd.c & LCDC_BG_ENABLE_BIT) && (maps_scan[x].priority || obj_scan[x].priority);
+       bg_priority = (lcd.c & LCDC_BG_ENABLE_BIT) &&
+                      (maps_scan[x].priority || obj_scan[x].priority);
+       draw_bg = (bg_priority && maps_scan[x].color_id != 0) || obj_scan[x].color_id == 0;
 
+       *pixel = draw_bg ? maps_scan[x].color : obj_scan[x].color;
+    }
+}
+
+static void draw_line_non_cgb_mode(scan_pixel_t *obj_scan, scan_pixel_t *maps_scan) {
+    u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
+    u8 x;
+    int bg_priority;
+
+    for(x = 0; x < LCD_WIDTH; x++, pixel++) {
+        bg_priority = (obj_scan[x].priority && maps_scan[x].color_id != 0) || obj_scan[x].color_id == 0;
         *pixel = bg_priority ? maps_scan[x].color : obj_scan[x].color;
     }
 }
 
-//static void draw_line_non_cgb_mode(u8 *maps_scan, u8 *obj_scan) {
-//    u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
-//    u8 x;
-//    int bg_priority;
-//
-//    for(x = 0; x < LCD_WIDTH; x++, pixel++) {
-//        bg_priority = (OBJ_PRIORITY(obj_scan[x]) && maps_scan[x] != 0) ||  (OBJ_DATA(obj_scan[x]) == 0);
-//        *pixel = bg_priority ? lcd.bgp_map[maps_scan[x]] : lcd.obp_map[OBJ_PALETTE(obj_scan[x])][OBJ_DATA(obj_scan[x])];
-//    }
-//}
-
 
 static void draw_line() {
-    scan_pixel_t obj_scan[LCD_WIDTH];
-    scan_pixel_t maps_scan[LCD_WIDTH];
+    scan_pixel_t obj_scan[160];
+    scan_pixel_t maps_scan[160];
 
     memset(obj_scan, 0x00, sizeof(obj_scan));
 
@@ -97,7 +93,7 @@ static void draw_line() {
         draw_line_cgb_mode(obj_scan, maps_scan);
     }
     else {
-        //draw_line_non_cgb_mode(obj_scan);
+        draw_line_non_cgb_mode(obj_scan, maps_scan);
     }
 }
 
@@ -138,10 +134,10 @@ static void next_line() {
 static void vblank_line(int mcs) {
     next_line();
     if(lcd.ly == 153) {
-        hw_schedule(&lcd_mode_event[2], DUR_SCANLINE * cpu.freq_factor - mcs);
+        hw_schedule(&lcd.mode_event[2], DUR_SCANLINE * cpu.freq_factor - mcs);
     }
     else {
-        hw_schedule(&lcd_vblank_line_event, DUR_SCANLINE * cpu.freq_factor - mcs);
+        hw_schedule(&lcd.vblank_line_event, DUR_SCANLINE * cpu.freq_factor - mcs);
     }
 }
 
@@ -157,10 +153,10 @@ static void mode_0(int mcs) {
     }
 
     if(lcd.ly == 143) {
-        hw_schedule(&lcd_mode_event[1], DUR_MODE_0 * cpu.freq_factor - mcs);
+        hw_schedule(&lcd.mode_event[1], DUR_MODE_0 * cpu.freq_factor - mcs);
     }
     else {
-       hw_schedule(&lcd_mode_event[2], DUR_MODE_0 * cpu.freq_factor - mcs);
+       hw_schedule(&lcd.mode_event[2], DUR_MODE_0 * cpu.freq_factor - mcs);
     }
 }
 
@@ -173,7 +169,7 @@ static void mode_1(int mcs) {
     sys_fb_ready();
     swap_fb();
 
-    hw_schedule(&lcd_vblank_line_event, DUR_SCANLINE * cpu.freq_factor - mcs);
+    hw_schedule(&lcd.vblank_line_event, DUR_SCANLINE * cpu.freq_factor - mcs);
 }
 
 static void mode_2(int mcs) {
@@ -181,15 +177,17 @@ static void mode_2(int mcs) {
     STAT_SET_MODE(2);
     stat_irq(SIF_OAM);
 
-    hw_schedule(&lcd_mode_event[3], DUR_MODE_2 * cpu.freq_factor - mcs);
+    hw_schedule(&lcd.mode_event[3], DUR_MODE_2 * cpu.freq_factor - mcs);
 }
 
 static void mode_3(int mcs) {
     STAT_SET_MODE(3);
-    hw_schedule(&lcd_mode_event[0], DUR_MODE_3 * cpu.freq_factor - mcs);
+    hw_schedule(&lcd.mode_event[0], DUR_MODE_3 * cpu.freq_factor - mcs);
 }
 
 void lcd_reset() {
+    memset(&lcd, 0x00, sizeof(lcd));
+
     lcd.c = 0x91;
     lcd.stat = 0x81;
     lcd.scx = 0;
@@ -201,49 +199,43 @@ void lcd_reset() {
     lcd.bgp = 0xFC;
     lcd.obp[0] = 0xFF;
     lcd.obp[1] = 0xFF;
-    lcd.cc = lcd.ly * DUR_SCANLINE + DUR_MODE_3;
 
     lcd.hdma_source = 0x0000;
     lcd.hdma_dest = 0x8000;
     lcd.hdma_length = 0x00;
     lcd.hdma_inactive = 0x80;
 
-    memset(lcd.fb, 0x00, sizeof(lcd.fb));
     lcd.clean_fb = lcd.fb[0];
     lcd.working_fb = lcd.fb[1];
 
-    memset(lcd.bgpd, 0x00, sizeof(lcd.bgpd));
-    memset(lcd.obpd, 0x00, sizeof(lcd.obpd));
-    memset(lcd.bgpd_map, 0x00, sizeof(lcd.bgpd_map));
-    memset(lcd.obpd_map, 0x00, sizeof(lcd.obpd_map));
-
-    lcd.non_cgb_bgp = 0;
-    lcd.non_cgb_obp[0] = 0;
-    lcd.non_cgb_obp[1] = 0;
-
-    lcd_c_dirty();
     lcd_bgp_dirty();
     lcd_obp0_dirty();
     lcd_obp1_dirty();
 
-    lcd_mode_event[0].callback = mode_0;
-    lcd_mode_event[1].callback = mode_1;
-    lcd_mode_event[2].callback = mode_2;
-    lcd_mode_event[3].callback = mode_3;
-    lcd_vblank_line_event.callback = vblank_line;
+    lcd.maps[0].tiles = &ram.vrambanks[0][0x1800];
+    lcd.maps[0].attr = &ram.vrambanks[1][0x1800];
+    lcd.maps[1].tiles = &ram.vrambanks[0][0x1C00];
+    lcd.maps[1].attr = &ram.vrambanks[1][0x1C00];
+
+    lcd.mode_event[0].callback = mode_0;
+    lcd.mode_event[1].callback = mode_1;
+    lcd.mode_event[2].callback = mode_2;
+    lcd.mode_event[3].callback = mode_3;
+    lcd.vblank_line_event.callback = vblank_line;
 
 #ifdef DEBUG
-    sprintf(lcd_mode_event[0].name, "lcd-mode-0");
-    sprintf(lcd_mode_event[1].name, "lcd-mode-1");
-    sprintf(lcd_mode_event[2].name, "lcd-mode-2");
-    sprintf(lcd_mode_event[3].name, "lcd-mode-3");
-    sprintf(lcd_vblank_line_event.name, "vblank_line");
+    sprintf(lcd.mode_event[0].name, "lcd-mode-0");
+    sprintf(lcd.mode_event[1].name, "lcd-mode-1");
+    sprintf(lcd.mode_event[2].name, "lcd-mode-2");
+    sprintf(lcd.mode_event[3].name, "lcd-mode-3");
+    sprintf(lcd.vblank_line_event.name, "vblank_line");
 #endif
 }
 
 void lcd_begin() {
     unschedule();
-    hw_schedule(&lcd_vblank_line_event, (DUR_MODE_0 + DUR_MODE_2) * cpu.freq_factor);
+    hw_schedule(&lcd.vblank_line_event, (DUR_MODE_0 + DUR_MODE_2) * cpu.freq_factor);
+    maps_dirty();
 }
 
 void lcd_dma(u8 v) {
@@ -295,25 +287,55 @@ void lcd_set_lyc(u8 lyc) {
 
 void lcd_reset_ly() {
     lcd.ly = 0x00;
-    lcd.cc = 0;
 }
 
-void lcd_c_dirty() {
-    lcd.bg_map = &ram.vrambanks[0][lcd.c & LCDC_BG_MAP_BIT ? 0x1C00 : 0x1800];
-    lcd.wnd_map = &ram.vrambanks[0][lcd.c & LCDC_WND_MAP_BIT ? 0x1C00 : 0x1800];
-    lcd.bg_attr_map = &ram.vrambanks[1][lcd.c & LCDC_BG_MAP_BIT ? 0x1C00 : 0x1800];
-    lcd.wnd_attr_map = &ram.vrambanks[1][lcd.c & LCDC_WND_MAP_BIT ? 0x1C00 : 0x1800];
+void lcd_c_write(u8 val) {
+    if(!(lcd.c & val & 0x80)) {
+        if(val & 0x80) {
+            lcd_enable();
+        }
+        else if(lcd.c & 0x80) {
+            lcd_disable();
+        }
+    }
+
+    if((lcd.c & 0x10) != (val & 0x10)) {
+        maps_dirty();
+    }
+
+    lcd.c = val;
+}
+
+void lcd_vram_write(u16 adr, u8 val) {
+    u16 vram_adr = adr - 0x8000;
+
+    if(val == ram.vrambanks[ram.selected_vrambank][vram_adr]) {
+        return;
+    }
+
+    ram.vrambanks[ram.selected_vrambank][vram_adr] = val;
+
+    if(vram_adr >= 0x0000 && vram_adr < 0x1800) {
+        maps_tiledata_dirty(vram_adr/16);
+    }
+    else if(vram_adr >= 0x1800 && vram_adr < 0x1C00) {
+        maps_tile_dirty(&lcd.maps[0], vram_adr - 0x1800);
+    }
+    else if(vram_adr >= 0x1C00) {
+        maps_tile_dirty(&lcd.maps[1], vram_adr - 0x1C00);
+    }
 }
 
 void lcd_bgp_dirty() {
     u8 rc;
 
     for(rc = 0; rc < 4; rc++) {
-        lcd.bgp_map[rc] = (lcd.bgp & (0x3 << (rc<<1))) >> (rc<<1);
+        lcd.bgp_map[0][rc] = (lcd.bgp & (0x3 << (rc<<1))) >> (rc<<1);
     }
+    maps_dirty();
 }
 
-static void obp_dirty(u8 obp, u8 *obp_map) {
+static void obp_dirty(u8 obp, u16 *obp_map) {
     u8 rc;
     for(rc = 0; rc < 4; rc++) {
         obp_map[rc] = (obp & (0x3 << (rc<<1))) >> (rc<<1);
@@ -328,20 +350,26 @@ void lcd_obp1_dirty() {
     obp_dirty(lcd.obp[1], lcd.obp_map[1]);
 }
 
-static void pd_dirty(u16 map[8][4], u8 d, u8 s) {
-    u16 palette, color;
+static int pd_dirty(u16 map[8][4], u8 d, u8 s) {
+    u16 palette, color_id, old_color, new_color;
 
     palette = s/8;
-    color = (s/2)%4;
+    color_id = (s/2)%4;
 
-    map[palette][color] = s % 2 == 0 ? (map[palette][color] & 0xFF00) | d : (map[palette][color] & 0x00FF) | (d << 8);
+    old_color = map[palette][color_id];
+    new_color = s % 2 == 0 ? (map[palette][color_id] & 0xFF00) | d : (map[palette][color_id] & 0x00FF) | (d << 8);
+    map[palette][color_id] =  new_color;
+
+    return old_color != new_color;
 }
 
 void lcd_bgpd_dirty(u8 bgps) {
-    pd_dirty(lcd.bgpd_map, lcd.bgpd[bgps], bgps);
+    if(pd_dirty(lcd.bgp_map, lcd.bgpd[bgps], bgps)) {
+        maps_palette_dirty(bgps/8);
+    }
 }
 
 void lcd_obpd_dirty(u8 obps) {
-    pd_dirty(lcd.obpd_map, lcd.obpd[obps], obps);
+    pd_dirty(lcd.obp_map, lcd.obpd[obps], obps);
 }
 

@@ -1,144 +1,182 @@
 #include "maps.h"
+#include "defines.h"
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 #include "mem.h"
 #include "moo.h"
 #include "lcd.h"
 
+static u8 priority, palette;
+static u8 *linedata;
 
-#define MAP_WIDTH 256
-#define TILE_WIDTH 8
-#define TILE_HEIGHT 8
-#define MAP_COLUMNS 32
-#define MAP_ROWS 32
-#define LCDC_TILE_DATA_BIT 0x10
-
-#define PRIORITY_SHIFT 7
-#define PALETTE_MASK 0x07
-#define BANK_SHIFT 3
-#define HFLIP_BIT 0x20
-#define VFLIP_BIT 0x40
-
-static u8 sx, tx, ty, tc, tr, index_offset;
-static u8 *tdt;
-static u8 priority, palette, bank;
-
-static inline void init_scan(u8 mx, u8 my) {
-    tx = mx % TILE_WIDTH;
-    ty = my % TILE_HEIGHT;
-    tc = mx / TILE_WIDTH;
-    tr = my / TILE_HEIGHT;
-    index_offset = lcd.c & LCDC_TILE_DATA_BIT ? 0x00 : 0x80;
-    tdt = lcd.c & LCDC_TILE_DATA_BIT ? &ram.vrambanks[bank][0x0000] : &ram.vrambanks[bank][0x0800];
-}
-
-static inline u8 render(u8 *line, u8 rshift) {
-    u8 lsb = (line[0] >> rshift) & 0x01;
-    u8 msb = (line[1] >> rshift) & 0x01;
+static inline u8 render(u8 rshift) {
+    u8 lsb = (linedata[0] >> rshift) & 0x01;
+    u8 msb = (linedata[1] >> rshift) & 0x01;
     return (lsb | (msb << 1));
 }
 
-static inline void scan_tile_line(u8 *scan, u8 *line) {
-    u8 rshift = 7 - tx;
-    u8 pixel = palette | priority;
+static inline void draw_tile_line_flipped(scan_pixel_t *scan) {
+    int tx;
+    u8 rshift = 0;
 
-    for(; tx < TILE_WIDTH && sx < LCD_WIDTH; tx++, sx++, rshift--) {
-        scan[sx] = pixel | render(line, rshift);
+    for(tx = 0; tx < 8; tx++, rshift++) {
+        scan[tx].color_id = render(rshift);
+        scan[tx].color = lcd.bgp_map[palette][scan[tx].color_id];
+        scan[tx].priority = priority;
     }
-    tx = 0;
 }
 
-static void inline scan_tile_line_flipped(u8 *scan, u8 *line) {
-    u8 rshift = tx;
-    u8 pixel = palette | priority;
+static inline void draw_tile_line(scan_pixel_t *scan) {
+    int tx;
+    u8 rshift = 7;
 
-    for(; tx < TILE_WIDTH && sx < LCD_WIDTH; tx++, sx++, rshift++) {
-        scan[sx] = pixel | render(line, rshift);
+    for(tx = 0; tx < 8; tx++, rshift--) {
+        scan[tx].color_id = render(rshift);
+        scan[tx].color = lcd.bgp_map[palette][scan[tx].color_id];
+        scan[tx].priority = priority;
     }
-    tx = 0;
 }
 
-static inline void dmg_scan_line(u8 *map, u8 *scan) {
-    u8 *tile_index;
-    do {
-        tile_index = &map[tr * MAP_COLUMNS + tc];
-        scan_tile_line(scan, &tdt[((*tile_index + index_offset)%256)*0x10 + ty*2]);
-        tc = (tc+1)%32;
-    } while (sx < LCD_WIDTH);
-}
+static inline void draw_tile(lcd_map_t *map, int tx, int ty) {
+    u8 tile_index = map->tiles[ty * 32 + tx];
+    u8 index_offset = lcd.c & 0x10 ? 0x00 : 0x80;
+    u8 attr = map->attr[ty * 32 + tx];
 
-static inline void cgb_scan_line(u8 *map, u8 *attr_map, u8 *scan) {
-    u8 tile_index, attributes, line;
-    do {
-        tile_index = map[tr * MAP_COLUMNS + tc];
-        attributes = attr_map[tr * MAP_COLUMNS + tc];
 
-        priority = attributes >> PRIORITY_SHIFT ? MAPS_PRIORITY_BIT : 0;
-        palette = (attributes & PALETTE_MASK) << MAPS_PALETTE_SHIFT;
-        bank = (attributes >> BANK_SHIFT) & 0x01;
-        tdt = lcd.c & LCDC_TILE_DATA_BIT ? &ram.vrambanks[bank][0x0000] : &ram.vrambanks[bank][0x0800];
+    priority = attr & 0x80;
+    palette = attr & 0x07;
+    u8 bank = attr & 0x08 ? 1 : 0;
+    u8 *tdt = &ram.vrambanks[bank][lcd.c & 0x10 ? 0x0000 : 0x0800];
 
-        line = attributes & VFLIP_BIT ? 7-ty : ty;
+    u8 cx = tx*8;
+    u8 cy = ty*8;
 
-        if(attributes & HFLIP_BIT) {
-            scan_tile_line_flipped(scan, &tdt[((tile_index + index_offset)%256)*0x10 + line*2]);
+    for(ty = 0; ty < 8; ty++, cy++) {
+        u8 tile = tile_index + index_offset;
+        u8 line = attr & 0x40 ? 7-ty : ty;
+        linedata = &tdt[tile*0x10 + line*2];
+
+        if(attr & 0x20) {
+            draw_tile_line_flipped(&map->scan_cache[cy][cx]);
         }
         else {
-            scan_tile_line(scan, &tdt[((tile_index + index_offset)%256)*0x10 + line*2]);
+            draw_tile_line(&map->scan_cache[cy][cx]);
         }
-        tc = (tc+1)%32;
-    } while (sx < LCD_WIDTH);
-}
-
-static inline void scan_bg(u8 *scan) {
-    sx = 0;
-    init_scan(lcd.scx, lcd.scy + lcd.ly);
-    if(moo.hw == CGB_HW) {
-        cgb_scan_line(lcd.bg_map, lcd.bg_attr_map, scan);
-    }
-    else {
-        dmg_scan_line(lcd.bg_map, scan);
     }
 }
 
-static inline void scan_wnd(u8 *scan) {
-    u8 mx;
+static inline void redraw_dirty(lcd_map_t *map, int tx, int ty) {
+    int c;
+    for(c = 0; c < 21; c++) {
+        int x = (tx + c) % 32;
 
-    if(lcd.wy > lcd.ly) {
+        if(map->tile_dirty[ty][x]) {
+            draw_tile(map, x, ty);
+            map->tile_dirty[ty][x] = 0;
+        }
+    }
+}
+
+static inline void scan_bg(scan_pixel_t *scan) {
+    lcd_map_t *map =  &lcd.maps[lcd.c & 0x08 ? 1 :0];
+
+    int my = (lcd.ly + lcd.scy) % 256;
+    int ex = min(255 - lcd.scx, 160);
+
+    redraw_dirty(map,  lcd.scx/8, my/8);
+
+    memcpy(scan, &map->scan_cache[my][lcd.scx], ex * sizeof(scan_pixel_t));
+    memcpy(&scan[ex], &map->scan_cache[my][0], (160 - ex) * sizeof(scan_pixel_t));
+}
+
+
+static inline void scan_wnd(scan_pixel_t *scan) {
+    if(lcd.wy > lcd.ly || lcd.wx > 166) {
         return;
     }
-    if(lcd.wx <= 7) {
-        sx = 0;
-        mx = lcd.wx - 7;
-    }
-    else {
-        sx = lcd.wx - 7;
-        mx = 0;
-    }
+    lcd_map_t *map =  &lcd.maps[lcd.c & 0x40 ? 1 :0];
 
-    init_scan(mx, lcd.ly - lcd.wy);
-    if(moo.hw == CGB_HW) {
-        cgb_scan_line(lcd.wnd_map, lcd.wnd_attr_map, scan);
-    }
-    else {
-        dmg_scan_line(lcd.wnd_map, scan);
-    }
+    u8 mx = -min(lcd.wx - 7, 0);
+    u8 my = lcd.ly - lcd.wy;
+    u8 sx = max(lcd.wx - 7, 0);
+
+    redraw_dirty(map, mx/8, my/8);
+
+    memcpy(&scan[sx], &map->scan_cache[my][mx], (160 - sx) * sizeof(scan_pixel_t));
 }
 
 void lcd_scan_maps(scan_pixel_t *scan) {
-//    if(moo.hw == CGB_HW) {
-//        bank = 0;
-//        priority = 0;
-//        palette = 0;
-//    }
-//
-//    if((lcd.c & LCDC_BG_ENABLE_BIT) || (moo.hw == CGB_HW)) {
-//        scan_bg(scan);
-//    }
-//    if(lcd.c & LCDC_WND_ENABLE_BIT) {
-//        scan_wnd(scan);
-//    }
+    scan_bg(scan);
+
+    if(lcd.c & 0x20) {
+        scan_wnd(scan);
+    }
 }
 
+static inline void tiledata_dirty(u8 tile, lcd_map_t *map) {
+    int x, y;
 
+    for(y = 0; y < 32; y++) {
+        for(x = 0; x < 32; x++) {
+            u8 index = y*32 + x;
+            u8 bank = (map->attr[index] >> 3) & 0x01;
+
+            if(map->tiles[index] == tile && bank == ram.selected_vrambank) {
+                map->tile_dirty[y][x] = 1;
+            }
+        }
+    }
+}
+
+void maps_tiledata_dirty(int tileindex) { //printf("tiledata %i\n", tileindex);
+    u8 tile;
+    if(lcd.c & 0x10) {
+        if(tileindex > 255) {
+            return;
+        }
+        tile = tileindex;
+    }
+    else {
+        if(tileindex < 128) {
+            return;
+        }
+        tile = tileindex - 255;
+    }
+
+    tiledata_dirty(tile, &lcd.maps[0]);
+    tiledata_dirty(tile, &lcd.maps[1]);
+}
+
+void maps_tile_dirty(lcd_map_t *map, int tile) {//printf("tile %i\n", tile);
+    map->tile_dirty[tile/32][tile%32] = 1;
+}
+
+void maps_dirty() {//printf("maps \n");
+    int x, y;
+
+    for(y = 0; y < 32; y++) {
+        for(x = 0; x < 32; x++) {
+            lcd.maps[0].tile_dirty[y][x] = 1;
+            lcd.maps[1].tile_dirty[y][x] = 1;
+        }
+    }
+}
+
+static void palette_dirty(int palette, lcd_map_t *map) {
+    int x, y;
+
+    for(y = 0; y < 32; y++) {
+        for(x = 0; x < 32; x++) {
+            if((map->attr[y*32+x] & 0x07) == palette) {
+                map->tile_dirty[y][x] = 1;
+            }
+        }
+    }
+}
+
+void maps_palette_dirty(int palette) {//printf("palette %i\n", palette);
+    palette_dirty(palette, &lcd.maps[0]);
+    palette_dirty(palette, &lcd.maps[1]);
+}
 
