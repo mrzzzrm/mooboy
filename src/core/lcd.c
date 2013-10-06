@@ -329,16 +329,20 @@ void lcd_vram_write(u16 adr, u8 val) {
 void lcd_bgp_dirty() {
     u8 rc;
 
-    for(rc = 0; rc < 4; rc++) {
-        lcd.bgp_map[0][rc] = (lcd.bgp & (0x3 << (rc<<1))) >> (rc<<1);
+    if(moo.mode == NON_CGB_MODE) {
+        for(rc = 0; rc < 4; rc++) {
+            lcd.bgp_map[0][rc] = (lcd.bgp & (0x3 << (rc<<1))) >> (rc<<1);
+        }
+        maps_dirty();
     }
-    maps_dirty();
 }
 
 static void obp_dirty(u8 obp, u16 *obp_map) {
     u8 rc;
-    for(rc = 0; rc < 4; rc++) {
-        obp_map[rc] = (obp & (0x3 << (rc<<1))) >> (rc<<1);
+    if(moo.mode == NON_CGB_MODE) {
+        for(rc = 0; rc < 4; rc++) {
+            obp_map[rc] = (obp & (0x3 << (rc<<1))) >> (rc<<1);
+        }
     }
 }
 
@@ -364,12 +368,16 @@ static int pd_dirty(u16 map[8][4], u8 d, u8 s) {
 }
 
 void lcd_bgpd_dirty(u8 bgps) {
-    if(pd_dirty(lcd.bgp_map, lcd.bgpd[bgps], bgps)) {
-        maps_palette_dirty(bgps/8);
+    if(moo.mode == CGB_MODE) {
+        if(pd_dirty(lcd.bgp_map, lcd.bgpd[bgps], bgps)) {
+            maps_palette_dirty(bgps/8);
+        }
     }
 }
 
 void lcd_obpd_dirty(u8 obps) {
-    pd_dirty(lcd.obp_map, lcd.obpd[obps], obps);
+    if(moo.mode == CGB_MODE) {
+        pd_dirty(lcd.obp_map, lcd.obpd[obps], obps);
+    }
 }
 

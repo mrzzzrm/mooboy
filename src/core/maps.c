@@ -43,7 +43,6 @@ static inline void draw_tile(lcd_map_t *map, int tx, int ty) {
     u8 index_offset = lcd.c & 0x10 ? 0x00 : 0x80;
     u8 attr = map->attr[ty * 32 + tx];
 
-
     priority = attr & 0x80;
     palette = attr & 0x07;
     u8 bank = attr & 0x08 ? 1 : 0;
@@ -82,11 +81,11 @@ static inline void scan_bg(scan_pixel_t *scan) {
     lcd_map_t *map =  &lcd.maps[lcd.c & 0x08 ? 1 :0];
 
     int my = (lcd.ly + lcd.scy) % 256;
-    int ex = min(255 - lcd.scx, 160);
+    int ex = min(256 - lcd.scx, 160);
 
-    redraw_dirty(map,  lcd.scx/8, my/8);
+    redraw_dirty(map, lcd.scx/8, my/8);
 
-    memcpy(scan, &map->scan_cache[my][lcd.scx], ex * sizeof(scan_pixel_t));
+    memcpy(scan, &map->scan_cache[my][lcd.scx], (ex) * sizeof(scan_pixel_t));
     memcpy(&scan[ex], &map->scan_cache[my][0], (160 - ex) * sizeof(scan_pixel_t));
 }
 
@@ -129,7 +128,7 @@ static inline void tiledata_dirty(u8 tile, lcd_map_t *map) {
     }
 }
 
-void maps_tiledata_dirty(int tileindex) { //printf("tiledata %i\n", tileindex);
+void maps_tiledata_dirty(int tileindex) {
     u8 tile;
     if(lcd.c & 0x10) {
         if(tileindex > 255) {
@@ -148,11 +147,11 @@ void maps_tiledata_dirty(int tileindex) { //printf("tiledata %i\n", tileindex);
     tiledata_dirty(tile, &lcd.maps[1]);
 }
 
-void maps_tile_dirty(lcd_map_t *map, int tile) {//printf("tile %i\n", tile);
+void maps_tile_dirty(lcd_map_t *map, int tile) {
     map->tile_dirty[tile/32][tile%32] = 1;
 }
 
-void maps_dirty() {//printf("maps \n");
+void maps_dirty() {
     int x, y;
 
     for(y = 0; y < 32; y++) {
@@ -175,7 +174,7 @@ static void palette_dirty(int palette, lcd_map_t *map) {
     }
 }
 
-void maps_palette_dirty(int palette) {//printf("palette %i\n", palette);
+void maps_palette_dirty(int palette) {
     palette_dirty(palette, &lcd.maps[0]);
     palette_dirty(palette, &lcd.maps[1]);
 }
