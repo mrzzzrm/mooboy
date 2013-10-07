@@ -7,7 +7,7 @@
 #include "moo.h"
 #include "lcd.h"
 
-static u8 priority, palette;
+static u8 priority, palette, bank, tile_index;
 static u8 *linedata;
 
 static inline u8 render(u8 rshift) {
@@ -39,13 +39,11 @@ static inline void draw_tile_line(scan_pixel_t *scan) {
 }
 
 static inline void draw_tile(lcd_map_t *map, int tx, int ty) {
-    u8 tile_index = map->tiles[ty * 32 + tx];
     u8 index_offset = lcd.c & 0x10 ? 0x00 : 0x80;
     u8 attr = map->attr[ty * 32 + tx];
 
     priority = attr & 0x80;
     palette = attr & 0x07;
-    u8 bank = attr & 0x08 ? 1 : 0;
     u8 *tdt = &ram.vrambanks[bank][lcd.c & 0x10 ? 0x0000 : 0x0800];
 
     u8 cx = tx*8;
@@ -65,21 +63,39 @@ static inline void draw_tile(lcd_map_t *map, int tx, int ty) {
     }
 }
 
+static inline void redraw_index_on_map(lcd_map_t *map, int x, int y, u8 index) {
+    if(map->tiles[y*32 + x] == index) {
+       draw_tile(map, x, y);
+    }
+}
+
+static inline void redraw_index(u8 index) {
+    int x, y;
+
+    for(y = 0; y < 32; y++) {
+        for(x = 0; x < 32; x++) {
+            redraw_index_on_map(&lcd.maps[0], x, y, index);
+            redraw_index_on_map(&lcd.maps[1], x, y, index);
+        }
+    }
+}
+
 static inline void redraw_dirty(lcd_map_t *map, int tx, int ty) {
     int c;
     for(tx = 0; tx < 32; tx++) {
         int x = tx;
+
+        bank = map->attr[ty*32 + tx] & 0x08 ? 1 : 0;
+        tile_index = map->tiles[ty*32+x];
 
         if(map->tile_dirty[ty][x]) {
             draw_tile(map, x, ty);
             map->tile_dirty[ty][x] = 0;
         }
 
-        u8 bank = map->attr[ty * 32 + tx] & 0x08 ? 1 : 0;
-
-        if(lcd.index_dirty[bank][map->tiles[ty*32+x]]) {
-            draw_tile(map, x, ty);
-          //  lcd.index_dirty[bank][map->tiles[ty*32+x]] = 0;
+        if(lcd.index_dirty[bank][tile_index]) {
+            redraw_index(tile_index);
+            lcd.index_dirty[bank][tile_index] = 0;
         }
     }
 }
