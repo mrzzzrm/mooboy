@@ -7,7 +7,7 @@
 #include "moo.h"
 #include "lcd.h"
 
-static u8 priority, palette, bank, tile_index;
+static u8 priority, palette, tile_index;
 static u8 *linedata;
 
 static inline u8 render(u8 rshift) {
@@ -40,6 +40,7 @@ static inline void draw_tile_line(scan_pixel_t *scan) {
 
 static inline void draw_tile(lcd_map_t *map, int tx, int ty) {
     u8 index_offset = lcd.c & 0x10 ? 0x00 : 0x80;
+    u8 tile_index = map->tiles[ty * 32 + tx];
     u8 attr = map->attr[ty * 32 + tx];
 
     priority = attr & 0x80;
@@ -86,8 +87,8 @@ static inline void redraw_dirty(lcd_map_t *map, int tx, int ty) {
     for(c = 0; c < 21; c++) {
         int x = (tx+c)%32;
 
-        bank = map->attr[ty*32 + x] & 0x08 ? 1 : 0;
-        tile_index = map->tiles[ty*32+x];
+        u8 bank = map->attr[ty*32 + x] & 0x08 ? 1 : 0;
+        tile_index = map->tiles[ty*32 + x];
 
         if(map->tile_dirty[ty][x]) {
             draw_tile(map, x, ty);
@@ -139,17 +140,17 @@ void lcd_scan_maps(scan_pixel_t *scan) {
 
 void maps_tiledata_dirty(int absolute_index) {
     u8 tile;
-    if(lcd.c & 0x10) {
+    if(lcd.c & 0x10) {printf("a\n");
         if(absolute_index > 255) {
             return;
         }
         tile = absolute_index;
     }
-    else {
-        if(absolute_index < 128) {
+    else {printf("b\n");
+        if(absolute_index <= 128) {
             return;
         }
-        tile = absolute_index - 255;
+        tile = absolute_index - 256;
     }
     lcd.index_dirty[ram.selected_vrambank][tile] = 1;
 }
@@ -174,14 +175,14 @@ static void palette_dirty(int palette, lcd_map_t *map) {
 
     for(y = 0; y < 32; y++) {
         for(x = 0; x < 32; x++) {
-            if((map->attr[y*32+x] & 0x07) == palette) {
+            if((map->attr[y*32+x] & 0x07) == palette) {printf("  %i %i\n", x, y);
                 map->tile_dirty[y][x] = 1;
             }
         }
     }
 }
 
-void maps_palette_dirty(int palette) {
+void maps_palette_dirty(int palette) { printf("Palette %i\n", palette);
     palette_dirty(palette, &lcd.maps[0]);
     palette_dirty(palette, &lcd.maps[1]);
 }

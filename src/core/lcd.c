@@ -180,7 +180,7 @@ static void mode_2(int mcs) {
     hw_schedule(&lcd.mode_event[3], DUR_MODE_2 * cpu.freq_factor - mcs);
 }
 
-static void mode_3(int mcs) {
+static void mode_3(int mcs) {http://start.ubuntu.com/13.04/Google/?sourceid=hp
     STAT_SET_MODE(3);
     hw_schedule(&lcd.mode_event[0], DUR_MODE_3 * cpu.freq_factor - mcs);
 }
