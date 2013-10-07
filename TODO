@@ -5,6 +5,7 @@
     - Magic-Number replacement, especially for bitchecks
     - Take care of byte-order and datatype size, especially for savestates
     - Pixel-Depth independant rendering
+    - .sav: check sanity of (v)ram bank indices
     
 [Game Bugs]
     - MrDriller: Blocks not shown

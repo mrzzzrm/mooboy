@@ -39,22 +39,31 @@ static u8 obj_size_mode;
 static u8 priority;
 static u8 palette;
 
-static inline u8 render_pixel(u8 *line, u8 rshift, u8 pixel) {
+static inline scan_pixel_t render_pixel(u8 *line, u8 rshift, scan_pixel_t old_pixel) {
+    scan_pixel_t pixel;
     u8 lsb = (line[0] >> rshift) & 0x01;
     u8 msb = (line[1] >> rshift) & 0x01;
-    u8 render = lsb + (msb << 1);
+    u8 color_id = lsb + (msb << 1);
 
-    return render != 0 ? (render | priority | palette) : pixel;
+    if(color_id == 0) {
+        return old_pixel;
+    }
+    else {
+        pixel.color_id = color_id;
+        pixel.priority = priority;
+        pixel.color = lcd.obp_map[palette][pixel.color_id];
+        return pixel;
+    }
 }
 
-static inline void render_obj_line(u8 *line, u8 tx, u8 sx, u8 *scan) {
+static inline void render_obj_line(u8 *line, u8 tx, u8 sx, scan_pixel_t *scan) {
     s8 rshift;
     for(rshift = 7 - tx; rshift >= 0 && sx < LCD_WIDTH; rshift--, sx++) {
         scan[sx] = render_pixel(line, rshift, scan[sx]);
     }
 }
 
-static inline void render_obj_line_flipped(u8 *line, u8 tx, u8 sx, u8 *scan) {
+static inline void render_obj_line_flipped(u8 *line, u8 tx, u8 sx, scan_pixel_t *scan) {
     u8 rshift;
     for(rshift = tx; rshift < 8 && sx < LCD_WIDTH; rshift++, sx++) {
         scan[sx] = render_pixel(line, rshift, scan[sx]);
@@ -101,7 +110,7 @@ static unsigned int establish_render_priority(u8 **objs, unsigned int count) {
 }
 
 
-static inline void render_obj(u8 *obj, u8 *scan) {
+static inline void render_obj(u8 *obj, scan_pixel_t *scan) {
     u8 *line_data;
     u8 obj_line, tile_index;
     s16 sx;
@@ -128,8 +137,8 @@ static inline void render_obj(u8 *obj, u8 *scan) {
         tx = 0;
     }
 
-    priority = PRIORITY(obj) ? OBJ_PRIORITY_BIT : 0x00;
-    palette = moo.mode == CGB_MODE ? CGB_PALETTE(obj) : DMG_PALETTE(obj);
+    priority = obj[FLAGS_OFFSET] & 0x80;
+    palette = moo.mode == CGB_MODE ? obj[FLAGS_OFFSET] & 0x07 : (obj[FLAGS_OFFSET] >> 4) & 0x01;
 
     if(XFLIP(obj)) {
         render_obj_line_flipped(line_data, tx, sx, scan);
@@ -140,7 +149,7 @@ static inline void render_obj(u8 *obj, u8 *scan) {
 }
 
 
-void lcd_scan_obj(u8 *scan) {
+void lcd_scan_obj(scan_pixel_t *scan) {
     int o;
     unsigned int obj_count;
     u8 *obj_indexes[OAM_OBJ_COUNT];

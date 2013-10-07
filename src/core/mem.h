@@ -10,9 +10,9 @@ typedef struct {
     u8 oam[0xA0];
 
     u8 *rambank;
-    u8 *vrambank;
 
     u8 rambank_index;
+    u8 selected_vrambank;
 } ram_t;
 
 typedef struct {

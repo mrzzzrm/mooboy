@@ -31,11 +31,11 @@ void mem_reset() {
     memset(ram.oam, 0x00, sizeof(ram.oam));
 
     ram.rambank = ram.rambanks[1];
-    ram.vrambank = ram.vrambanks[0];
 
     mbc.ram_selected = 1;
 
     ram.rambank_index = 1;
+    ram.selected_vrambank = 0;
 }
 
 u8 mem_read_byte(u16 adr) {
@@ -50,7 +50,7 @@ u8 mem_read_byte(u16 adr) {
             if((lcd.stat & 0x03) == 0x03 && (lcd.c & 0x80))
                 return read_locked_mem(adr);
             else
-                return ram.vrambank[adr - 0x8000];
+                return ram.vrambanks[ram.selected_vrambank][adr - 0x8000];
         break;
         case 0xA: case 0xB:
             return mbc_upper_read(adr);
@@ -104,10 +104,12 @@ void mem_write_byte(u16 adr, u8 val) {
             mbc_lower_write(adr, val);
         return;
         case 0x8: case 0x9:
-            if((lcd.stat & 0x03) != 0x03 || !(lcd.c & 0x80))
-                ram.vrambank[adr - 0x8000] = val;
-            else
+            if((lcd.stat & 0x03) != 0x03 || !(lcd.c & 0x80)) {
+                lcd_vram_write(adr, val);
+            }
+            else {
                 write_locked_mem(adr, val);
+            }
         return;
         case 0xA: case 0xB:
             mbc_upper_write(adr, val);

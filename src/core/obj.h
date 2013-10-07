@@ -2,6 +2,7 @@
 #define CORE_OBJ_H
 
 #include "defines.h"
+#include "lcd.h"
 
 #define OBJ_PALETTE_MASK 0x07
 #define OBJ_PALETTE_SHIFT 2
@@ -12,6 +13,6 @@
 #define OBJ_PALETTE(o) (((o) >> OBJ_PALETTE_SHIFT) & OBJ_PALETTE_MASK)
 #define OBJ_PRIORITY(o) ((o) & OBJ_PRIORITY_BIT)
 
-void lcd_scan_obj(u8 *scan);
+void lcd_scan_obj(scan_pixel_t *scan);
 
 #endif
