@@ -44,6 +44,7 @@ static inline void draw_tile(lcd_map_t *map, int tx, int ty) {
 
     priority = attr & 0x80;
     palette = attr & 0x07;
+    u8 bank = attr & 0x08 ? 1 : 0;
     u8 *tdt = &ram.vrambanks[bank][lcd.c & 0x10 ? 0x0000 : 0x0800];
 
     u8 cx = tx*8;
@@ -81,10 +82,11 @@ static inline void redraw_index(u8 index) {
 }
 
 static inline void redraw_dirty(lcd_map_t *map, int tx, int ty) {
-    for(tx = 0; tx < 32; tx++) {
-        int x = tx;
+    int c;
+    for(c = 0; c < 21; c++) {
+        int x = (tx+c)%32;
 
-        bank = map->attr[ty*32 + tx] & 0x08 ? 1 : 0;
+        bank = map->attr[ty*32 + x] & 0x08 ? 1 : 0;
         tile_index = map->tiles[ty*32+x];
 
         if(map->tile_dirty[ty][x]) {
@@ -135,19 +137,19 @@ void lcd_scan_maps(scan_pixel_t *scan) {
     }
 }
 
-void maps_tiledata_dirty(int tileindex) {
+void maps_tiledata_dirty(int absolute_index) {
     u8 tile;
     if(lcd.c & 0x10) {
-        if(tileindex > 255) {
+        if(absolute_index > 255) {
             return;
         }
-        tile = tileindex;
+        tile = absolute_index;
     }
     else {
-        if(tileindex <= 128) {
+        if(absolute_index < 128) {
             return;
         }
-        tile = tileindex - 256;
+        tile = absolute_index - 255;
     }
     lcd.index_dirty[ram.selected_vrambank][tile] = 1;
 }
