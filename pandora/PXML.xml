@@ -1,0 +1,42 @@
+<PXML xmlns="http://openpandora.org/namespaces/PXML">
+    <application id="mooboy.mrz" appdata="mooboy.mrz">
+        <exec command="./mooboy"/>
+        <author name="mrz"/>
+        <version major="0" minor="1" release="1" build="1" type="beta"/>
+        <titles>
+            <title lang="en_US">mooBoy</title>
+        </titles>
+        <descriptions>
+            <description lang="en_US">
+              A GameBoy Color Emulator still in development, thus marked 'beta'.
+              While a few games have (minor) sound/gfx issues, most of them run great.
+              
+              Features an auto-continue option, that lets you continue where you left a game without having to save manually. 
+              Also the battery-clock is emulated even when the emulator is not running, so that games such as Pokemon can be played as they are supposed to be.
+            </description>
+        </descriptions>
+        <description lang="en_US">
+              A GameBoy Color Emulator still in development, thus marked 'beta'.
+              While a few games have (minor) sound/gfx issues, most of them run great.
+              
+              Features an auto-continue option, that lets you continue where you left a game without having to save manually. 
+              Also the battery-clock is emulated even when the emulator is not running, so that games such as Pokemon can be played as they are supposed to be.
+        </description>
+        <icon src="icon.png"/>
+        <licenses>
+            <license name="GPLv2" url="http://www.gnu.org/licenses/gpl-2.0.html" sourcecodeurl="http://www.github.com/mrzzzrm/mooboy/"/>
+        </licenses>
+        <previewpics>
+          <pic src="preview/01.png"/>
+          <pic src="preview/02.png"/>
+          <pic src="preview/03.png"/>
+          <pic src="preview/04.png"/>
+          <pic src="preview/05.png"/>
+        </previewpics>
+        <categories>
+            <category name="Game">
+                <subcategory name="Emulator"/>
+            </category>
+        </categories>
+    </application>
+</PXML>

@@ -81,7 +81,6 @@ static inline void redraw_index(u8 index) {
 }
 
 static inline void redraw_dirty(lcd_map_t *map, int tx, int ty) {
-    int c;
     for(tx = 0; tx < 32; tx++) {
         int x = tx;
 
