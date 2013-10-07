@@ -163,7 +163,6 @@ static void save_lcd_maps() {
 static void load_lcd_maps() {
     int p;
 
-    lcd_c_dirty();
     lcd_obp0_dirty();
     lcd_obp1_dirty();
     lcd_bgp_dirty();
@@ -270,7 +269,7 @@ static void save_mem() {
     SV(ram.hram);
     SV(ram.oam);
     S(BYTE(((u8(*)[0x1000])ram.rambank - ram.rambanks)));
-    S(BYTE(((u8(*)[0x2000])ram.vrambank - ram.vrambanks)));
+    S(BYTE(ram.selected_vrambank));
     S(ram.rambank_index);
     set_checkpoint();
 }
@@ -299,7 +298,7 @@ static void load_mem() {
     RV(ram.hram);
     RV(ram.oam);
     R(byte); ram.rambank = ram.rambanks[byte];
-    R(byte); ram.vrambank = ram.vrambanks[byte];
+    R(byte); ram.selected_vrambank = byte;
     R(ram.rambank_index);
     assert_checkpoint();
 }
@@ -447,11 +446,11 @@ static void load_timers() {
 }
 
 static u8 hw_event_to_id(hw_event_t *event) {
-    if(event == &lcd_mode_event[0]) return LCD_MODE_0_EVENT_ID;
-    if(event == &lcd_mode_event[1]) return LCD_MODE_1_EVENT_ID;
-    if(event == &lcd_mode_event[2]) return LCD_MODE_2_EVENT_ID;
-    if(event == &lcd_mode_event[3]) return LCD_MODE_3_EVENT_ID;
-    if(event == &lcd_vblank_line_event) return LCD_VBLANK_LINE_EVENT_ID;
+    if(event == &lcd.mode_event[0]) return LCD_MODE_0_EVENT_ID;
+    if(event == &lcd.mode_event[1]) return LCD_MODE_1_EVENT_ID;
+    if(event == &lcd.mode_event[2]) return LCD_MODE_2_EVENT_ID;
+    if(event == &lcd.mode_event[3]) return LCD_MODE_3_EVENT_ID;
+    if(event == &lcd.vblank_line_event) return LCD_VBLANK_LINE_EVENT_ID;
     if(event == &sound_mix_event) return SOUND_MIX_EVENT_ID;
     if(event == &sound_sweep_event) return SOUND_SWEEP_EVENT_ID;
     if(event == &sound_envelopes_event) return SOUND_ENVELOPES_EVENT_ID;
@@ -480,11 +479,11 @@ static void save_hw() {
 }
 
 static hw_event_t *hw_id_to_event(u8 id) {
-    if(id == LCD_MODE_0_EVENT_ID) return &lcd_mode_event[0];
-    if(id == LCD_MODE_1_EVENT_ID) return &lcd_mode_event[1];
-    if(id == LCD_MODE_2_EVENT_ID) return &lcd_mode_event[2];
-    if(id == LCD_MODE_3_EVENT_ID) return &lcd_mode_event[3];
-    if(id == LCD_VBLANK_LINE_EVENT_ID) return &lcd_vblank_line_event;
+    if(id == LCD_MODE_0_EVENT_ID) return &lcd.mode_event[0];
+    if(id == LCD_MODE_1_EVENT_ID) return &lcd.mode_event[1];
+    if(id == LCD_MODE_2_EVENT_ID) return &lcd.mode_event[2];
+    if(id == LCD_MODE_3_EVENT_ID) return &lcd.mode_event[3];
+    if(id == LCD_VBLANK_LINE_EVENT_ID) return &lcd.vblank_line_event;
     if(id == SOUND_MIX_EVENT_ID) return &sound_mix_event;
     if(id == SOUND_SWEEP_EVENT_ID) return &sound_sweep_event;
     if(id == SOUND_ENVELOPES_EVENT_ID) return &sound_envelopes_event;

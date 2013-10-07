@@ -56,7 +56,7 @@ u8 io_read(u16 adr) {
 
         case 0x4D: return cpu.freq_switch | (cpu.freq == DOUBLE_CPU_FREQ ? 0x80 : 0x00); break;
 
-        case 0x4F: return ram.vrambank == ram.vrambanks[0] ? 0 : 1; break;
+        case 0x4F: return ram.selected_vrambank; break;
 
         case 0x51: return lcd.hdma_source >> 8; break;
         case 0x52: return lcd.hdma_source & 0xFF; break;
@@ -111,19 +111,7 @@ void io_write(u16 adr, u8 val) {
 
         case 0x15: case 0x1F: break;
 
-        case 0x40:
-            if(!(lcd.c & val & 0x80)) {
-                if(val & 0x80) {
-                    lcd_enable();
-                }
-                else if(lcd.c & 0x80) {
-                    lcd_disable();
-                }
-            }
-
-            lcd.c = val;
-            lcd_c_dirty();
-        break;
+        case 0x40: lcd_c_write(val); break;
         case 0x41: lcd.stat = (lcd.stat & 0x87) | (val & 0x78); break;
         case 0x42: lcd.scy = val; break;
         case 0x43: lcd.scx = val; break;
@@ -147,7 +135,7 @@ void io_write(u16 adr, u8 val) {
 
         case 0x4D: cpu.freq_switch = val & 0x01;  break;
 
-        case 0x4F: ram.vrambank = ram.vrambanks[val & 0x01]; break;
+        case 0x4F: ram.selected_vrambank = val & 0x01; break;
 
         case 0x51: lcd.hdma_source = (lcd.hdma_source & 0x00FF) | (val << 8); break;
         case 0x52: lcd.hdma_source = (lcd.hdma_source & 0xFF00) | (val & 0xF0); break;

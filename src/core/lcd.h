@@ -19,6 +19,21 @@
 #define LCD_WIDTH 160
 #define LCD_HEIGHT 144
 
+
+typedef struct {
+    u16 color;
+    u8 color_id;
+    u8 priority;
+} scan_pixel_t;
+
+typedef struct {
+    scan_pixel_t scan_cache[256][256];
+    int tile_dirty[32][32];
+    int index_dirty[256];
+    u8 *tiles;
+    u8 *attr;
+} lcd_map_t;
+
 typedef struct {
     u8 c;
     u8 stat;
@@ -38,25 +53,18 @@ typedef struct {
     u16 hdma_source, hdma_dest;
     u8 hdma_length, hdma_inactive;
 
-    u8 *bg_map, *bg_attr_map;
-    u8 *wnd_map, *wnd_attr_map;
+    lcd_map_t maps[2];
+    int index_dirty[2][256];
 
-    u8 bgp_map[4];
-    u8 obp_map[2][4];
+    u16 bgp_map[8][4];
+    u16 obp_map[8][4];
 
-    u8 non_cgb_bgp;
-    u8 non_cgb_obp[2];
-
-    u16 bgpd_map[8][4];
-    u16 obpd_map[8][4];
-
-    u32 cc;
+    hw_event_t mode_event[4];
+    hw_event_t vblank_line_event;
 } lcd_t;
 
-extern lcd_t lcd;
 
-extern hw_event_t lcd_mode_event[4];
-extern hw_event_t lcd_vblank_line_event;
+extern lcd_t lcd;
 
 
 void lcd_reset();
@@ -71,7 +79,10 @@ void lcd_disable();
 void lcd_set_lyc(u8 lyc);
 void lcd_reset_ly();
 
-void lcd_c_dirty();
+void lcd_c_write(u8 val);
+void lcd_vram_write(u16 adr, u8 val);
+
+void lcd_update_map_pointers(u8 c);
 void lcd_obp0_dirty();
 void lcd_obp1_dirty();
 void lcd_bgp_dirty();
