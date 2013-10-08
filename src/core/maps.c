@@ -65,39 +65,64 @@ static inline void draw_tile(lcd_map_t *map, int tx, int ty) {
     }
 }
 
-static inline void redraw_index_on_map(lcd_map_t *map, int x, int y, u8 index) {
+static inline void mark_index_refs_dirty_on_map(lcd_map_t *map, int x, int y, u8 index) {
     if(map->tiles[y*32 + x] == index) {
-       draw_tile(map, x, y);
+       map->tile_dirty[y][x] = 1;
     }
 }
 
-static inline void redraw_index(u8 index) {
+static inline void mark_index_refs_dirty(u8 index) {
     int x, y;
 
     for(y = 0; y < 32; y++) {
         for(x = 0; x < 32; x++) {
-            redraw_index_on_map(&lcd.maps[0], x, y, index);
-            redraw_index_on_map(&lcd.maps[1], x, y, index);
+            mark_index_refs_dirty_on_map(&lcd.maps[0], x, y, index);
+            mark_index_refs_dirty_on_map(&lcd.maps[1], x, y, index);
+        }
+    }
+}
+
+static inline void mark_palette_refs_dirty_on_map(lcd_map_t *map, int x, int y, int palette) {
+    if((map->attr[y*32 + x] & 0x07) == palette) {
+       map->tile_dirty[y][x] = 1;
+    }
+}
+
+static inline void mark_palette_refs_dirty(int palette) {
+    int x, y;
+
+    for(y = 0; y < 32; y++) {
+        for(x = 0; x < 32; x++) {
+            mark_palette_refs_dirty_on_map(&lcd.maps[0], x, y, palette);
+            mark_palette_refs_dirty_on_map(&lcd.maps[1], x, y, palette);
         }
     }
 }
 
 static inline void redraw_dirty(lcd_map_t *map, int tx, int ty) {
     int c;
+
     for(c = 0; c < 21; c++) {
         int x = (tx+c)%32;
 
-        u8 bank = map->attr[ty*32 + x] & 0x08 ? 1 : 0;
+        u8 attr = map->attr[ty * 32 + x];
+        u8 bank = attr & 0x08 ? 1 : 0;
+        u8 palette = attr & 0x07;
         tile_index = map->tiles[ty*32 + x];
+
+        if(lcd.index_dirty[bank][tile_index]) {
+            mark_index_refs_dirty(tile_index);
+            lcd.index_dirty[bank][tile_index] = 0;
+        }
+
+        if(lcd.bgp_dirty[palette]) {
+            mark_palette_refs_dirty(palette);
+            lcd.bgp_dirty[palette] = 0;
+        }
 
         if(map->tile_dirty[ty][x]) {
             draw_tile(map, x, ty);
             map->tile_dirty[ty][x] = 0;
-        }
-
-        if(lcd.index_dirty[bank][tile_index]) {
-            redraw_index(tile_index);
-            lcd.index_dirty[bank][tile_index] = 0;
         }
     }
 }
@@ -140,13 +165,13 @@ void lcd_scan_maps(scan_pixel_t *scan) {
 
 void maps_tiledata_dirty(int absolute_index) {
     u8 tile;
-    if(lcd.c & 0x10) {printf("a\n");
+    if(lcd.c & 0x10) {
         if(absolute_index > 255) {
             return;
         }
         tile = absolute_index;
     }
-    else {printf("b\n");
+    else {
         if(absolute_index <= 128) {
             return;
         }
@@ -170,20 +195,21 @@ void maps_dirty() {
     }
 }
 
-static void palette_dirty(int palette, lcd_map_t *map) {
-    int x, y;
+//static void palette_dirty(int palette, lcd_map_t *map) {
+//    int x, y;
+//
+//    for(y = 0; y < 32; y++) {
+//        for(x = 0; x < 32; x++) {
+//            if((map->attr[y*32+x] & 0x07) == palette) {
+//                map->tile_dirty[y][x] = 1;
+//            }
+//        }
+//    }
+//}
 
-    for(y = 0; y < 32; y++) {
-        for(x = 0; x < 32; x++) {
-            if((map->attr[y*32+x] & 0x07) == palette) {printf("  %i %i\n", x, y);
-                map->tile_dirty[y][x] = 1;
-            }
-        }
-    }
-}
-
-void maps_palette_dirty(int palette) { printf("Palette %i\n", palette);
-    palette_dirty(palette, &lcd.maps[0]);
-    palette_dirty(palette, &lcd.maps[1]);
+void maps_palette_dirty(int palette) {
+    lcd.bgp_dirty[palette] = 1;
+//    palette_dirty(palette, &lcd.maps[0]);
+//    palette_dirty(palette, &lcd.maps[1]);
 }
 

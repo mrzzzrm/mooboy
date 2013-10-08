@@ -41,24 +41,30 @@ typedef struct {
     u8 ly;
     u8 lyc;
     u8 wx, wy;
+
+    // Palettes
     u8 bgp, obp[2];
     u8 bgpd[0x40], obpd[0x40];
     u8 bgps, bgpi;
     u8 obps, obpi;
+    u16 bgp_map[8][4];
+    u16 obp_map[8][4];
 
+    // Framebuffer
     u16 fb[2][144*160];
     u16 *clean_fb;
     u16 *working_fb;
 
+    // DMA
     u16 hdma_source, hdma_dest;
     u8 hdma_length, hdma_inactive;
 
+    // Caching
     lcd_map_t maps[2];
     int index_dirty[2][256];
+    int bgp_dirty[8];
 
-    u16 bgp_map[8][4];
-    u16 obp_map[8][4];
-
+    // HW events
     hw_event_t mode_event[4];
     hw_event_t vblank_line_event;
 } lcd_t;
