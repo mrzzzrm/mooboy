@@ -54,7 +54,7 @@ void sys_init(int argc, const char** argv) {
         moo_fatalf("Setting of SDL video-mode failed");
     }
 #else
-    if(SDL_SetVideoMode(800, 480, sys.bits_per_pixel, 0) == NULL) {
+    if(SDL_SetVideoMode(1600, 480, sys.bits_per_pixel, 0) == NULL) {
         moo_fatalf("Setting of SDL video-mode failed");
     }
 #endif
@@ -211,7 +211,7 @@ void sys_set_scalingmode(int mode) {
         case SCALING_STRECHED: area = streched_scaling_area(); break;
         default: moo_errorf("No valid scalingmode selected"); return;
     }
-
+    area.x = 0;
     video_set_area(area);
 }
 

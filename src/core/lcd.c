@@ -251,6 +251,7 @@ void lcd_gdma() {
     int d;
     u16 length, source, dest, end;
 
+
     for(d = 0; d <= lcd.hdma_length; d++) {
         hw_step(8);
     }
@@ -272,7 +273,7 @@ void lcd_enable() {
     lcd.stat = (lcd.stat & 0xF8) | 0x04;
     unschedule();
     lcd.ly = -1;
-    mode_2(1);
+    mode_2(7);
 }
 
 void lcd_disable() {
@@ -283,10 +284,18 @@ void lcd_disable() {
 
 void lcd_set_lyc(u8 lyc) {
     lcd.lyc = lyc;
+    if(lcd.ly == lcd.lyc) {
+        lcd.stat |= 0x04;
+        stat_irq(SIF_LYC);
+    }
 }
 
 void lcd_reset_ly() {
     lcd.ly = 0x00;
+    if(lcd.ly == lcd.lyc) {
+        lcd.stat |= 0x04;
+        stat_irq(SIF_LYC);
+    }
 }
 
 void lcd_c_write(u8 val) {

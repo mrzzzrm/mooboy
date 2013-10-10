@@ -195,21 +195,7 @@ void maps_dirty() {
     }
 }
 
-//static void palette_dirty(int palette, lcd_map_t *map) {
-//    int x, y;
-//
-//    for(y = 0; y < 32; y++) {
-//        for(x = 0; x < 32; x++) {
-//            if((map->attr[y*32+x] & 0x07) == palette) {
-//                map->tile_dirty[y][x] = 1;
-//            }
-//        }
-//    }
-//}
-
 void maps_palette_dirty(int palette) {
     lcd.bgp_dirty[palette] = 1;
-//    palette_dirty(palette, &lcd.maps[0]);
-//    palette_dirty(palette, &lcd.maps[1]);
 }
 

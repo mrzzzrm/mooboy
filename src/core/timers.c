@@ -70,9 +70,11 @@ void timers_tac(u8 tac) {
 
     if((timers.tac & 0x03) != (tac & 0x03)) {
         hw_unschedule(&timers_tima_event);
-        hw_schedule(&timers_tima_event, MCS_PER_TIMA[tac & 0x03]);
+        if(tac & 0x04) {
+            hw_schedule(&timers_tima_event, MCS_PER_TIMA[tac & 0x03]);
+        }
     }
 
-    timers.tac = tac;
+    timers.tac = tac&0x07;
 }
 
