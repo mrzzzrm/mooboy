@@ -16,6 +16,21 @@ static FILE *file;
 static pair_t **tuples = NULL;
 static int num_tuples;
 
+typedef struct {
+    char *name;
+    int *ptr;
+    int default_val;
+} config_value_t;
+
+static config_value_t values[] = {
+    {"sound_on", &sys.sound_on, 1},
+    {"scalingmode", &sys.scalingmode, 0},
+    {"show_statusbar", &sys.show_statusbar, 0},
+    {"auto_continue", &sys.auto_continue, SYS_AUTO_CONTINUE_ASK},
+    {"auto_rtc", &sys.auto_rtc, 1},
+    {"warned_rtc_sav_conflict", &sys.warned_rtc_sav_conflict, 0}
+};
+
 static void trim(char *str) {
     char *c;
     for(c = str; isalnum(*c); c++) {}
@@ -104,56 +119,49 @@ static void config_save(const char *path) {
         return;
     }
 
-    save_int("sound_on", sys.sound_on);
-    save_int("scalingmode", sys.scalingmode);
-    save_int("show_statusbar", sys.show_statusbar);
-    save_int("auto_continue", sys.auto_continue);
-    save_int("auto_rtc", sys.auto_rtc);
-    save_int("warned_rtc_sav_conflict", sys.warned_rtc_sav_conflict);
+    int v;
+    for(v = 0; v < sizeof(values)/sizeof(*values); v++) {
+        save_int(values[v].name, *values[v].ptr);
+    }
 
     fclose(file);
 }
 
 static int config_load(const char *path) {
+    printf("Loading config from '%s'\n", path);
 
     file = fopen(path, "r");
     if(file == NULL) {
         return 0;
     }
 
-    printf("Loading config from '%s'\n", path);
-
     parse();
     fclose(file);
 
-    sys.sound_on = load_int("sound_on");
-
-    int scalingmode = load_int("scalingmode");
-    sys.show_statusbar = load_int("show_statusbar");
-    sys.auto_continue = load_int("auto_continue");
-    sys.auto_rtc = load_int("auto_rtc");
-    sys.warned_rtc_sav_conflict = load_int("warned_rtc_sav_conflict");
+    int old_scalingmode = sys.scalingmode;
+    int v;
+    for(v = 0; v < sizeof(values)/sizeof(*values); v++) {
+         *values[v].ptr = load_int(values[v].name);
+    }
 
     clear();
 
-
-    if(scalingmode < 0 || scalingmode >= sys.num_scalingmodes) {
-        moo_errorf("No such scalingmode %i, please delete config or insert a valid value", scalingmode);
+    if(sys.scalingmode < 0 || sys.scalingmode >= sys.num_scalingmodes) {
+        moo_errorf("No such scalingmode %i, please delete config or insert a valid value", sys.scalingmode);
         sys_set_scalingmode(0);
         return 0;
     }
-    sys_set_scalingmode(scalingmode);
+    sys_set_scalingmode(sys.scalingmode);
 
     return 1;
 }
 
 void config_default() {
-    sys.sound_on = 1;
+    int v;
+    for(v = 0; v < sizeof(values)/sizeof(*values); v++) {
+         *values[v].ptr = values[v].default_val;
+    }
     sys_set_scalingmode(sys.scalingmode);
-    sys.show_statusbar = 0;
-    sys.auto_continue = SYS_AUTO_CONTINUE_ASK;
-    sys.auto_rtc = 1;
-    sys.warned_rtc_sav_conflict = 0;
 }
 
 void config_save_local() {

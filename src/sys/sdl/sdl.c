@@ -54,7 +54,7 @@ void sys_init(int argc, const char** argv) {
         moo_fatalf("Setting of SDL video-mode failed");
     }
 #else
-    if(SDL_SetVideoMode(1600, 480, sys.bits_per_pixel, 0) == NULL) {
+    if(SDL_SetVideoMode(800, 480, sys.bits_per_pixel, 0) == NULL) {
         moo_fatalf("Setting of SDL video-mode failed");
     }
 #endif
@@ -203,15 +203,15 @@ void sys_new_performance_info() {
 void sys_set_scalingmode(int mode) {
     SDL_Rect area;
 
-    sys.scalingmode = mode;
-    switch(sys.scalingmode) {
+    switch(mode) {
         case SCALING_NONE: area = none_scaling_area(); break;
         case SCALING_PROPORTIONAL: area = proportional_scaling_area(); break;
         case SCALING_PROPORTIONAL_FULL: area = proportional_full_scaling_area(); break;
         case SCALING_STRECHED: area = streched_scaling_area(); break;
         default: moo_errorf("No valid scalingmode selected"); return;
     }
-    area.x = 0;
+    sys.scalingmode = mode;
+
     video_set_area(area);
 }
 
