@@ -6,6 +6,9 @@
     - Take care of byte-order and datatype size, especially for savestates
     - Pixel-Depth independant rendering
     - .sav: check sanity of (v)ram bank indices
+	- Support zipped ROMs
+	- Support VSync(Notaz SDL?)
+	
     
 [Game Bugs]
     - MrDriller: Blocks not shown
