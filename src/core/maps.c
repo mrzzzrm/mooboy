@@ -120,7 +120,7 @@ static inline void redraw_dirty(lcd_map_t *map, int tx, int ty) {
             lcd.bgp_dirty[palette] = 0;
         }
 
-        if(map->tile_dirty[ty][x]) {
+        if(1 || map->tile_dirty[ty][x]) {
             draw_tile(map, x, ty);
             map->tile_dirty[ty][x] = 0;
         }

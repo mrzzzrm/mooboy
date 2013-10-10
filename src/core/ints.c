@@ -6,7 +6,6 @@
 #include "defines.h"
 
 static inline void exec_int(u8 i) {
-    printf("%i; %i\n", cpu.dbg_mcs, i);
     cpu.irq &= ~(1 << i);
     cpu.ime = IME_OFF;
 
