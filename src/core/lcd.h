@@ -35,6 +35,13 @@ typedef struct {
 } lcd_map_t;
 
 typedef struct {
+    u8 s;
+    u8 i;
+    u8 d[0x40];
+    u16 map[8][4];
+} lcd_palettes_t;
+
+typedef struct {
     u8 c;
     u8 stat;
     u8 scx, scy;
@@ -43,12 +50,9 @@ typedef struct {
     u8 wx, wy;
 
     // Palettes
-    u8 bgp, obp[2];
-    u8 bgpd[0x40], obpd[0x40];
-    u8 bgps, bgpi;
-    u8 obps, obpi;
-    u16 bgp_map[8][4];
-    u16 obp_map[8][4];
+    u8 obp[2], bgp;
+    lcd_palettes_t cobp;
+    lcd_palettes_t cbgp;
 
     // Framebuffer
     u16 fb[2][144*160];
@@ -94,5 +98,8 @@ void lcd_obp1_dirty();
 void lcd_bgp_dirty();
 void lcd_bgpd_dirty(u8 bgps);
 void lcd_obpd_dirty(u8 obps);
+
+void lcd_palette_control(lcd_palettes_t *palettes, u8 val);
+int lcd_palette_data(lcd_palettes_t *palettes, u8 val);
 
 #endif

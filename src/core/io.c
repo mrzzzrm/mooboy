@@ -70,10 +70,10 @@ u8 io_read(u16 adr) {
 
         case 0x56: return 0x40; break;
 
-        case 0x68: return lcd.bgps | lcd.bgpi; break;
-        case 0x69: return lcd.bgpd[lcd.bgps]; break;
-        case 0x6A: return lcd.obps | lcd.obpi; break;
-        case 0x6B: return lcd.obpd[lcd.obps]; break;
+        case 0x68: return lcd.cbgp.s | lcd.cbgp.i; break;
+        case 0x69: return lcd.cbgp.d[lcd.cobp.s]; break;
+        case 0x6A: return lcd.cobp.s | lcd.cobp.i; break;
+        case 0x6B: return lcd.cobp.d[lcd.cobp.s]; break;
 
         case 0x70: return ram.rambank_index | 0xF8; break;
 
@@ -162,30 +162,10 @@ void io_write(u16 adr, u8 val) {
 
         case 0x56: break;
 
-        case 0x68:
-            lcd.bgps = val & 0x3F;
-            lcd.bgpi = val & 0x80;
-        break;
-        case 0x69:
-            lcd.bgpd[lcd.bgps] = lcd.bgps & 0x01 ? val&0x7F : val;
-            lcd_bgpd_dirty(lcd.bgps);
-            if(lcd.bgpi) {
-                lcd.bgps++;
-            }
-            lcd.bgps &= 0x3F;
-        break;
-        case 0x6A:
-            lcd.obps = val & 0x3F;
-            lcd.obpi = val & 0x80;
-        break;
-        case 0x6B:
-            lcd.obpd[lcd.obps] = lcd.obps & 0x01 ? val&0x7F : val;
-            lcd_obpd_dirty(lcd.obps);
-            if(lcd.obpi) {
-                lcd.obps++;
-            }
-            lcd.obps &= 0x3F;
-        break;
+        case 0x68: lcd_palette_control(&lcd.cbgp, val); break;
+        case 0x69: lcd_palette_data(&lcd.cbgp, val); break;
+        case 0x6A: lcd_palette_control(&lcd.cobp, val); break;
+        case 0x6B: lcd_palette_data(&lcd.cobp, val); break;
 
         case 0x70:
             ram.rambank_index = (val & 0x07) != 0 ? val & 0x07 : 0x01;

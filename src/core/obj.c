@@ -51,7 +51,7 @@ static inline scan_pixel_t render_pixel(u8 *line, u8 rshift, scan_pixel_t old_pi
     else {
         pixel.color_id = color_id;
         pixel.priority = priority;
-        pixel.color = lcd.obp_map[palette][pixel.color_id];
+        pixel.color = lcd.cobp.map[palette][pixel.color_id];
         return pixel;
     }
 }

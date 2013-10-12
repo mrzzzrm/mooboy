@@ -151,7 +151,6 @@ static void mode_0(int mcs) {
     if(lcd.c & LCDC_DISPLAY_ENABLE_BIT) {
         draw_line();
     }
-
     if(!lcd.hdma_inactive) {
         lcd_hdma();
     }
@@ -175,7 +174,8 @@ static void mode_1(int mcs) {
 static void mode_2(int mcs) {
     STAT_SET_MODE(2);
     next_line();
-           // printf("%i/%i/%.2X Mode 2\n", cpu.dbg_mcs, lcd.ly, lcd.stat);
+
+        // printf("%i/%i/%.2X Mode 2\n", cpu.dbg_mcs, lcd.ly, lcd.stat);
     stat_irq(SIF_OAM);
 
     hw_schedule(&lcd.mode_event[3], DUR_MODE_2 - mcs);
@@ -340,58 +340,79 @@ void lcd_vram_write(u16 adr, u8 val) {
 }
 
 void lcd_bgp_dirty() {
-    u8 rc;
-
-    if(moo.mode == NON_CGB_MODE) {
-        for(rc = 0; rc < 4; rc++) {
-            lcd.bgp_map[0][rc] = (lcd.bgp & (0x3 << (rc<<1))) >> (rc<<1);
-        }
-        maps_dirty();
-    }
+//    u8 rc;
+//
+//    if(moo.mode == NON_CGB_MODE) {
+//        for(rc = 0; rc < 4; rc++) {
+//            lcd.bgp_map[0][rc] = (lcd.bgp & (0x3 << (rc<<1))) >> (rc<<1);
+//        }
+//        maps_dirty();
+//    }
 }
 
 static void obp_dirty(u8 obp, u16 *obp_map) {
-    u8 rc;
-    if(moo.mode == NON_CGB_MODE) {
-        for(rc = 0; rc < 4; rc++) {
-            obp_map[rc] = (obp & (0x3 << (rc<<1))) >> (rc<<1);
-        }
-    }
+//    u8 rc;
+//    if(moo.mode == NON_CGB_MODE) {
+//        for(rc = 0; rc < 4; rc++) {
+//            obp_map[rc] = (obp & (0x3 << (rc<<1))) >> (rc<<1);
+//        }
+//    }
 }
 
 void lcd_obp0_dirty() {
-    obp_dirty(lcd.obp[0], lcd.obp_map[0]);
+//    obp_dirty(lcd.obp[0], lcd.obp_map[0]);
 }
 
 void lcd_obp1_dirty() {
-    obp_dirty(lcd.obp[1], lcd.obp_map[1]);
+//    obp_dirty(lcd.obp[1], lcd.obp_map[1]);
 }
 
-static int pd_dirty(u16 map[8][4], u8 d, u8 s) {
-    u16 palette, color_id, old_color, new_color;
+static int update_palettes_map(lcd_palettes_t *palettes) {
+    u16 palette, color_id, old_color, new_color, d;
 
-    palette = s/8;
-    color_id = (s/2)%4;
+    palette = palettes->s/8;
+    color_id = (palettes->s/2)%4;
+    d = palettes->d[palettes->s];
 
-    old_color = map[palette][color_id];
-    new_color = s % 2 == 0 ? (map[palette][color_id] & 0xFF00) | d : (map[palette][color_id] & 0x00FF) | (d << 8);
-    map[palette][color_id] =  new_color;
+    old_color = palettes->map[palette][color_id];
+    new_color = palettes->s & 1 ? (palettes->map[palette][color_id] & 0x00FF) | (d << 8) : (palettes->map[palette][color_id] & 0xFF00);
+    palettes->map[palette][color_id] =  new_color;
 
     return old_color != new_color;
 }
 
-void lcd_bgpd_dirty(u8 bgps) {
-    if(moo.mode == CGB_MODE) {
-        if(pd_dirty(lcd.bgp_map, lcd.bgpd[bgps], bgps)) {
-         //   printf("%i/%i/%.2X Palette %i Color %i => %.2X\n", cpu.dbg_mcs, lcd.ly, lcd.stat, bgps/8, (bgps/2)%4, lcd.bgpd[bgps]);
-            maps_palette_dirty(bgps/8);
-        }
-    }
+//void lcd_bgpd_dirty(u8 bgps) {
+//    if(moo.mode == CGB_MODE) {
+//        if(pd_dirty(lcd.bgp_map, lcd.bgpd[bgps], bgps)) {
+//            maps_palette_dirty(bgps/8);
+//        }
+//    }
+//}
+//
+//void lcd_obpd_dirty(u8 obps) {
+//    if(moo.mode == CGB_MODE) {
+//        pd_dirty(lcd.obp_map, lcd.obpd[obps], obps);
+//    }
+//}
+
+void lcd_palette_control(lcd_palettes_t *palettes, u8 val) {
+    palettes->s = val & 0x3F;
+    palettes->i = val & 0x80;
 }
 
-void lcd_obpd_dirty(u8 obps) {
-    if(moo.mode == CGB_MODE) {
-        pd_dirty(lcd.obp_map, lcd.obpd[obps], obps);
-    }
-}
+int lcd_palette_data(lcd_palettes_t *palettes, u8 val) {
+    palettes->d[palettes->s] = palettes->s & 0x01 ? val&0x7F : val;
 
+    int dirty = update_palettes_map(palettes);
+
+    if(dirty && palettes == &lcd.cbgp) {
+        maps_palette_dirty(lcd.cbgp.s/8);
+    }
+
+    if(moo.mode == CGB_MODE && palettes->i) {
+        palettes->s++;
+        palettes->s &= 0x3F;
+    }
+
+    return dirty;
+}
