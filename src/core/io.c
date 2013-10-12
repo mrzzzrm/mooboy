@@ -12,9 +12,9 @@
 #include "serial.h"
 
 u8 io_read(u16 adr) {
-    u8 r = adr &  0x00FF;
+    u8 reg = adr & 0x00FF;
 
-    switch(r) {
+    switch(reg) {
         case 0x00: return joy_read(); break;
 
         case 0x01: /* return serial.sb;*/ break;
@@ -36,16 +36,20 @@ u8 io_read(u16 adr) {
         case 0x37: case 0x38: case 0x39: case 0x3A:
         case 0x3B: case 0x3C: case 0x3D: case 0x3E:
         case 0x3F:
-            return sound_read(r);
+            return sound_read(reg);
         break;
 
         case 0x15: case 0x1F: return 0x00; break;
 
         case 0x40: return lcd.c; break;
-        case 0x41: return lcd.stat; break;
+        case 0x41: //printf("%i/%i/%.2X Stat read\n", cpu.dbg_mcs, lcd.ly, lcd.stat);
+        return lcd.stat;
+            break;
         case 0x42: return lcd.scy; break;
         case 0x43: return lcd.scx; break;
-        case 0x44: return lcd.ly;break;
+        case 0x44://printf("%i/%i/%.2X LYC read\n", cpu.dbg_mcs, lcd.ly, lcd.stat);
+        return lcd.ly;
+            break;
         case 0x45: return lcd.lyc; break;
         case 0x46: return 0x00; break;
         case 0x47: return lcd.bgp; break;
@@ -75,7 +79,7 @@ u8 io_read(u16 adr) {
 
         default:;
 #ifdef DEBUG
-            printf("Unknown IO read: %.2X\n", r);
+            printf("Unknown IO read: %.2X\n", reg);
 #endif
     }
 
@@ -83,8 +87,9 @@ u8 io_read(u16 adr) {
 }
 
 void io_write(u16 adr, u8 val) {
-    u8 r = adr & 0x00FF;
-    switch(r) {
+    u8 reg = adr & 0x00FF;
+
+    switch(reg) {
         case 0x00: joy_select_col(val); break;
 
         case 0x01: /*serial.sb = val;*/  break;
@@ -106,7 +111,7 @@ void io_write(u16 adr, u8 val) {
         case 0x37: case 0x38: case 0x39: case 0x3A:
         case 0x3B: case 0x3C: case 0x3D: case 0x3E:
         case 0x3F:
-            sound_write(r, val);
+            sound_write(reg, val);
         break;
 
         case 0x15: case 0x1F: break;
@@ -162,7 +167,7 @@ void io_write(u16 adr, u8 val) {
             lcd.bgpi = val & 0x80;
         break;
         case 0x69:
-            lcd.bgpd[lcd.bgps] = val;
+            lcd.bgpd[lcd.bgps] = lcd.bgps & 0x01 ? val&0x7F : val;
             lcd_bgpd_dirty(lcd.bgps);
             if(lcd.bgpi) {
                 lcd.bgps++;
@@ -174,7 +179,7 @@ void io_write(u16 adr, u8 val) {
             lcd.obpi = val & 0x80;
         break;
         case 0x6B:
-            lcd.obpd[lcd.obps] = val;
+            lcd.obpd[lcd.obps] = lcd.obps & 0x01 ? val&0x7F : val;
             lcd_obpd_dirty(lcd.obps);
             if(lcd.obpi) {
                 lcd.obps++;
@@ -189,7 +194,7 @@ void io_write(u16 adr, u8 val) {
 
         default:;
 #ifdef DEBUG
-            printf("Unknown IO write: %.2X=%.2X\n", r, val);
+            printf("Unknown IO write: %.2X=%.2X\n", reg, val);
 #endif
     }
 }

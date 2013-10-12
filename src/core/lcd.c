@@ -9,12 +9,10 @@
 #include "obj.h"
 #include "maps.h"
 
-#define DUR_FULL_REFRESH 17556
-#define DUR_MODE_0 51
-#define DUR_MODE_2 20
-#define DUR_MODE_3 43
-#define DUR_SCANLINE 114
-#define DUR_VBLANK 1140
+#define DUR_MODE_0 (51 * cpu.freq_factor)
+#define DUR_MODE_2 (20 * cpu.freq_factor)
+#define DUR_MODE_3 (43 * cpu.freq_factor)
+#define DUR_SCANLINE (114 * cpu.freq_factor)
 
 #define SIF_HBLANK 0x08
 #define SIF_VBLANK 0x10
@@ -47,6 +45,22 @@ static void unschedule() {
     hw_unschedule(&lcd.vblank_line_event);
 }
 
+static inline void stat_irq(u8 flag) {
+    if((lcd.c & LCDC_DISPLAY_ENABLE_BIT) && (lcd.stat & flag)) {
+        cpu.irq |= IF_LCDSTAT;
+    }
+}
+
+static void check_coincidence() {
+    if(lcd.ly == lcd.lyc) {
+        stat_irq(SIF_LYC);
+        STAT_SET_CFLAG(1);
+    }
+    else {
+        STAT_SET_CFLAG(0);
+    }
+}
+
 static void swap_fb() {
     u16 *tmp = lcd.clean_fb;
     lcd.clean_fb = lcd.working_fb;
@@ -55,7 +69,7 @@ static void swap_fb() {
 
 static void draw_line_cgb_mode(scan_pixel_t *obj_scan, scan_pixel_t *maps_scan) {
     u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
-    int x, bg_priority,draw_bg;
+    int x, bg_priority, draw_bg;
 
     for(x = 0; x < LCD_WIDTH; x++, pixel++) {
        bg_priority = (lcd.c & LCDC_BG_ENABLE_BIT) &&
@@ -97,12 +111,6 @@ static void draw_line() {
     }
 }
 
-static inline void stat_irq(u8 flag) {
-    if((lcd.c & LCDC_DISPLAY_ENABLE_BIT) && (lcd.stat & flag)) {
-        cpu.irq |= IF_LCDSTAT;
-    }
-}
-
 inline void lcd_hdma() {
     u16 end;
 
@@ -122,67 +130,61 @@ inline void lcd_hdma() {
 }
 
 static void next_line() {
+   // printf("%i/%i Next line\n", cpu.dbg_mcs, lcd.ly);
+
     lcd.ly++;
     lcd.ly %= 154;
 
-    if(lcd.ly == lcd.lyc) {
-        lcd.stat |= 0x04;
-        stat_irq(SIF_LYC);
-    }
+    check_coincidence();
 }
 
 static void vblank_line(int mcs) {
     next_line();
-    if(lcd.ly == 153) {
-        hw_schedule(&lcd.mode_event[2], DUR_SCANLINE * cpu.freq_factor - mcs);
-    }
-    else {
-        hw_schedule(&lcd.vblank_line_event, DUR_SCANLINE * cpu.freq_factor - mcs);
-    }
+    hw_schedule(lcd.ly == 153 ? &lcd.mode_event[2] : &lcd.vblank_line_event, DUR_SCANLINE - mcs);
 }
 
 static void mode_0(int mcs) {
     STAT_SET_MODE(0);
     stat_irq(SIF_HBLANK);
+          //  printf("%i/%i/%.2X Mode 0\n", cpu.dbg_mcs, lcd.ly, lcd.stat);
 
     if(lcd.c & LCDC_DISPLAY_ENABLE_BIT) {
         draw_line();
     }
+
     if(!lcd.hdma_inactive) {
         lcd_hdma();
     }
 
-    if(lcd.ly == 143) {
-        hw_schedule(&lcd.mode_event[1], DUR_MODE_0 * cpu.freq_factor - mcs);
-    }
-    else {
-       hw_schedule(&lcd.mode_event[2], DUR_MODE_0 * cpu.freq_factor - mcs);
-    }
+    hw_schedule(lcd.ly == 143 ? &lcd.mode_event[1] : &lcd.mode_event[2], DUR_MODE_0 - mcs);
 }
 
 static void mode_1(int mcs) {
     next_line();
     STAT_SET_MODE(1);
+          //  printf("%i/%i/%.2X Mode 1\n", cpu.dbg_mcs, lcd.ly, lcd.stat);
 
     cpu.irq |= IF_VBLANK;
     stat_irq(SIF_VBLANK);
     sys_fb_ready();
     swap_fb();
 
-    hw_schedule(&lcd.vblank_line_event, DUR_SCANLINE * cpu.freq_factor - mcs);
+    hw_schedule(&lcd.vblank_line_event, DUR_SCANLINE - mcs);
 }
 
 static void mode_2(int mcs) {
-    next_line();
     STAT_SET_MODE(2);
+    next_line();
+           // printf("%i/%i/%.2X Mode 2\n", cpu.dbg_mcs, lcd.ly, lcd.stat);
     stat_irq(SIF_OAM);
 
-    hw_schedule(&lcd.mode_event[3], DUR_MODE_2 * cpu.freq_factor - mcs);
+    hw_schedule(&lcd.mode_event[3], DUR_MODE_2 - mcs);
 }
 
 static void mode_3(int mcs) {
     STAT_SET_MODE(3);
-    hw_schedule(&lcd.mode_event[0], DUR_MODE_3 * cpu.freq_factor - mcs);
+          //  printf("%i/%i/%.2X Mode 3\n", cpu.dbg_mcs, lcd.ly, lcd.stat);
+    hw_schedule(&lcd.mode_event[0], DUR_MODE_3 - mcs);
 }
 
 void lcd_reset() {
@@ -234,7 +236,7 @@ void lcd_reset() {
 
 void lcd_begin() {
     unschedule();
-    hw_schedule(&lcd.vblank_line_event, (DUR_MODE_0 + DUR_MODE_2) * cpu.freq_factor);
+    hw_schedule(&lcd.vblank_line_event, DUR_MODE_0 + DUR_MODE_2);
     maps_dirty();
 }
 
@@ -270,6 +272,7 @@ void lcd_gdma() {
 }
 
 void lcd_enable() {
+    printf("%i LCD On\n", cpu.dbg_mcs);
     lcd.stat = (lcd.stat & 0xF8) | 0x04;
     unschedule();
     lcd.ly = -1;
@@ -277,25 +280,23 @@ void lcd_enable() {
 }
 
 void lcd_disable() {
+    printf("%i LCD Off\n", cpu.dbg_mcs);
     lcd.ly = 0;
+    check_coincidence();
     lcd.stat = (lcd.stat & 0xF8) | 0x00;
     unschedule();
 }
 
 void lcd_set_lyc(u8 lyc) {
+    printf("%i/%i LYC %i => %i\n", cpu.dbg_mcs, lcd.ly, lcd.lyc, lyc);
     lcd.lyc = lyc;
-    if(lcd.ly == lcd.lyc) {
-        lcd.stat |= 0x04;
-        stat_irq(SIF_LYC);
-    }
+    check_coincidence();
 }
 
 void lcd_reset_ly() {
+    printf("%i/%i Reset LY\n", cpu.dbg_mcs, lcd.ly);
     lcd.ly = 0x00;
-    if(lcd.ly == lcd.lyc) {
-        lcd.stat |= 0x04;
-        stat_irq(SIF_LYC);
-    }
+    check_coincidence();
 }
 
 void lcd_c_write(u8 val) {
@@ -325,12 +326,15 @@ void lcd_vram_write(u16 adr, u8 val) {
     ram.vrambanks[ram.selected_vrambank][vram_adr] = val;
 
     if(vram_adr >= 0x0000 && vram_adr < 0x1800) {
+        //printf("%i/%i TILEDATA %i => %.2X\n", cpu.dbg_mcs, lcd.ly, vram_adr/16, val);
         maps_tiledata_dirty(vram_adr/16);
     }
     else if(vram_adr >= 0x1800 && vram_adr < 0x1C00) {
+       // printf("%i/%i MAP#0/%i %i/%i => %i\n", cpu.dbg_mcs, lcd.ly, ram.selected_vrambank, (vram_adr - 0x1800)%32, (vram_adr - 0x1800)/32, val);
         maps_tile_dirty(&lcd.maps[0], vram_adr - 0x1800);
     }
     else if(vram_adr >= 0x1C00) {
+       // printf("%i/%i MAP#1/%i %i/%i => %i\n", cpu.dbg_mcs, lcd.ly, ram.selected_vrambank, (vram_adr - 0x1C00)%32, (vram_adr - 0x1C00)/32, val);
         maps_tile_dirty(&lcd.maps[1], vram_adr - 0x1C00);
     }
 }
@@ -379,6 +383,7 @@ static int pd_dirty(u16 map[8][4], u8 d, u8 s) {
 void lcd_bgpd_dirty(u8 bgps) {
     if(moo.mode == CGB_MODE) {
         if(pd_dirty(lcd.bgp_map, lcd.bgpd[bgps], bgps)) {
+         //   printf("%i/%i/%.2X Palette %i Color %i => %.2X\n", cpu.dbg_mcs, lcd.ly, lcd.stat, bgps/8, (bgps/2)%4, lcd.bgpd[bgps]);
             maps_palette_dirty(bgps/8);
         }
     }

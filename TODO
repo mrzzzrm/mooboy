@@ -7,6 +7,7 @@
     - .sav: check sanity of (v)ram bank indices
 	- Support zipped ROMs
 	- Support VSync(Notaz SDL?)
+	- Support savs in appdata
 	
     
 [Game Bugs]
@@ -14,9 +15,12 @@
     - Aladdin: Messed up graphics
     - Alfred's Adventure: Messed up graphics
     - Alice in Wonderland: Messed up graphics
-    - Animorphs: Crash during first battle
     - Quest for Camelot: gfx trouble in mainmenu 
     - Donkey Kong GB: Minor gfx dissortions around character
+    - 007 The World is not enough: 2 lines in the statusbar aren't palleted correcly
+    - Addams Familiy: Same palette dissortions as ever
+    
+    - Animorphs: Crash during first battle
     - Donkey Kong GBC: Music too low?
 
 [Menu]  
