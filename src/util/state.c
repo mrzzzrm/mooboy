@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <time.h>
+#include <string.h>
 #include "sys/sys.h"
 #include "util/framerate.h"
 #include "core/cpu.h"

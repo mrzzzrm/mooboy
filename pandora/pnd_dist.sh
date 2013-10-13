@@ -13,6 +13,7 @@ cp mooboy $PND_TMP_DIR/
 cp ../data/Xolonium.ttf $PND_TMP_DIR/data/
 cp ../icon.png $PND_TMP_DIR/
 cp PXML.xml $PND_TMP_DIR/
+cp mooboy.sh $PND_TMP_DIR/
 cp -r preview $PND_TMP_DIR/
 
 $PND_MAKE -p mooboy.mrz.pnd -d $PND_TMP_DIR -x $PND_TMP_DIR/PXML.xml -i $PND_TMP_DIR/icon.png

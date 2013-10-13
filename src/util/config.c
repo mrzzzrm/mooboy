@@ -138,7 +138,6 @@ static int config_load(const char *path) {
     parse();
     fclose(file);
 
-    int old_scalingmode = sys.scalingmode;
     int v;
     for(v = 0; v < sizeof(values)/sizeof(*values); v++) {
          *values[v].ptr = load_int(values[v].name);
