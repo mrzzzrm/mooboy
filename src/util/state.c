@@ -161,22 +161,6 @@ static void load_fb() {
     assert_checkpoint();
 }
 
-static void save_lcd_maps() {
-
-}
-
-static void load_lcd_maps() {
-    int p;
-
-    lcd_obp0_dirty();
-    lcd_obp1_dirty();
-    lcd_bgp_dirty();
-
-    for(p = 0; p <= 0x3F; p++) {
-        lcd_bgpd_dirty(p);
-        lcd_obpd_dirty(p);
-    }
-}
 
 static void save_lcd() {
     S(lcd.c);
@@ -184,15 +168,14 @@ static void save_lcd() {
     S(lcd.scx); S(lcd.scy);
     S(lcd.ly); S(lcd.lyc);
     S(lcd.wx); S(lcd.wy);
-    S(lcd.bgp); SV(lcd.obp);
-    SV(lcd.bgpd); SV(lcd.obpd);
-    S(lcd.bgps); S(lcd.bgpi);
-    S(lcd.obps); S(lcd.obpi);
+    SV(lcd.bgp.b); SV(lcd.obp.b);
+    SV(lcd.bgp.d); SV(lcd.obp.d);
+    S(lcd.bgp.s); S(lcd.bgp.i);
+    S(lcd.obp.s); S(lcd.obp.i);
     set_checkpoint();
     save_fb();
     S(lcd.hdma_source); S(lcd.hdma_dest);
     S(lcd.hdma_length); S(lcd.hdma_inactive);
-    save_lcd_maps();
     set_checkpoint();
 }
 
@@ -203,15 +186,15 @@ static void load_lcd() {
     R(lcd.ly);
     R(lcd.lyc);
     R(lcd.wx); R(lcd.wy);
-    R(lcd.bgp); RV(lcd.obp);
-    RV(lcd.bgpd); RV(lcd.obpd);
-    R(lcd.bgps); R(lcd.bgpi);
-    R(lcd.obps); R(lcd.obpi);
+    RV(lcd.bgp.b); RV(lcd.obp.b);
+    RV(lcd.obp.d); RV(lcd.bgp.d);
+    R(lcd.bgp.s); R(lcd.bgp.i);
+    R(lcd.obp.s); R(lcd.obp.i);
     assert_checkpoint();
     load_fb();
     R(lcd.hdma_source); R(lcd.hdma_dest);
     R(lcd.hdma_length); R(lcd.hdma_inactive);
-    load_lcd_maps();
+    lcd_rebuild_palette_maps();
     assert_checkpoint();
 }
 

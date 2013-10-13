@@ -9,12 +9,10 @@
 #include "obj.h"
 #include "maps.h"
 
-#define DUR_FULL_REFRESH 17556
-#define DUR_MODE_0 51
-#define DUR_MODE_2 20
-#define DUR_MODE_3 43
-#define DUR_SCANLINE 114
-#define DUR_VBLANK 1140
+#define DUR_MODE_0 (51 * cpu.freq_factor)
+#define DUR_MODE_2 (20 * cpu.freq_factor)
+#define DUR_MODE_3 (43 * cpu.freq_factor)
+#define DUR_SCANLINE (114 * cpu.freq_factor)
 
 #define SIF_HBLANK 0x08
 #define SIF_VBLANK 0x10
@@ -47,6 +45,22 @@ static void unschedule() {
     hw_unschedule(&lcd.vblank_line_event);
 }
 
+static inline void stat_irq(u8 flag) {
+    if((lcd.c & LCDC_DISPLAY_ENABLE_BIT) && (lcd.stat & flag)) {
+        cpu.irq |= IF_LCDSTAT;
+    }
+}
+
+static void check_coincidence() {
+    if(lcd.ly == lcd.lyc) {
+        stat_irq(SIF_LYC);
+        STAT_SET_CFLAG(1);
+    }
+    else {
+        STAT_SET_CFLAG(0);
+    }
+}
+
 static void swap_fb() {
     u16 *tmp = lcd.clean_fb;
     lcd.clean_fb = lcd.working_fb;
@@ -55,7 +69,7 @@ static void swap_fb() {
 
 static void draw_line_cgb_mode(scan_pixel_t *obj_scan, scan_pixel_t *maps_scan) {
     u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
-    int x, bg_priority,draw_bg;
+    int x, bg_priority, draw_bg;
 
     for(x = 0; x < LCD_WIDTH; x++, pixel++) {
        bg_priority = (lcd.c & LCDC_BG_ENABLE_BIT) &&
@@ -97,13 +111,7 @@ static void draw_line() {
     }
 }
 
-static inline void stat_irq(u8 flag) {
-    if((lcd.c & LCDC_DISPLAY_ENABLE_BIT) && (lcd.stat & flag)) {
-        cpu.irq |= IF_LCDSTAT;
-    }
-}
-
-inline void lcd_hdma() {
+inline void hdma() {
     u16 end;
 
     hw_defer(8);
@@ -122,23 +130,17 @@ inline void lcd_hdma() {
 }
 
 static void next_line() {
+   // printf("%i/%i Next line\n", cpu.dbg_mcs, lcd.ly);
+
     lcd.ly++;
     lcd.ly %= 154;
 
-    if(lcd.ly == lcd.lyc) {
-        lcd.stat |= 0x04;
-        stat_irq(SIF_LYC);
-    }
+    check_coincidence();
 }
 
 static void vblank_line(int mcs) {
     next_line();
-    if(lcd.ly == 153) {
-        hw_schedule(&lcd.mode_event[2], DUR_SCANLINE * cpu.freq_factor - mcs);
-    }
-    else {
-        hw_schedule(&lcd.vblank_line_event, DUR_SCANLINE * cpu.freq_factor - mcs);
-    }
+    hw_schedule(lcd.ly == 153 ? &lcd.mode_event[2] : &lcd.vblank_line_event, DUR_SCANLINE - mcs);
 }
 
 static void mode_0(int mcs) {
@@ -149,15 +151,10 @@ static void mode_0(int mcs) {
         draw_line();
     }
     if(!lcd.hdma_inactive) {
-        lcd_hdma();
+        hdma();
     }
 
-    if(lcd.ly == 143) {
-        hw_schedule(&lcd.mode_event[1], DUR_MODE_0 * cpu.freq_factor - mcs);
-    }
-    else {
-       hw_schedule(&lcd.mode_event[2], DUR_MODE_0 * cpu.freq_factor - mcs);
-    }
+    hw_schedule(lcd.ly == 143 ? &lcd.mode_event[1] : &lcd.mode_event[2], DUR_MODE_0 - mcs);
 }
 
 static void mode_1(int mcs) {
@@ -169,20 +166,21 @@ static void mode_1(int mcs) {
     sys_fb_ready();
     swap_fb();
 
-    hw_schedule(&lcd.vblank_line_event, DUR_SCANLINE * cpu.freq_factor - mcs);
+    hw_schedule(&lcd.vblank_line_event, DUR_SCANLINE - mcs);
 }
 
 static void mode_2(int mcs) {
-    next_line();
     STAT_SET_MODE(2);
+    next_line();
+
     stat_irq(SIF_OAM);
 
-    hw_schedule(&lcd.mode_event[3], DUR_MODE_2 * cpu.freq_factor - mcs);
+    hw_schedule(&lcd.mode_event[3], DUR_MODE_2 - mcs);
 }
 
 static void mode_3(int mcs) {
     STAT_SET_MODE(3);
-    hw_schedule(&lcd.mode_event[0], DUR_MODE_3 * cpu.freq_factor - mcs);
+    hw_schedule(&lcd.mode_event[0], DUR_MODE_3 - mcs);
 }
 
 void lcd_reset() {
@@ -190,27 +188,18 @@ void lcd_reset() {
 
     lcd.c = 0x91;
     lcd.stat = 0x81;
-    lcd.scx = 0;
-    lcd.scy = 0;
     lcd.ly = 0x90;
-    lcd.lyc = 0;
-    lcd.wx = 0;
-    lcd.wy = 0;
-    lcd.bgp = 0xFC;
-    lcd.obp[0] = 0xFF;
-    lcd.obp[1] = 0xFF;
 
-    lcd.hdma_source = 0x0000;
     lcd.hdma_dest = 0x8000;
-    lcd.hdma_length = 0x00;
     lcd.hdma_inactive = 0x80;
 
     lcd.clean_fb = lcd.fb[0];
     lcd.working_fb = lcd.fb[1];
 
-    lcd_bgp_dirty();
-    lcd_obp0_dirty();
-    lcd_obp1_dirty();
+    lcd.bgp.b[0] = 0xFC;
+    lcd.obp.b[0] = 0xFF;
+    lcd.obp.b[1] = 0xFF;
+    lcd_rebuild_palette_maps();
 
     lcd.maps[0].tiles = &ram.vrambanks[0][0x1800];
     lcd.maps[0].attr = &ram.vrambanks[1][0x1800];
@@ -234,7 +223,8 @@ void lcd_reset() {
 
 void lcd_begin() {
     unschedule();
-    hw_schedule(&lcd.vblank_line_event, (DUR_MODE_0 + DUR_MODE_2) * cpu.freq_factor);
+    hw_schedule(&lcd.vblank_line_event, DUR_MODE_0 + DUR_MODE_2);
+
     maps_dirty();
 }
 
@@ -269,33 +259,42 @@ void lcd_gdma() {
     lcd.hdma_inactive = 0x80;
 }
 
+void lcd_hdma_control(u8 val) {
+    lcd.hdma_length = val & 0x7F;
+    if(val & 0x80) {
+        lcd.hdma_inactive = 0x00;
+    }
+    else {
+        if(lcd.hdma_inactive) {
+            lcd_gdma();
+            lcd.hdma_length = 0x7F;
+        }
+        lcd.hdma_inactive = 0x80;
+    }
+}
+
 void lcd_enable() {
     lcd.stat = (lcd.stat & 0xF8) | 0x04;
     unschedule();
     lcd.ly = -1;
-    mode_2(7);
+    mode_2(1);
 }
 
 void lcd_disable() {
     lcd.ly = 0;
+    check_coincidence();
     lcd.stat = (lcd.stat & 0xF8) | 0x00;
     unschedule();
 }
 
 void lcd_set_lyc(u8 lyc) {
     lcd.lyc = lyc;
-    if(lcd.ly == lcd.lyc) {
-        lcd.stat |= 0x04;
-        stat_irq(SIF_LYC);
-    }
+    check_coincidence();
 }
 
 void lcd_reset_ly() {
     lcd.ly = 0x00;
-    if(lcd.ly == lcd.lyc) {
-        lcd.stat |= 0x04;
-        stat_irq(SIF_LYC);
-    }
+    check_coincidence();
 }
 
 void lcd_c_write(u8 val) {
@@ -335,58 +334,64 @@ void lcd_vram_write(u16 adr, u8 val) {
     }
 }
 
-void lcd_bgp_dirty() {
-    u8 rc;
-
-    if(moo.mode == NON_CGB_MODE) {
-        for(rc = 0; rc < 4; rc++) {
-            lcd.bgp_map[0][rc] = (lcd.bgp & (0x3 << (rc<<1))) >> (rc<<1);
-        }
-        maps_dirty();
-    }
-}
-
-static void obp_dirty(u8 obp, u16 *obp_map) {
-    u8 rc;
-    if(moo.mode == NON_CGB_MODE) {
-        for(rc = 0; rc < 4; rc++) {
-            obp_map[rc] = (obp & (0x3 << (rc<<1))) >> (rc<<1);
-        }
-    }
-}
-
-void lcd_obp0_dirty() {
-    obp_dirty(lcd.obp[0], lcd.obp_map[0]);
-}
-
-void lcd_obp1_dirty() {
-    obp_dirty(lcd.obp[1], lcd.obp_map[1]);
-}
-
-static int pd_dirty(u16 map[8][4], u8 d, u8 s) {
-    u16 palette, color_id, old_color, new_color;
+static void update_cgb_palettes_map(lcd_palettes_t *palettes, u8 s) {
+    u16 palette, color_id, d;
 
     palette = s/8;
     color_id = (s/2)%4;
+    d = palettes->d[s];
 
-    old_color = map[palette][color_id];
-    new_color = s % 2 == 0 ? (map[palette][color_id] & 0xFF00) | d : (map[palette][color_id] & 0x00FF) | (d << 8);
-    map[palette][color_id] =  new_color;
-
-    return old_color != new_color;
+    palettes->map[palette][color_id] = s & 1 ? (palettes->map[palette][color_id] & 0x00FF) | (d << 8) : (palettes->map[palette][color_id] & 0xFF00) | d;
 }
 
-void lcd_bgpd_dirty(u8 bgps) {
+static void update_dmg_palettes_map(lcd_palettes_t *palettes, u8 s) {
+    u8 rc;
+
+    for(rc = 0; rc < 4; rc++) {
+        palettes->map[s][rc] = (palettes->b[s] & (0x3 << (rc<<1))) >> (rc<<1);
+    }
+    maps_dirty();
+}
+
+void lcd_palette_control(lcd_palettes_t *palettes, u8 val) {
     if(moo.mode == CGB_MODE) {
-        if(pd_dirty(lcd.bgp_map, lcd.bgpd[bgps], bgps)) {
-            maps_palette_dirty(bgps/8);
+        palettes->s = val & 0x3F;
+        palettes->i = val & 0x80;
+    }
+}
+
+void lcd_cgb_palette_data(lcd_palettes_t *palettes, u8 val) {
+    if(moo.mode == CGB_MODE) {
+        palettes->d[palettes->s] = palettes->s & 0x01 ? val&0x7F : val;
+
+        update_cgb_palettes_map(palettes, palettes->s);
+
+        if(palettes->i) {
+            palettes->s++;
+            palettes->s &= 0x3F;
         }
     }
 }
 
-void lcd_obpd_dirty(u8 obps) {
+void lcd_dmg_palette_data(lcd_palettes_t *palettes, u8 val, u8 s) {
+    palettes->b[s] = val;
+    if(moo.mode == NON_CGB_MODE) {
+        update_dmg_palettes_map(palettes, s);
+    }
+}
+
+void lcd_rebuild_palette_maps() {
     if(moo.mode == CGB_MODE) {
-        pd_dirty(lcd.obp_map, lcd.obpd[obps], obps);
+        int i;
+        for(i = 0; i < 0x40; i++) {
+            update_cgb_palettes_map(&lcd.bgp, i);
+            update_cgb_palettes_map(&lcd.obp, i);
+        }
+    }
+    else {
+        update_dmg_palettes_map(&lcd.bgp, 0);
+        update_dmg_palettes_map(&lcd.obp, 0);
+        update_dmg_palettes_map(&lcd.obp, 1);
     }
 }
 

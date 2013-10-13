@@ -22,7 +22,7 @@ static inline void draw_tile_line_flipped(scan_pixel_t *scan) {
 
     for(tx = 0; tx < 8; tx++, rshift++) {
         scan[tx].color_id = render(rshift);
-        scan[tx].color = lcd.bgp_map[palette][scan[tx].color_id];
+        scan[tx].color = lcd.bgp.map[palette][scan[tx].color_id];
         scan[tx].priority = priority;
     }
 }
@@ -33,7 +33,7 @@ static inline void draw_tile_line(scan_pixel_t *scan) {
 
     for(tx = 0; tx < 8; tx++, rshift--) {
         scan[tx].color_id = render(rshift);
-        scan[tx].color = lcd.bgp_map[palette][scan[tx].color_id];
+        scan[tx].color = lcd.bgp.map[palette][scan[tx].color_id];
         scan[tx].priority = priority;
     }
 }
@@ -115,12 +115,15 @@ static inline void redraw_dirty(lcd_map_t *map, int tx, int ty) {
             lcd.index_dirty[bank][tile_index] = 0;
         }
 
-        if(lcd.bgp_dirty[palette]) {
-            mark_palette_refs_dirty(palette);
-            lcd.bgp_dirty[palette] = 0;
+        if(map->cached_palette[ty][x][0] != *(u32*)&lcd.bgp.d[palette*8] ||
+           map->cached_palette[ty][x][1] != *(u32*)&lcd.bgp.d[palette*8+4])
+        {
+            map->tile_dirty[ty][x] = 1;
+            map->cached_palette[ty][x][0] = *(u32*)&lcd.bgp.d[palette*8];
+            map->cached_palette[ty][x][1] = *(u32*)&lcd.bgp.d[palette*8+4];
         }
 
-        if(1 || map->tile_dirty[ty][x]) {
+        if(map->tile_dirty[ty][x]) {
             draw_tile(map, x, ty);
             map->tile_dirty[ty][x] = 0;
         }
@@ -193,9 +196,5 @@ void maps_dirty() {
             lcd.maps[1].tile_dirty[y][x] = 1;
         }
     }
-}
-
-void maps_palette_dirty(int palette) {
-    lcd.bgp_dirty[palette] = 1;
 }
 

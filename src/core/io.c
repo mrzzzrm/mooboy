@@ -12,9 +12,9 @@
 #include "serial.h"
 
 u8 io_read(u16 adr) {
-    u8 r = adr &  0x00FF;
+    u8 reg = adr & 0x00FF;
 
-    switch(r) {
+    switch(reg) {
         case 0x00: return joy_read(); break;
 
         case 0x01: /* return serial.sb;*/ break;
@@ -36,7 +36,7 @@ u8 io_read(u16 adr) {
         case 0x37: case 0x38: case 0x39: case 0x3A:
         case 0x3B: case 0x3C: case 0x3D: case 0x3E:
         case 0x3F:
-            return sound_read(r);
+            return sound_read(reg);
         break;
 
         case 0x15: case 0x1F: return 0x00; break;
@@ -45,12 +45,12 @@ u8 io_read(u16 adr) {
         case 0x41: return lcd.stat; break;
         case 0x42: return lcd.scy; break;
         case 0x43: return lcd.scx; break;
-        case 0x44: return lcd.ly;break;
+        case 0x44: return lcd.ly; break;
         case 0x45: return lcd.lyc; break;
-        case 0x46: return 0x00; break;
-        case 0x47: return lcd.bgp; break;
-        case 0x48: return lcd.obp[0]; break;
-        case 0x49: return lcd.obp[1]; break;
+        case 0x46: return 0xFF; break;
+        case 0x47: return lcd.bgp.b[0]; break;
+        case 0x48: return lcd.obp.b[0]; break;
+        case 0x49: return lcd.obp.b[1]; break;
         case 0x4A: return lcd.wy; break;
         case 0x4B: return lcd.wx; break;
 
@@ -66,16 +66,16 @@ u8 io_read(u16 adr) {
 
         case 0x56: return 0x40; break;
 
-        case 0x68: return lcd.bgps | lcd.bgpi; break;
-        case 0x69: return lcd.bgpd[lcd.bgps]; break;
-        case 0x6A: return lcd.obps | lcd.obpi; break;
-        case 0x6B: return lcd.obpd[lcd.obps]; break;
+        case 0x68: return lcd.bgp.s | lcd.bgp.i; break;
+        case 0x69: return lcd.bgp.d[lcd.bgp.s]; break;
+        case 0x6A: return lcd.obp.s | lcd.obp.i; break;
+        case 0x6B: return lcd.obp.d[lcd.obp.s]; break;
 
         case 0x70: return ram.rambank_index | 0xF8; break;
 
         default:;
 #ifdef DEBUG
-            printf("Unknown IO read: %.2X\n", r);
+            printf("Unknown IO read: %.2X\n", reg);
 #endif
     }
 
@@ -83,8 +83,9 @@ u8 io_read(u16 adr) {
 }
 
 void io_write(u16 adr, u8 val) {
-    u8 r = adr & 0x00FF;
-    switch(r) {
+    u8 reg = adr & 0x00FF;
+
+    switch(reg) {
         case 0x00: joy_select_col(val); break;
 
         case 0x01: /*serial.sb = val;*/  break;
@@ -106,7 +107,7 @@ void io_write(u16 adr, u8 val) {
         case 0x37: case 0x38: case 0x39: case 0x3A:
         case 0x3B: case 0x3C: case 0x3D: case 0x3E:
         case 0x3F:
-            sound_write(r, val);
+            sound_write(reg, val);
         break;
 
         case 0x15: case 0x1F: break;
@@ -118,18 +119,9 @@ void io_write(u16 adr, u8 val) {
         case 0x44: lcd_reset_ly(); break;
         case 0x45: lcd_set_lyc(val); break;
         case 0x46: lcd_dma(val); break;
-        case 0x47:
-            lcd.bgp = val;
-            lcd_bgp_dirty();
-        break;
-        case 0x48:
-            lcd.obp[0] = val;
-            lcd_obp0_dirty();
-        break;
-        case 0x49:
-            lcd.obp[1] = val;
-            lcd_obp1_dirty();
-        break;
+        case 0x47: lcd_dmg_palette_data(&lcd.bgp, val, 0); break;
+        case 0x48: lcd_dmg_palette_data(&lcd.obp, val, 0); break;
+        case 0x49: lcd_dmg_palette_data(&lcd.obp, val, 1); break;
         case 0x4A: lcd.wy = val; break;
         case 0x4B: lcd.wx = val; break;
 
@@ -141,46 +133,14 @@ void io_write(u16 adr, u8 val) {
         case 0x52: lcd.hdma_source = (lcd.hdma_source & 0xFF00) | (val & 0xF0); break;
         case 0x53: lcd.hdma_dest = (lcd.hdma_dest & 0x80FF) | ((val & 0x1F) << 8); break;
         case 0x54: lcd.hdma_dest = (lcd.hdma_dest & 0xFF00) | (val & 0xF0); break;
-        case 0x55:
-            lcd.hdma_length = val & 0x7F;
-            if(val & 0x80) {
-                lcd.hdma_inactive = 0x00;
-            }
-            else {
-                if(lcd.hdma_inactive) {
-                    lcd_gdma();
-                    lcd.hdma_length = 0x7F;
-                }
-                lcd.hdma_inactive = 0x80;
-            }
-        break;
+        case 0x55: lcd_hdma_control(val); break;
 
         case 0x56: break;
 
-        case 0x68:
-            lcd.bgps = val & 0x3F;
-            lcd.bgpi = val & 0x80;
-        break;
-        case 0x69:
-            lcd.bgpd[lcd.bgps] = val;
-            lcd_bgpd_dirty(lcd.bgps);
-            if(lcd.bgpi) {
-                lcd.bgps++;
-            }
-            lcd.bgps &= 0x3F;
-        break;
-        case 0x6A:
-            lcd.obps = val & 0x3F;
-            lcd.obpi = val & 0x80;
-        break;
-        case 0x6B:
-            lcd.obpd[lcd.obps] = val;
-            lcd_obpd_dirty(lcd.obps);
-            if(lcd.obpi) {
-                lcd.obps++;
-            }
-            lcd.obps &= 0x3F;
-        break;
+        case 0x68: lcd_palette_control(&lcd.bgp, val); break;
+        case 0x69: lcd_cgb_palette_data(&lcd.bgp, val); break;
+        case 0x6A: lcd_palette_control(&lcd.obp, val); break;
+        case 0x6B: lcd_cgb_palette_data(&lcd.obp, val); break;
 
         case 0x70:
             ram.rambank_index = (val & 0x07) != 0 ? val & 0x07 : 0x01;
@@ -189,7 +149,7 @@ void io_write(u16 adr, u8 val) {
 
         default:;
 #ifdef DEBUG
-            printf("Unknown IO write: %.2X=%.2X\n", r, val);
+            printf("Unknown IO write: %.2X=%.2X\n", reg, val);
 #endif
     }
 }

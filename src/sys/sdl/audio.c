@@ -41,7 +41,7 @@ static void handout_buf(void *_unused, Uint8 *stream, int length) {
     else {
 #ifdef DEBUG
         if(get_available_samples() < requested_samples) {
-            printf("WARNING: Sound buffer underrun\n");
+      //      printf("WARNING: Sound buffer underrun\n");
         }
 #endif
 

@@ -28,11 +28,19 @@ typedef struct {
 
 typedef struct {
     scan_pixel_t scan_cache[256][256];
+    u32 cached_palette[32][32][2];
     int tile_dirty[32][32];
-    int index_dirty[256];
     u8 *tiles;
     u8 *attr;
 } lcd_map_t;
+
+typedef struct {
+    u8 s;
+    u8 i;
+    u8 b[2];
+    u8 d[0x40];
+    u16 map[8][4];
+} lcd_palettes_t;
 
 typedef struct {
     u8 c;
@@ -43,12 +51,7 @@ typedef struct {
     u8 wx, wy;
 
     // Palettes
-    u8 bgp, obp[2];
-    u8 bgpd[0x40], obpd[0x40];
-    u8 bgps, bgpi;
-    u8 obps, obpi;
-    u16 bgp_map[8][4];
-    u16 obp_map[8][4];
+    lcd_palettes_t bgp, obp;
 
     // Framebuffer
     u16 fb[2][144*160];
@@ -62,7 +65,6 @@ typedef struct {
     // Caching
     lcd_map_t maps[2];
     int index_dirty[2][256];
-    int bgp_dirty[8];
 
     // HW events
     hw_event_t mode_event[4];
@@ -78,7 +80,7 @@ void lcd_begin();
 
 void lcd_dma(u8 v);
 void lcd_gdma();
-void lcd_hdma();
+void lcd_hdma_control(u8 val);
 
 void lcd_enable();
 void lcd_disable();
@@ -88,11 +90,9 @@ void lcd_reset_ly();
 void lcd_c_write(u8 val);
 void lcd_vram_write(u16 adr, u8 val);
 
-void lcd_update_map_pointers(u8 c);
-void lcd_obp0_dirty();
-void lcd_obp1_dirty();
-void lcd_bgp_dirty();
-void lcd_bgpd_dirty(u8 bgps);
-void lcd_obpd_dirty(u8 obps);
+void lcd_palette_control(lcd_palettes_t *palettes, u8 val);
+void lcd_cgb_palette_data(lcd_palettes_t *palettes, u8 val);
+void lcd_dmg_palette_data(lcd_palettes_t *palettes, u8 val, u8 s);
+void lcd_rebuild_palette_maps();
 
 #endif
