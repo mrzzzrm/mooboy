@@ -28,9 +28,8 @@ typedef struct {
 
 typedef struct {
     scan_pixel_t scan_cache[256][256];
-    u8 cached_palette[32][32][8];
+    u32 cached_palette[32][32][2];
     int tile_dirty[32][32];
-    int index_dirty[256];
     u8 *tiles;
     u8 *attr;
 } lcd_map_t;
