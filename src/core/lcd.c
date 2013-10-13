@@ -111,7 +111,7 @@ static void draw_line() {
     }
 }
 
-inline void lcd_hdma() {
+inline void hdma() {
     u16 end;
 
     hw_defer(8);
@@ -146,13 +146,12 @@ static void vblank_line(int mcs) {
 static void mode_0(int mcs) {
     STAT_SET_MODE(0);
     stat_irq(SIF_HBLANK);
-          //  printf("%i/%i/%.2X Mode 0\n", cpu.dbg_mcs, lcd.ly, lcd.stat);
 
     if(lcd.c & LCDC_DISPLAY_ENABLE_BIT) {
         draw_line();
     }
     if(!lcd.hdma_inactive) {
-        lcd_hdma();
+        hdma();
     }
 
     hw_schedule(lcd.ly == 143 ? &lcd.mode_event[1] : &lcd.mode_event[2], DUR_MODE_0 - mcs);
@@ -161,7 +160,6 @@ static void mode_0(int mcs) {
 static void mode_1(int mcs) {
     next_line();
     STAT_SET_MODE(1);
-          //  printf("%i/%i/%.2X Mode 1\n", cpu.dbg_mcs, lcd.ly, lcd.stat);
 
     cpu.irq |= IF_VBLANK;
     stat_irq(SIF_VBLANK);
@@ -175,7 +173,6 @@ static void mode_2(int mcs) {
     STAT_SET_MODE(2);
     next_line();
 
-        // printf("%i/%i/%.2X Mode 2\n", cpu.dbg_mcs, lcd.ly, lcd.stat);
     stat_irq(SIF_OAM);
 
     hw_schedule(&lcd.mode_event[3], DUR_MODE_2 - mcs);
@@ -183,7 +180,6 @@ static void mode_2(int mcs) {
 
 static void mode_3(int mcs) {
     STAT_SET_MODE(3);
-          //  printf("%i/%i/%.2X Mode 3\n", cpu.dbg_mcs, lcd.ly, lcd.stat);
     hw_schedule(&lcd.mode_event[0], DUR_MODE_3 - mcs);
 }
 
@@ -192,27 +188,19 @@ void lcd_reset() {
 
     lcd.c = 0x91;
     lcd.stat = 0x81;
-    lcd.scx = 0;
-    lcd.scy = 0;
     lcd.ly = 0x90;
-    lcd.lyc = 0;
-    lcd.wx = 0;
-    lcd.wy = 0;
-    lcd.bgp = 0xFC;
-    lcd.obp[0] = 0xFF;
-    lcd.obp[1] = 0xFF;
 
-    lcd.hdma_source = 0x0000;
+
     lcd.hdma_dest = 0x8000;
-    lcd.hdma_length = 0x00;
     lcd.hdma_inactive = 0x80;
 
     lcd.clean_fb = lcd.fb[0];
     lcd.working_fb = lcd.fb[1];
 
-    lcd_bgp_dirty();
-    lcd_obp0_dirty();
-    lcd_obp1_dirty();
+    lcd.bgp.b[0] = 0xFC;
+    lcd.obp.b[0] = 0xFF;
+    lcd.obp.b[1] = 0xFF;
+    lcd_rebuild_palette_maps();
 
     lcd.maps[0].tiles = &ram.vrambanks[0][0x1800];
     lcd.maps[0].attr = &ram.vrambanks[1][0x1800];
@@ -237,6 +225,7 @@ void lcd_reset() {
 void lcd_begin() {
     unschedule();
     hw_schedule(&lcd.vblank_line_event, DUR_MODE_0 + DUR_MODE_2);
+
     maps_dirty();
 }
 
@@ -271,8 +260,21 @@ void lcd_gdma() {
     lcd.hdma_inactive = 0x80;
 }
 
+void lcd_hdma_control(u8 val) {
+    lcd.hdma_length = val & 0x7F;
+    if(val & 0x80) {
+        lcd.hdma_inactive = 0x00;
+    }
+    else {
+        if(lcd.hdma_inactive) {
+            lcd_gdma();
+            lcd.hdma_length = 0x7F;
+        }
+        lcd.hdma_inactive = 0x80;
+    }
+}
+
 void lcd_enable() {
-    printf("%i LCD On\n", cpu.dbg_mcs);
     lcd.stat = (lcd.stat & 0xF8) | 0x04;
     unschedule();
     lcd.ly = -1;
@@ -280,7 +282,6 @@ void lcd_enable() {
 }
 
 void lcd_disable() {
-    printf("%i LCD Off\n", cpu.dbg_mcs);
     lcd.ly = 0;
     check_coincidence();
     lcd.stat = (lcd.stat & 0xF8) | 0x00;
@@ -288,13 +289,11 @@ void lcd_disable() {
 }
 
 void lcd_set_lyc(u8 lyc) {
-    printf("%i/%i LYC %i => %i\n", cpu.dbg_mcs, lcd.ly, lcd.lyc, lyc);
     lcd.lyc = lyc;
     check_coincidence();
 }
 
 void lcd_reset_ly() {
-    printf("%i/%i Reset LY\n", cpu.dbg_mcs, lcd.ly);
     lcd.ly = 0x00;
     check_coincidence();
 }
@@ -326,93 +325,80 @@ void lcd_vram_write(u16 adr, u8 val) {
     ram.vrambanks[ram.selected_vrambank][vram_adr] = val;
 
     if(vram_adr >= 0x0000 && vram_adr < 0x1800) {
-        //printf("%i/%i TILEDATA %i => %.2X\n", cpu.dbg_mcs, lcd.ly, vram_adr/16, val);
         maps_tiledata_dirty(vram_adr/16);
     }
     else if(vram_adr >= 0x1800 && vram_adr < 0x1C00) {
-       // printf("%i/%i MAP#0/%i %i/%i => %i\n", cpu.dbg_mcs, lcd.ly, ram.selected_vrambank, (vram_adr - 0x1800)%32, (vram_adr - 0x1800)/32, val);
         maps_tile_dirty(&lcd.maps[0], vram_adr - 0x1800);
     }
     else if(vram_adr >= 0x1C00) {
-       // printf("%i/%i MAP#1/%i %i/%i => %i\n", cpu.dbg_mcs, lcd.ly, ram.selected_vrambank, (vram_adr - 0x1C00)%32, (vram_adr - 0x1C00)/32, val);
         maps_tile_dirty(&lcd.maps[1], vram_adr - 0x1C00);
     }
 }
 
-void lcd_bgp_dirty() {
-//    u8 rc;
-//
-//    if(moo.mode == NON_CGB_MODE) {
-//        for(rc = 0; rc < 4; rc++) {
-//            lcd.bgp_map[0][rc] = (lcd.bgp & (0x3 << (rc<<1))) >> (rc<<1);
-//        }
-//        maps_dirty();
-//    }
+static void update_cgb_palettes_map(lcd_palettes_t *palettes, u8 s) {
+    u16 palette, color_id, d;
+
+    palette = s/8;
+    color_id = (s/2)%4;
+    d = palettes->d[s];
+
+    palettes->map[palette][color_id] = s & 1 ? (palettes->map[palette][color_id] & 0x00FF) | (d << 8) : (palettes->map[palette][color_id] & 0xFF00) | d;
 }
 
-static void obp_dirty(u8 obp, u16 *obp_map) {
-//    u8 rc;
-//    if(moo.mode == NON_CGB_MODE) {
-//        for(rc = 0; rc < 4; rc++) {
-//            obp_map[rc] = (obp & (0x3 << (rc<<1))) >> (rc<<1);
-//        }
-//    }
+static void update_dmg_palettes_map(lcd_palettes_t *palettes, u8 s) {
+    u8 rc;
+
+    for(rc = 0; rc < 4; rc++) {
+        palettes->map[s][rc] = (palettes->b[s] & (0x3 << (rc<<1))) >> (rc<<1);
+    }
+    maps_dirty();
 }
-
-void lcd_obp0_dirty() {
-//    obp_dirty(lcd.obp[0], lcd.obp_map[0]);
-}
-
-void lcd_obp1_dirty() {
-//    obp_dirty(lcd.obp[1], lcd.obp_map[1]);
-}
-
-static int update_palettes_map(lcd_palettes_t *palettes) {
-    u16 palette, color_id, old_color, new_color, d;
-
-    palette = palettes->s/8;
-    color_id = (palettes->s/2)%4;
-    d = palettes->d[palettes->s];
-
-    old_color = palettes->map[palette][color_id];
-    new_color = palettes->s & 1 ? (palettes->map[palette][color_id] & 0x00FF) | (d << 8) : (palettes->map[palette][color_id] & 0xFF00);
-    palettes->map[palette][color_id] =  new_color;
-
-    return old_color != new_color;
-}
-
-//void lcd_bgpd_dirty(u8 bgps) {
-//    if(moo.mode == CGB_MODE) {
-//        if(pd_dirty(lcd.bgp_map, lcd.bgpd[bgps], bgps)) {
-//            maps_palette_dirty(bgps/8);
-//        }
-//    }
-//}
-//
-//void lcd_obpd_dirty(u8 obps) {
-//    if(moo.mode == CGB_MODE) {
-//        pd_dirty(lcd.obp_map, lcd.obpd[obps], obps);
-//    }
-//}
 
 void lcd_palette_control(lcd_palettes_t *palettes, u8 val) {
-    palettes->s = val & 0x3F;
-    palettes->i = val & 0x80;
+    if(moo.mode == CGB_MODE) {
+        palettes->s = val & 0x3F;
+        palettes->i = val & 0x80;
+    }
 }
 
-int lcd_palette_data(lcd_palettes_t *palettes, u8 val) {
-    palettes->d[palettes->s] = palettes->s & 0x01 ? val&0x7F : val;
+void lcd_cgb_palette_data(lcd_palettes_t *palettes, u8 val) {
+    if(moo.mode == CGB_MODE) {
+        u8 old_val = palettes->d[palettes->s];
+        u8 new_val = palettes->s & 0x01 ? val&0x7F : val;
+        palettes->d[palettes->s] = new_val;
 
-    int dirty = update_palettes_map(palettes);
+        update_cgb_palettes_map(palettes, palettes->s);
 
-    if(dirty && palettes == &lcd.cbgp) {
-        maps_palette_dirty(lcd.cbgp.s/8);
+        if(old_val != new_val && (palettes == &lcd.bgp)) {
+            maps_palette_dirty(palettes->s/8);
+        }
+
+        if(palettes->i) {
+            palettes->s++;
+            palettes->s &= 0x3F;
+        }
     }
-
-    if(moo.mode == CGB_MODE && palettes->i) {
-        palettes->s++;
-        palettes->s &= 0x3F;
-    }
-
-    return dirty;
 }
+
+void lcd_dmg_palette_data(lcd_palettes_t *palettes, u8 val, u8 s) {
+    palettes->b[s] = val;
+    if(moo.mode == NON_CGB_MODE) {
+        update_dmg_palettes_map(palettes, s);
+    }
+}
+
+void lcd_rebuild_palette_maps() {
+    if(moo.mode == CGB_MODE) {
+        int i;
+        for(i = 0; i < 0x40; i++) {
+            update_cgb_palettes_map(&lcd.bgp, i);
+            update_cgb_palettes_map(&lcd.obp, i);
+        }
+    }
+    else {
+        update_dmg_palettes_map(&lcd.bgp, 0);
+        update_dmg_palettes_map(&lcd.obp, 0);
+        update_dmg_palettes_map(&lcd.obp, 1);
+    }
+}
+

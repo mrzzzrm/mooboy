@@ -22,7 +22,7 @@ static inline void draw_tile_line_flipped(scan_pixel_t *scan) {
 
     for(tx = 0; tx < 8; tx++, rshift++) {
         scan[tx].color_id = render(rshift);
-        scan[tx].color = lcd.cbgp.map[palette][scan[tx].color_id];
+        scan[tx].color = lcd.bgp.map[palette][scan[tx].color_id];
         scan[tx].priority = priority;
     }
 }
@@ -33,7 +33,7 @@ static inline void draw_tile_line(scan_pixel_t *scan) {
 
     for(tx = 0; tx < 8; tx++, rshift--) {
         scan[tx].color_id = render(rshift);
-        scan[tx].color = lcd.cbgp.map[palette][scan[tx].color_id];
+        scan[tx].color = lcd.bgp.map[palette][scan[tx].color_id];
         scan[tx].priority = priority;
     }
 }

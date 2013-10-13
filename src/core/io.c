@@ -42,19 +42,15 @@ u8 io_read(u16 adr) {
         case 0x15: case 0x1F: return 0x00; break;
 
         case 0x40: return lcd.c; break;
-        case 0x41: //printf("%i/%i/%.2X Stat read\n", cpu.dbg_mcs, lcd.ly, lcd.stat);
-        return lcd.stat;
-            break;
+        case 0x41: return lcd.stat; break;
         case 0x42: return lcd.scy; break;
         case 0x43: return lcd.scx; break;
-        case 0x44://printf("%i/%i/%.2X LYC read\n", cpu.dbg_mcs, lcd.ly, lcd.stat);
-        return lcd.ly;
-            break;
+        case 0x44: return lcd.ly; break;
         case 0x45: return lcd.lyc; break;
-        case 0x46: return 0x00; break;
-        case 0x47: return lcd.bgp; break;
-        case 0x48: return lcd.obp[0]; break;
-        case 0x49: return lcd.obp[1]; break;
+        case 0x46: return 0xFF; break;
+        case 0x47: return lcd.bgp.b[0]; break;
+        case 0x48: return lcd.obp.b[0]; break;
+        case 0x49: return lcd.obp.b[1]; break;
         case 0x4A: return lcd.wy; break;
         case 0x4B: return lcd.wx; break;
 
@@ -70,10 +66,10 @@ u8 io_read(u16 adr) {
 
         case 0x56: return 0x40; break;
 
-        case 0x68: return lcd.cbgp.s | lcd.cbgp.i; break;
-        case 0x69: return lcd.cbgp.d[lcd.cobp.s]; break;
-        case 0x6A: return lcd.cobp.s | lcd.cobp.i; break;
-        case 0x6B: return lcd.cobp.d[lcd.cobp.s]; break;
+        case 0x68: return lcd.bgp.s | lcd.bgp.i; break;
+        case 0x69: return lcd.bgp.d[lcd.bgp.s]; break;
+        case 0x6A: return lcd.obp.s | lcd.obp.i; break;
+        case 0x6B: return lcd.obp.d[lcd.obp.s]; break;
 
         case 0x70: return ram.rambank_index | 0xF8; break;
 
@@ -123,18 +119,9 @@ void io_write(u16 adr, u8 val) {
         case 0x44: lcd_reset_ly(); break;
         case 0x45: lcd_set_lyc(val); break;
         case 0x46: lcd_dma(val); break;
-        case 0x47:
-            lcd.bgp = val;
-            lcd_bgp_dirty();
-        break;
-        case 0x48:
-            lcd.obp[0] = val;
-            lcd_obp0_dirty();
-        break;
-        case 0x49:
-            lcd.obp[1] = val;
-            lcd_obp1_dirty();
-        break;
+        case 0x47: lcd_dmg_palette_data(&lcd.bgp, val, 0); break;
+        case 0x48: lcd_dmg_palette_data(&lcd.obp, val, 0); break;
+        case 0x49: lcd_dmg_palette_data(&lcd.obp, val, 1); break;
         case 0x4A: lcd.wy = val; break;
         case 0x4B: lcd.wx = val; break;
 
@@ -146,26 +133,14 @@ void io_write(u16 adr, u8 val) {
         case 0x52: lcd.hdma_source = (lcd.hdma_source & 0xFF00) | (val & 0xF0); break;
         case 0x53: lcd.hdma_dest = (lcd.hdma_dest & 0x80FF) | ((val & 0x1F) << 8); break;
         case 0x54: lcd.hdma_dest = (lcd.hdma_dest & 0xFF00) | (val & 0xF0); break;
-        case 0x55:
-            lcd.hdma_length = val & 0x7F;
-            if(val & 0x80) {
-                lcd.hdma_inactive = 0x00;
-            }
-            else {
-                if(lcd.hdma_inactive) {
-                    lcd_gdma();
-                    lcd.hdma_length = 0x7F;
-                }
-                lcd.hdma_inactive = 0x80;
-            }
-        break;
+        case 0x55: lcd_hdma_control(val); break;
 
         case 0x56: break;
 
-        case 0x68: lcd_palette_control(&lcd.cbgp, val); break;
-        case 0x69: lcd_palette_data(&lcd.cbgp, val); break;
-        case 0x6A: lcd_palette_control(&lcd.cobp, val); break;
-        case 0x6B: lcd_palette_data(&lcd.cobp, val); break;
+        case 0x68: lcd_palette_control(&lcd.bgp, val); break;
+        case 0x69: lcd_cgb_palette_data(&lcd.bgp, val); break;
+        case 0x6A: lcd_palette_control(&lcd.obp, val); break;
+        case 0x6B: lcd_cgb_palette_data(&lcd.obp, val); break;
 
         case 0x70:
             ram.rambank_index = (val & 0x07) != 0 ? val & 0x07 : 0x01;
