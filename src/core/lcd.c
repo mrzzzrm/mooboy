@@ -190,7 +190,6 @@ void lcd_reset() {
     lcd.stat = 0x81;
     lcd.ly = 0x90;
 
-
     lcd.hdma_dest = 0x8000;
     lcd.hdma_inactive = 0x80;
 
@@ -278,7 +277,7 @@ void lcd_enable() {
     lcd.stat = (lcd.stat & 0xF8) | 0x04;
     unschedule();
     lcd.ly = -1;
-    mode_2(7);
+    mode_2(1);
 }
 
 void lcd_disable() {
