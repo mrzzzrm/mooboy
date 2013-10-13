@@ -38,7 +38,7 @@ static inline void rtc_tick(u8 r) {
         break;
         case 2:
             (*regs[r])++;
-            if(*regs[r] > 24) {
+            if(*regs[r] >= 24) {
                 *regs[r] = 0;
                 rtc_tick(r+1);
             }
