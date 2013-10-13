@@ -30,6 +30,7 @@ typedef struct {
     scan_pixel_t scan_cache[256][256];
     u32 cached_palette[32][32][2];
     int tile_dirty[32][32];
+
     u8 *tiles;
     u8 *attr;
 } lcd_map_t;

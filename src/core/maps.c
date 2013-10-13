@@ -7,7 +7,7 @@
 #include "moo.h"
 #include "lcd.h"
 
-static u8 priority, palette, tile_index;
+static u8 priority, palette, tile_index, attr, bank;
 static u8 *linedata;
 
 static inline u8 render(u8 rshift) {
@@ -16,52 +16,44 @@ static inline u8 render(u8 rshift) {
     return (lsb | (msb << 1));
 }
 
-static inline void draw_tile_line_flipped(scan_pixel_t *scan) {
-    int tx;
-    u8 rshift = 0;
-
-    for(tx = 0; tx < 8; tx++, rshift++) {
-        scan[tx].color_id = render(rshift);
-        scan[tx].color = lcd.bgp.map[palette][scan[tx].color_id];
-        scan[tx].priority = priority;
+#define draw_tile_line(scan, rshift_init, op) \
+    int tx; \
+    u8 rshift = rshift_init; \
+    \
+    for(tx = 0; tx < 8; tx++, rshift op) { \
+        (scan)[tx].color_id = render(rshift); \
+        (scan)[tx].color = lcd.bgp.map[palette][(scan)[tx].color_id]; \
+        (scan)[tx].priority = priority; \
     }
-}
 
-static inline void draw_tile_line(scan_pixel_t *scan) {
-    int tx;
-    u8 rshift = 7;
-
-    for(tx = 0; tx < 8; tx++, rshift--) {
-        scan[tx].color_id = render(rshift);
-        scan[tx].color = lcd.bgp.map[palette][scan[tx].color_id];
-        scan[tx].priority = priority;
+#define iterate_tile(line_init, op) \
+    u8 line = line_init; \
+    for(ty = 0; ty < 8; ty++, line op, cy++) { \
+        linedata = &tdt[tile*0x10 + line*2]; \
+        \
+        if(attr & 0x20) { \
+            draw_tile_line(&map->scan_cache[cy][cx], 0, ++); \
+        } \
+        else { \
+            draw_tile_line(&map->scan_cache[cy][cx], 7, --); \
+        } \
     }
-}
 
 static inline void draw_tile(lcd_map_t *map, int tx, int ty) {
     u8 index_offset = lcd.c & 0x10 ? 0x00 : 0x80;
-    u8 tile_index = map->tiles[ty * 32 + tx];
-    u8 attr = map->attr[ty * 32 + tx];
+    u8 tile = tile_index + index_offset;
 
     priority = attr & 0x80;
-    palette = attr & 0x07;
-    u8 bank = attr & 0x08 ? 1 : 0;
     u8 *tdt = &ram.vrambanks[bank][lcd.c & 0x10 ? 0x0000 : 0x0800];
 
     u8 cx = tx*8;
     u8 cy = ty*8;
 
-    for(ty = 0; ty < 8; ty++, cy++) {
-        u8 tile = tile_index + index_offset;
-        u8 line = attr & 0x40 ? 7-ty : ty;
-        linedata = &tdt[tile*0x10 + line*2];
-
-        if(attr & 0x20) {
-            draw_tile_line_flipped(&map->scan_cache[cy][cx]);
-        }
-        else {
-            draw_tile_line(&map->scan_cache[cy][cx]);
-        }
+    if(attr & 0x40) {
+        iterate_tile(7, --);
+    }
+    else {
+        iterate_tile(0, ++);
     }
 }
 
@@ -82,32 +74,18 @@ static inline void mark_index_refs_dirty(u8 index) {
     }
 }
 
-static inline void mark_palette_refs_dirty_on_map(lcd_map_t *map, int x, int y, int palette) {
-    if((map->attr[y*32 + x] & 0x07) == palette) {
-       map->tile_dirty[y][x] = 1;
-    }
-}
-
-static inline void mark_palette_refs_dirty(int palette) {
-    int x, y;
-
-    for(y = 0; y < 32; y++) {
-        for(x = 0; x < 32; x++) {
-            mark_palette_refs_dirty_on_map(&lcd.maps[0], x, y, palette);
-            mark_palette_refs_dirty_on_map(&lcd.maps[1], x, y, palette);
-        }
-    }
-}
+#define cached_dirty(dword) map->cached_palette[ty][x][dword] != *(u32*)&lcd.bgp.d[palette*8 + dword*4]
+#define cache_palette(dword) map->cached_palette[ty][x][dword] = *(u32*)&lcd.bgp.d[palette*8 + dword*4]
 
 static inline void redraw_dirty(lcd_map_t *map, int tx, int ty) {
     int c;
 
     for(c = 0; c < 21; c++) {
-        int x = (tx+c)%32;
+        int x = (tx + c) % 32;
 
-        u8 attr = map->attr[ty * 32 + x];
-        u8 bank = attr & 0x08 ? 1 : 0;
-        u8 palette = attr & 0x07;
+        attr = map->attr[ty * 32 + x];
+        bank = attr & 0x08 ? 1 : 0;
+        palette = attr & 0x07;
         tile_index = map->tiles[ty*32 + x];
 
         if(lcd.index_dirty[bank][tile_index]) {
@@ -115,12 +93,10 @@ static inline void redraw_dirty(lcd_map_t *map, int tx, int ty) {
             lcd.index_dirty[bank][tile_index] = 0;
         }
 
-        if(map->cached_palette[ty][x][0] != *(u32*)&lcd.bgp.d[palette*8] ||
-           map->cached_palette[ty][x][1] != *(u32*)&lcd.bgp.d[palette*8+4])
-        {
+        if(cached_dirty(0) || cached_dirty(1)) {
             map->tile_dirty[ty][x] = 1;
-            map->cached_palette[ty][x][0] = *(u32*)&lcd.bgp.d[palette*8];
-            map->cached_palette[ty][x][1] = *(u32*)&lcd.bgp.d[palette*8+4];
+            cache_palette(0);
+            cache_palette(1);
         }
 
         if(map->tile_dirty[ty][x]) {
@@ -188,13 +164,7 @@ void maps_tile_dirty(lcd_map_t *map, int tile) {
 }
 
 void maps_dirty() {
-    int x, y;
-
-    for(y = 0; y < 32; y++) {
-        for(x = 0; x < 32; x++) {
-            lcd.maps[0].tile_dirty[y][x] = 1;
-            lcd.maps[1].tile_dirty[y][x] = 1;
-        }
-    }
+    memset(lcd.maps[0].tile_dirty, 0xFF, sizeof(lcd.maps[0].tile_dirty));
+    memset(lcd.maps[1].tile_dirty, 0xFF, sizeof(lcd.maps[1].tile_dirty));
 }
 
