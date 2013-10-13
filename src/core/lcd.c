@@ -363,15 +363,9 @@ void lcd_palette_control(lcd_palettes_t *palettes, u8 val) {
 
 void lcd_cgb_palette_data(lcd_palettes_t *palettes, u8 val) {
     if(moo.mode == CGB_MODE) {
-        u8 old_val = palettes->d[palettes->s];
-        u8 new_val = palettes->s & 0x01 ? val&0x7F : val;
-        palettes->d[palettes->s] = new_val;
+        palettes->d[palettes->s] = palettes->s & 0x01 ? val&0x7F : val;
 
         update_cgb_palettes_map(palettes, palettes->s);
-
-        if(old_val != new_val && (palettes == &lcd.bgp)) {
-            maps_palette_dirty(palettes->s/8);
-        }
 
         if(palettes->i) {
             palettes->s++;

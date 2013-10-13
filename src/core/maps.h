@@ -17,6 +17,5 @@
     void maps_tiledata_dirty(int tileindex);
     void maps_tile_dirty(lcd_map_t *map, int tile);
     void maps_dirty();
-    void maps_palette_dirty(int palette);
 
 #endif

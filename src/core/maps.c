@@ -115,9 +115,9 @@ static inline void redraw_dirty(lcd_map_t *map, int tx, int ty) {
             lcd.index_dirty[bank][tile_index] = 0;
         }
 
-        if(lcd.bgp_dirty[palette]) {
-            mark_palette_refs_dirty(palette);
-            lcd.bgp_dirty[palette] = 0;
+        if(memcmp(map->cached_palette[ty][x], &lcd.bgp.d[palette*8], 8)) {
+            map->tile_dirty[ty][x] = 1;
+            memcpy(map->cached_palette[ty][x], &lcd.bgp.d[palette*8], 8);
         }
 
         if(map->tile_dirty[ty][x]) {
@@ -193,9 +193,5 @@ void maps_dirty() {
             lcd.maps[1].tile_dirty[y][x] = 1;
         }
     }
-}
-
-void maps_palette_dirty(int palette) {
-    lcd.bgp_dirty[palette] = 1;
 }
 
