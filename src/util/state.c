@@ -43,11 +43,15 @@
 #define RTC_EVENT_ID 11
 #define NUM_HW_EVENTS 12
 
+#define STATE_PREFIX "mbs"
+#define STATE_REVISION 0x01
+
 FILE *f;
 static u8 byte;
 static u8 checkpoints[CHECKPOINTS];
 static int current_checkpoint;
 static int bytes_handled;
+static u8 loading_revision;
 
 
 static void save(u32 val, u8 size) {
@@ -562,6 +566,23 @@ static void load_util() {
     assert_checkpoint();
 }
 
+static void save_prefix() {
+    fprintf(f, "%s", STATE_PREFIX);
+    S(BYTE(STATE_REVISION));
+}
+
+static int load_prefix() {
+    char buf[sizeof(STATE_PREFIX)];
+
+    int read = fread(buf, 1, sizeof(buf)-1, f);
+    if(read != sizeof(buf)-1 || strcmp(buf, STATE_PREFIX)) {
+        return 1;
+    }
+    R(loading_revision);
+
+    return 0;
+}
+
 static void init_checkpoints() {
     srand(time(NULL));
     int cp;
@@ -599,6 +620,7 @@ void state_save(const char *filename) {
 
     init_checkpoints();
 
+    save_prefix();
     save_cpu();
     save_joy();
     save_lcd();
@@ -625,6 +647,10 @@ int state_load(const char *filename) {
 
     load_checkpoints();
 
+    if(load_prefix()) {
+        return 0;
+    }
+
     load_cpu();
     load_joy();
     load_lcd();
@@ -644,6 +670,7 @@ int state_load(const char *filename) {
 
     fclose(f);
 
+    printf("Error: %i\n", moo.state & MOO_ERROR_BIT);
     if(~moo.state & MOO_ERROR_BIT) {
         moo_continue();
     }
