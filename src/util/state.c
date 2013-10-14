@@ -51,105 +51,105 @@ typedef struct {
     int size;
 } value_t;
 
-#define VV(v) {&(v), sizeof(v)}
+#define V(v) {&(v), sizeof(v)}
 #define VA(v) {(v), sizeof(v)}
 
 #define S(v) fwrite(&v, sizeof(v), 1, f)
 #define R(v) fread(&v, sizeof(v), 1, f)
 
 #define _sqw(c) \
-    VV((c).on), \
-    VV((c).l), VV((c).r), \
-    VV((c).freq), VV((c).duty), VV((c).volume), \
-    VV((c).cc), VV((c).cc_reset),\
-    VV((c).counter.length), VV((c).counter.expires)
+    V((c).on), \
+    V((c).l), V((c).r), \
+    V((c).freq), V((c).duty), V((c).volume), \
+    V((c).cc), V((c).cc_reset),\
+    V((c).counter.length), V((c).counter.expires)
 
-#define _env(e) VV((e).sweep), VV((e).tick), VV((e).dir)
+#define _env(e) V((e).sweep), V((e).tick), V((e).dir)
 
 #define NUM_VALUES (sizeof(values)/sizeof(*values))
 
 static value_t values[] = {
-    VV(cpu.af), VV(cpu.bc), VV(cpu.de), VV(cpu.hl),
-    VV(SP), VV(PC),
-    VV(cpu.op), VV(cpu.cb),
-    VV(cpu.ime), VV(cpu.irq), VV(cpu.ie),
-    VV(cpu.remainder),
-    VV(cpu.freq),
-    VV(cpu.freq_factor),
-    VV(cpu.freq_switch),
-    VV(cpu.halted),
-    VV(joy.col),
+    V(cpu.af), V(cpu.bc), V(cpu.de), V(cpu.hl),
+    V(SP), V(PC),
+    V(cpu.op), V(cpu.cb),
+    V(cpu.ime), V(cpu.irq), V(cpu.ie),
+    V(cpu.remainder),
+    V(cpu.freq),
+    V(cpu.freq_factor),
+    V(cpu.freq_switch),
+    V(cpu.halted),
+    V(joy.col),
     VA(lcd.fb),
-    VV(lcd.c),
-    VV(lcd.stat),
-    VV(lcd.scx), VV(lcd.scy),
-    VV(lcd.ly), VV(lcd.lyc),
-    VV(lcd.wx), VV(lcd.wy),
-    VV(lcd.bgp.b), VV(lcd.obp.b),
-    VV(lcd.bgp.d), VV(lcd.obp.d),
-    VV(lcd.bgp.s), VV(lcd.bgp.i),
-    VV(lcd.obp.s), VV(lcd.obp.i),
-    VV(lcd.hdma_source), VV(lcd.hdma_dest),
-    VV(lcd.hdma_length), VV(lcd.hdma_inactive),
-    VV(mbc.type),
-    VV(mbc.has_rtc),
-    VV(mbc.has_battery),
-    VV(mbc1.mode),
-    VV(mbc1.rombank),
-    VV(mbc3.mode),
-    VV(mbc5.rombank),
-    VV(card.romsize),
-    VV(card.sramsize),
+    V(lcd.c),
+    V(lcd.stat),
+    V(lcd.scx), V(lcd.scy),
+    V(lcd.ly), V(lcd.lyc),
+    V(lcd.wx), V(lcd.wy),
+    V(lcd.bgp.b), V(lcd.obp.b),
+    V(lcd.bgp.d), V(lcd.obp.d),
+    V(lcd.bgp.s), V(lcd.bgp.i),
+    V(lcd.obp.s), V(lcd.obp.i),
+    V(lcd.hdma_source), V(lcd.hdma_dest),
+    V(lcd.hdma_length), V(lcd.hdma_inactive),
+    V(mbc.type),
+    V(mbc.has_rtc),
+    V(mbc.has_battery),
+    V(mbc1.mode),
+    V(mbc1.rombank),
+    V(mbc3.mode),
+    V(mbc5.rombank),
+    V(card.romsize),
+    V(card.sramsize),
     VA(card.srambanks),
     VA(ram.rambanks),
     VA(ram.vrambanks),
     VA(ram.hram),
     VA(ram.oam),
-    VV(ram.rambank_index),
+    V(ram.rambank_index),
     VA(rtc.latched),
     VA(rtc.ticking),
-    VV(rtc.mapped),
-    VV(rtc.prelatched),
-    VV(sound.on),
-    VV(sound.so1_volume), VV(sound.so2_volume),
-    VV(sound.mix_threshold),
-    VV(sound.cc_reset),
-    VV(sound.remainder),
+    V(rtc.mapped),
+    V(rtc.prelatched),
+    V(sound.on),
+    V(sound.so1_volume), V(sound.so2_volume),
+    V(sound.mix_threshold),
+    V(sound.cc_reset),
+    V(sound.remainder),
     _sqw(sqw[0]), _sqw(sqw[1]),
     _env(env[0]), _env(env[1]), _env(env[2]),
-    VV(sweep.period), VV(sweep.dir), VV(sweep.shift), VV(sweep.tick),
-    VV(wave.on),
-    VV(wave.cc), VV(wave.cc_reset),
-    VV(wave.l), VV(wave.r),
-    VV(wave.freq),
-    VV(wave.shift),
+    V(sweep.period), V(sweep.dir), V(sweep.shift), V(sweep.tick),
+    V(wave.on),
+    V(wave.cc), V(wave.cc_reset),
+    V(wave.l), V(wave.r),
+    V(wave.freq),
+    V(wave.shift),
     VA(wave.data),
-    VV(wave.counter.length), VV(wave.counter.expires),
-    VV(noise.on),
-    VV(noise.cc), VV(noise.cc_reset),
-    VV(noise.l), VV(noise.r),
-    VV(noise.volume),
-    VV(noise.shift),
-    VV(noise.width),
-    VV(noise.divr),
-    VV(noise.lsfr),
-    VV(noise.counter.length), VV(noise.counter.expires),
-    VV(timers.div), VV(timers.tima), VV(timers.tma), VV(timers.tac),
-    VV(timers.div_cc), VV(timers.tima_cc),
-    VV(sys.ticks),
-    VV(sys.invoke_cc),
-    VV(framerate.cc_ahead),
-    VV(framerate.skipped),
-    VV(framerate.delay_threshold),
-    VV(framerate.first_frame_ticks),
-    VV(framerate.framecount),
-    VV(framerate.last_curb_ticks),
-    VV(hw.cc)
+    V(wave.counter.length), V(wave.counter.expires),
+    V(noise.on),
+    V(noise.cc), V(noise.cc_reset),
+    V(noise.l), V(noise.r),
+    V(noise.volume),
+    V(noise.shift),
+    V(noise.width),
+    V(noise.divr),
+    V(noise.lsfr),
+    V(noise.counter.length), V(noise.counter.expires),
+    V(timers.div), V(timers.tima), V(timers.tma), V(timers.tac),
+    V(timers.div_cc), V(timers.tima_cc),
+    V(sys.ticks),
+    V(sys.invoke_cc),
+    V(framerate.cc_ahead),
+    V(framerate.skipped),
+    V(framerate.delay_threshold),
+    V(framerate.first_frame_ticks),
+    V(framerate.framecount),
+    V(framerate.last_curb_ticks),
+    V(hw.cc)
 };
 
 static void save_prefix() {
     fprintf(f, "%s", STATE_PREFIX);
-    fwrite(&STATE_REVISION, sizeof(STATE_REVISION), 1, f);
+    S(STATE_REVISION);
 }
 
 static void save_values() {
@@ -192,13 +192,10 @@ static void save_hw() {
 
 
 static void save_misc() {
-    u8 byte;
-
     byte = (u8(*)[0x4000])mbc.rombank - card.rombanks; S(byte);
     byte = (u8(*)[0x2000])mbc.srambank - card.srambanks; S(byte);
     byte = (u8(*)[0x1000])ram.rambank - ram.rambanks; S(byte);
     save_hw();
-
 }
 
 void state_save(const char *filename) {
@@ -245,7 +242,6 @@ static int load_values() {
     return 0;
 }
 
-
 static hw_event_t *hw_id_to_event(u8 id) {
     if(id < NUM_HW_EVENTS) {
         return id2event[id];
@@ -255,6 +251,7 @@ static hw_event_t *hw_id_to_event(u8 id) {
         return NULL;
     }
 }
+
 static int load_hw_queue() {
     u8 id;
     hw_cycle_t mcs;
@@ -294,7 +291,6 @@ static int load_hw() {
 
 static int load_misc() {
     int error = 0;
-    u8 byte;
 
     joy.state = 0xFF;
 
@@ -314,11 +310,7 @@ int state_load(const char *filename) {
         return 0;
     }
 
-    if( load_prefix() ||
-        load_values() ||
-        load_misc()
-      )
-    {
+    if( load_prefix() || load_values() || load_misc())  {
         fclose(f);
         return 0;
     }
