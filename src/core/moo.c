@@ -25,6 +25,7 @@
 #include "util/card.h"
 #include "util/state.h"
 #include "util/continue.h"
+#include "util/path.h"
 #include "sound.h"
 
 
@@ -58,6 +59,7 @@ void moo_init() {
 
 void moo_close() {
     sound_close();
+    path_close();
     //serial_close();
 }
 

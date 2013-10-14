@@ -28,8 +28,7 @@ static config_value_t values[] = {
     {"show_statusbar", &sys.show_statusbar, 0},
     {"auto_continue", &sys.auto_continue, SYS_AUTO_CONTINUE_ASK},
     {"auto_rtc", &sys.auto_rtc, 1},
-    {"warned_rtc_sav_conflict", &sys.warned_rtc_sav_conflict, 0},
-    {"appdata_saves", &sys.appdata_saves, 1}
+    {"warned_rtc_sav_conflict", &sys.warned_rtc_sav_conflict, 0}
 };
 
 static void trim(char *str) {

@@ -26,10 +26,9 @@ typedef struct {
     char **scalingmode_names;
 
     int auto_continue;
-    int appdata_saves;
 
     int auto_rtc;
-    int warned_rtc_sav_conflict;f
+    int warned_rtc_sav_conflict;
 
     unsigned int bits_per_pixel;
     unsigned int bytes_per_pixel;

@@ -11,12 +11,11 @@
 #define LABEL_STATUSBAR 2
 #define LABEL_AUTO_CONTINUE 3
 #define LABEL_AUTO_RTC 4
-#define LABEL_APPDATA_SAVES 5
-#define LABEL_SAVE_LOCAL 6
-#define LABEL_LOAD_LOCAL 7
-#define LABEL_SAVE_GLOBAL 8
-#define LABEL_LOAD_GLOBAL 9
-#define LABEL_RESET 10
+#define LABEL_SAVE_LOCAL 5
+#define LABEL_LOAD_LOCAL 6
+#define LABEL_SAVE_GLOBAL 7
+#define LABEL_LOAD_GLOBAL 8
+#define LABEL_RESET 9
 
 
 static menu_list_t *list;
@@ -52,18 +51,12 @@ static void change_auto_rtc(int dir) {
     menu_listentry_val(list, LABEL_AUTO_RTC, sys.auto_rtc ? "yes" : "no");
 }
 
-static void change_appdata_saves(int dir) {
-    sys.appdata_saves = dir ? !sys.appdata_saves : sys.appdata_saves;
-    menu_listentry_val(list, LABEL_APPDATA_SAVES, sys.appdata_saves ? "App dir" : "ROM dir");
-}
-
 static void update_options() {
     change_sound(0);
     change_scaling(0);
     change_statusbar(0);
     change_auto_continue(0);
     change_auto_rtc(0);
-    change_appdata_saves(0);
 }
 
 static void reset() {
@@ -108,7 +101,6 @@ void menu_options_init() {
     menu_new_listentry_selection(list, "Statusbar", LABEL_STATUSBAR, change_statusbar);
     menu_new_listentry_selection(list, "Auto-Continue", LABEL_AUTO_CONTINUE, change_auto_continue);
     menu_new_listentry_selection(list, "Tick RTC when ROM not loaded", LABEL_AUTO_RTC, change_auto_rtc);
-    menu_new_listentry_selection(list, "Saves/Config location", LABEL_APPDATA_SAVES, change_appdata_saves);
 
     menu_new_listentry_spacer(list);
 
