@@ -57,7 +57,7 @@ static void load_state() {
 }
 
 static void save_state() {
-    state_load(pathes.states[save_slot]);
+    state_save(pathes.states[save_slot]);
 }
 
 static void resume() {

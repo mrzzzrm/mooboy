@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdarg.h>
+#include <unistd.h>
 #include "defines.h"
 #include "lcd.h"
 #include "rtc.h"
@@ -24,7 +25,6 @@
 #include "util/config.h"
 #include "util/card.h"
 #include "util/state.h"
-#include "util/continue.h"
 #include "util/pathes.h"
 #include "sound.h"
 
@@ -149,10 +149,10 @@ void moo_load_rom(const char *path) {
         moo_paused_do(warn_rtc_sav_conflict);
     }
 
-    if(continue_state_exists()) {
+    if(access(pathes.continue_state, R_OK) == 0) {
         switch(sys.auto_continue) {
             case SYS_AUTO_CONTINUE_YES:
-                continue_state_load();
+                state_load(pathes.continue_state);
             break;
             case SYS_AUTO_CONTINUE_ASK:
                 moo_paused_do(menu_continue);
