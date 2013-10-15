@@ -13,7 +13,7 @@
 
 static FILE *file;
 
-static char *get_path() {
+
 static void read(void *ptr, size_t size) {
     size_t r = fread(ptr, size, 1, file);
     if(r != 1) {
@@ -52,8 +52,7 @@ void card_save() {
 
     printf("Saving card '%s'\n", pathes.card);
 
-    file = fopen(path, "wb");
-    free(path);
+    file = fopen(pathes.card, "wb");
 
     file = fopen(pathes.card, "wb");
     if(file == NULL) {

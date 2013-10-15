@@ -13,7 +13,7 @@ static void load_continue_state() {
 }
 
 void menu_dialogs_init() {
-    continue_dialog = menu_dialog_new("Continue right where you left?", load_continue_state, moo_continue);
+    continue_dialog = menu_dialog_new("Continue right where you left?", load_continue_state, NULL);
     warn_rtc_sav_conflict_dialog = menu_dialog_new_message("This ROM uses a cardrige clock. mooBoy can emulate this clock even when it is not running. Don't use savestates if you want to take advantage of this, or disable auto-RTC in the options.");
     error_dialog = NULL;
 }

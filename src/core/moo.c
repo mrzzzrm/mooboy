@@ -113,7 +113,9 @@ void moo_quit() {
 void moo_paused_do(void (*func)()) {
     moo_pause();
     func();
-    moo_continue();
+    if(~moo.state & MOO_ERROR_BIT) {
+        moo_continue();
+    }
 }
 
 static void warn_rtc_sav_conflict() {
