@@ -11,27 +11,49 @@
 #include "core/moo.h"
 #include "util/pathes.h"
 
+static FILE *file;
 
-static void print_time(time_t secs) {
-    int y = secs / (3600*24*365) + 1970;
-    int m = secs / (3600*24*31) % 12;
-    int d = secs / (3600*24) % 31;
-    int h = secs / (3600) % 24;
-    int mi = secs/60 % 60;
-    int s = secs % 60;
+static char *get_path() {
+static void read(void *ptr, size_t size) {
+    size_t r = fread(ptr, size, 1, file);
+    if(r != 1) {
+        moo_errorf("SRAM-file corrupt");
+    }
+}
 
-    printf("%i-%i-%i %i:%i:%i", y, m, d, h, mi, s);
+static void write(void *ptr, size_t size) {
+    size_t written = fwrite(ptr, size, 1, file);
+    if(written != 1) {
+        moo_errorf("IO error");
+    }
+}
+
+static void io_ram(void (*io)(void *ptr, size_t size)) {
+    if(mbc.has_ram) {
+        io(card.srambanks, card.sramsize * sizeof(*card.srambanks));
+    }
+}
+
+static void io_rtc(void (*io)(void *ptr, size_t size), time_t *timestamp) {
+    if(mbc.has_rtc) {
+        io(rtc.latched, sizeof(rtc.latched));
+        io(rtc.ticking, sizeof(rtc.ticking));
+        io(&rtc.mapped, sizeof(rtc.mapped));
+        io(&rtc.prelatched, sizeof(rtc.prelatched));
+        io(&rtc.cc, sizeof(rtc.cc));
+        io(timestamp, sizeof(*timestamp));
+    }
 }
 
 void card_save() {
-    FILE *file;
-    size_t written;
-
     if(!mbc.has_battery || !(mbc.has_ram || mbc.has_rtc)) {
         return;
     }
 
     printf("Saving card '%s'\n", pathes.card);
+
+    file = fopen(path, "wb");
+    free(path);
 
     file = fopen(pathes.card, "wb");
     if(file == NULL) {
@@ -39,37 +61,15 @@ void card_save() {
         return;
     }
 
-    if(mbc.has_ram) {
-        written = fwrite(card.srambanks, 1, card.sramsize * sizeof(*card.srambanks), file);
-        if(written != card.sramsize * sizeof(*card.srambanks)) {
-            moo_errorf("Error writing to sram file #1");
-        }
-    }
+    io_ram(write);
 
-    if(mbc.has_rtc) {
-        time_t timestamp = time(NULL);
-
-        written = fwrite(rtc.latched, 1, sizeof(rtc.latched), file) +
-                  fwrite(rtc.ticking, 1, sizeof(rtc.ticking), file) +
-                  fwrite(&rtc.mapped, 1, sizeof(rtc.mapped), file) +
-                  fwrite(&rtc.prelatched, 1, sizeof(rtc.prelatched), file) +
-                  fwrite(&rtc.cc, 1, sizeof(rtc.cc), file) +
-                  fwrite(&timestamp, 1, sizeof(timestamp), file);
-        printf("Saving RTC at "); print_time(timestamp); printf("\n");
-        if(written != sizeof(rtc.latched) + sizeof(rtc.ticking) + sizeof(rtc.mapped) +
-                      sizeof(rtc.prelatched) + sizeof(rtc.cc) + sizeof(timestamp)) {
-            moo_errorf("Error writing to sram file #2");
-        }
-    }
+    time_t timestamp = time(NULL);
+    io_rtc(write, &timestamp);
 
     fclose(file);
 }
 
 void card_load() {
-    FILE *file;
-    size_t read;
-    u8 dummy;
-
     if(!mbc.has_battery || !(mbc.has_ram || mbc.has_rtc)) {
         return;
     }
@@ -81,39 +81,21 @@ void card_load() {
     }
 
     printf("Loading SRAM file '%s'\n", pathes.card);
+    io_ram(read);
 
-    if(mbc.has_ram) {
-        read = fread(card.srambanks, 1, card.sramsize * sizeof(*card.srambanks), file);
-        if(read != card.sramsize * sizeof(*card.srambanks)) {
-            moo_errorf("SRAM file corrupt #1");
+    time_t card_ts;
+    io_rtc(read, &card_ts);
+
+    if(mbc.has_rtc && sys.auto_rtc) {
+        time_t now_ts = time(NULL);
+        if(now_ts > card_ts) {
+            rtc_advance_seconds(now_ts - card_ts);
         }
     }
 
-    if(mbc.has_rtc) {
-        time_t card_ts, now_ts;
-
-        read = fread(rtc.latched, 1, sizeof(rtc.latched), file) +
-               fread(rtc.ticking, 1, sizeof(rtc.ticking), file) +
-               fread(&rtc.mapped, 1, sizeof(rtc.mapped), file) +
-               fread(&rtc.prelatched, 1, sizeof(rtc.prelatched), file) +
-               fread(&rtc.cc, 1, sizeof(rtc.cc), file) +
-               fread(&card_ts, 1, sizeof(card_ts), file);
-        if(read != sizeof(rtc.latched) + sizeof(rtc.ticking) + sizeof(rtc.mapped) +
-                   sizeof(rtc.prelatched) + sizeof(rtc.cc) + sizeof(card_ts)) {
-            moo_errorf("SRAM file corrupt corrupt #2");
-        }
-        if(sys.auto_rtc) {
-            now_ts = time(NULL);
-            printf("Saved time is "); print_time(card_ts); printf(", we now have "); print_time(now_ts); printf("\n");
-            if(now_ts > card_ts) {
-                printf("  Advancing RTC by "); print_time(now_ts - card_ts); printf("\n");
-                rtc_advance_seconds(now_ts - card_ts);
-            }
-        }
-    }
-
+    u8 dummy;
     if(fread(&dummy, 1, 1, file) != 0) {
-        moo_notifyf("SRAM file corrupt #3");
+        moo_errorf("SRAM file too big");
     }
 
     fclose(file);
