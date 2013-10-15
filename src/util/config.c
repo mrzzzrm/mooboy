@@ -1,6 +1,7 @@
 #include "config.h"
 #include "sys/sys.h"
 #include "core/moo.h"
+#include "util/pathes.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -164,15 +165,11 @@ void config_default() {
 }
 
 void config_save_local() {
-    char rom_config_path[sizeof(sys.rompath) + 5 + 1];
-    sprintf(rom_config_path, "%s.conf", sys.rompath);
-    config_save(rom_config_path);
+    config_save(pathes.config);
 }
 
 int config_load_local() {
-    char rom_config_path[sizeof(sys.rompath) + 5 + 1];
-    sprintf(rom_config_path, "%s.conf", sys.rompath);
-    return config_load(rom_config_path);
+    return config_load(pathes.config);
 }
 
 void config_save_global() {

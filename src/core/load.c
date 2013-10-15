@@ -10,6 +10,7 @@
 #include "moo.h"
 #include "mbc.h"
 #include "util/card.h"
+#include "util/pathes.h"
 
 #define LOAD_BUFSIZE (1024)
 
@@ -152,7 +153,7 @@ void load_rom() {
 
     moo.state &= ~MOO_ROM_LOADED_BIT;
 
-    u8 *rom = load_binary(sys.rompath, &romsize);
+    u8 *rom = load_binary(pathes.rom, &romsize);
     assert(romsize > 0x014F);
 
     init_mode(rom[0x0143]);

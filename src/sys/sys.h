@@ -19,8 +19,6 @@ typedef struct {
 
     int show_statusbar;
 
-    char rompath[256]; // TODO: Dynamic
-
     int scalingmode;
     int num_scalingmodes;
     char **scalingmode_names;

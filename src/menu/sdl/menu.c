@@ -11,6 +11,7 @@
 #include "util/last_rom.h"
 #include <assert.h>
 #include "util.h"
+#include "util/pathes.h"
 #include <SDL/SDL.h>
 
 
@@ -52,17 +53,11 @@ static void set_slot(int label, int i) {
 }
 
 static void load_state() {
-    char *sav_file = malloc(strlen(sys.rompath) + strlen(".sav") + 1 + 1);
-    sprintf(sav_file, "%s.sav%i", sys.rompath, load_slot);
-    state_load(sav_file);
-    free(sav_file);
+    state_load(pathes.states[load_slot]);
 }
 
 static void save_state() {
-    char *sav_file = malloc(strlen(sys.rompath) + strlen(".sav") + 1 + 1);
-    sprintf(sav_file, "%s.sav%i", sys.rompath, save_slot);
-    state_save(sav_file);
-    free(sav_file);
+    state_load(pathes.states[save_slot]);
 }
 
 static void resume() {

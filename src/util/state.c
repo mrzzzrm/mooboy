@@ -654,7 +654,6 @@ int state_load(const char *filename) {
 
     fclose(f);
 
-    printf("Error: %i\n", moo.state & MOO_ERROR_BIT);
     if(~moo.state & MOO_ERROR_BIT) {
         moo_continue();
     }

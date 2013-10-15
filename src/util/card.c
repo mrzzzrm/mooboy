@@ -9,6 +9,7 @@
 #include "core/mem.h"
 #include "core/rtc.h"
 #include "core/moo.h"
+#include "util/pathes.h"
 
 
 static void print_time(time_t secs) {
@@ -22,17 +23,7 @@ static void print_time(time_t secs) {
     printf("%i-%i-%i %i:%i:%i", y, m, d, h, mi, s);
 }
 
-static char *get_sramfile() {
-    char *sramfile;
-
-    sramfile = malloc(strlen(sys.rompath) + strlen(".card") + 1);
-    sprintf(sramfile, "%s.card",  sys.rompath);
-
-    return sramfile;
-}
-
 void card_save() {
-    char *sramfile;
     FILE *file;
     size_t written;
 
@@ -40,10 +31,9 @@ void card_save() {
         return;
     }
 
-    sramfile = get_sramfile();
-    printf("Saving card '%s'\n", sramfile);
+    printf("Saving card '%s'\n", pathes.card);
 
-    file = fopen(sramfile, "wb");
+    file = fopen(pathes.card, "wb");
     if(file == NULL) {
         moo_errorf("Couldn't write to sram file");
         return;
@@ -72,12 +62,10 @@ void card_save() {
         }
     }
 
-    free(sramfile);
     fclose(file);
 }
 
 void card_load() {
-    char *sramfile;
     FILE *file;
     size_t read;
     u8 dummy;
@@ -86,15 +74,13 @@ void card_load() {
         return;
     }
 
-    sramfile = get_sramfile();
-
-    file = fopen(sramfile, "rb");
+    file = fopen(pathes.card, "rb");
     if(file == NULL) {
         printf("No .card-file found\n");
         return;
     }
 
-    printf("Loading SRAM file '%s'\n", sramfile);
+    printf("Loading SRAM file '%s'\n", pathes.card);
 
     if(mbc.has_ram) {
         read = fread(card.srambanks, 1, card.sramsize * sizeof(*card.srambanks), file);

@@ -4,6 +4,7 @@
 #include "core/moo.h"
 #include "util/config.h"
 #include "util.h"
+#include "util/pathes.h"
 #include <dirent.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -180,10 +181,11 @@ static void clear() {
 }
 
 static void load_rom() {
-    char new_rompath[sizeof(sys.rompath)];
+    char *new_rompath = malloc(strlen(cwd) + strlen(direntries[list->selected]->name) + 1);
 
     snprintf(new_rompath, sizeof(new_rompath), "%s%s", cwd, direntries[list->selected]->name);
     moo_load_rom(new_rompath);
+    free(new_rompath);
 
     finished = 1;
 }

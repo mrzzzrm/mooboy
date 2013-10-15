@@ -25,6 +25,7 @@
 #include "util/card.h"
 #include "util/state.h"
 #include "util/continue.h"
+#include "util/pathes.h"
 #include "sound.h"
 
 
@@ -32,18 +33,13 @@ moo_t moo;
 
 
 static void on_rom_over() {
-    char *ext = ".continue.sav";
-    char *state_path = malloc(strlen(sys.rompath) + strlen(ext) + 1);
-    sprintf(state_path, "%s%s", sys.rompath, ext);
-    state_save(state_path);
-    free(state_path);
-
+    state_save(pathes.continue_state);
     card_save();
 }
 
 static void store_rompath() {
     FILE *f = fopen("lastrom.txt", "w");
-    fwrite(sys.rompath, 1, strlen(sys.rompath), f);
+    fprintf(f, "%s", pathes.rom);
     fclose(f);
 }
 
@@ -58,6 +54,7 @@ void moo_init() {
 
 void moo_close() {
     sound_close();
+    pathes_close();
     //serial_close();
 }
 
@@ -130,11 +127,11 @@ void moo_load_rom(const char *path) {
     if(moo.state & MOO_ROM_LOADED_BIT) {
         on_rom_over();
     }
-    if(path != sys.rompath) {
-        strcpy(sys.rompath, path);
+    if(path != pathes.rom) {
+        pathes_rompath(path);
     }
 
-    printf("Loading ROM '%s'\n", sys.rompath);
+    printf("Loading ROM '%s'\n", pathes.rom);
 
     moo_reset();
     moo_load_rom_config();

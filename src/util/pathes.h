@@ -4,8 +4,10 @@
 typedef struct {
     char *rom;
     char *romdir;
+    char *romname;
     char *config;
     char *states[10];
+    char *continue_state;
     char *card;
 } pathes_t;
 
