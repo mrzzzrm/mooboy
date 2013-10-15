@@ -4,10 +4,8 @@
     - Magic-Number replacement, especially for bitchecks
     - Take care of byte-order and datatype size, especially for savestates
     - Pixel-Depth independant rendering
-    - .sav: check sanity of (v)ram bank indices
 	- Support zipped ROMs
    >- Support VSync(Notaz SDL?)
-	- Support savs in appdata
 	
     
 [Game Bugs]
@@ -29,11 +27,8 @@
     
 [Misc]
 	- Build system, autotools
-   >- Prefix cards and states with version 
 	
 [Refactoring]
-	- cards and states should use templated code
 	- move config state into own struct
-	- decide between mainloop based state and pause->do_something_else->continue
 	- Lazy initialize menu components? Reduces spaghetti...
 	
