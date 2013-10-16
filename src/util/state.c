@@ -85,8 +85,8 @@ static value_t values[] = {
     V(lcd.scx), V(lcd.scy),
     V(lcd.ly), V(lcd.lyc),
     V(lcd.wx), V(lcd.wy),
-    V(lcd.bgp.b), V(lcd.obp.b),
-    V(lcd.bgp.d), V(lcd.obp.d),
+    VA(lcd.bgp.b), VA(lcd.obp.b),
+    VA(lcd.bgp.d), VA(lcd.obp.d),
     V(lcd.bgp.s), V(lcd.bgp.i),
     V(lcd.obp.s), V(lcd.obp.i),
     V(lcd.hdma_source), V(lcd.hdma_dest),
@@ -261,6 +261,7 @@ static int load_hw_queue() {
     for(R(id); id != 0xFF; R(id)) {
         if(scheduled[id]) {
             moo_errorf("Savestate is corrupt #2");
+            return 1;
         }
         scheduled[id] = 1;
 
@@ -298,6 +299,9 @@ static int load_misc() {
     error |= fread(&byte, 1, 1, f) != 1; mbc.srambank = card.srambanks[byte & 0x03];
     error |= fread(&byte, 1, 1, f) != 1; ram.rambank = ram.rambanks[byte & 0x07];
     error |= load_hw();
+
+    maps_dirty();
+    lcd_rebuild_palette_maps();
 
     return error;
 }

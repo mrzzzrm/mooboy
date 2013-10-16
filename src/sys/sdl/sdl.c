@@ -150,27 +150,12 @@ SDL_Rect streched_scaling_area() {
     return area;
 }
 
-static void dbg_render_map(int m, int x) {
-    int tx, ty;
-
-    for(ty = 0; ty < 32; ty++) {
-        for(tx  = 0; tx < 32; tx++) {
-          //  dbg_render_tile(ram.vramtx*8+x, ty*8);
-        }
-    }
-}
-
-static void dbg_render_maps() {
-    dbg_render_map(0, 480);
-    dbg_render_map(1, 736);
-}
 
 static void render() {
     video_render(SDL_GetVideoSurface());
     if(sys.show_statusbar) {
         SDL_BlitSurface(statuslabel, NULL, SDL_GetVideoSurface(), NULL);
     }
-    dbg_render_maps();
     SDL_Flip(SDL_GetVideoSurface());
 }
 
@@ -235,7 +220,6 @@ void sys_set_scalingmode(int mode) {
     }
     sys.scalingmode = mode;
 
-   // area.x = 0;
     video_set_area(area);
 }
 

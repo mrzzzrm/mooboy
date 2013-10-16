@@ -86,8 +86,10 @@ void moo_begin() {
 }
 
 void moo_continue() {
-    moo.state |= MOO_ROM_RUNNING_BIT;
-    sys_continue();
+    if((moo.state & MOO_ROM_LOADED_BIT) && (~moo.state & MOO_ERROR_BIT)) {
+        moo.state |= MOO_ROM_RUNNING_BIT;
+        sys_continue();
+    }
 }
 
 void moo_restart_rom() {
@@ -113,9 +115,7 @@ void moo_quit() {
 void moo_paused_do(void (*func)()) {
     moo_pause();
     func();
-    if(~moo.state & MOO_ERROR_BIT) {
-        moo_continue();
-    }
+    moo_continue();
 }
 
 static void warn_rtc_sav_conflict() {
@@ -247,6 +247,8 @@ void moo_errorf(const char *format, ...) {
     moo.state |= MOO_ERROR_BIT;
     moo.state &= ~MOO_ROM_RUNNING_BIT;
     moo.state &= ~MOO_ROM_LOADED_BIT;
+
+    moo_reset();
 
     va_end(args);
 }
