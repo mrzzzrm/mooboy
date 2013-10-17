@@ -63,12 +63,18 @@ static sample_t sqw_mix(sqw_t *ch) {
     }
     ch->cc = hw.cc - ch->cc_reset;
 
+
+
     wavefreq = 131072 / (2048 - ch->freq);
     wavelen = cpu.freq / wavefreq;
 
     if(ch->cc >= wavelen) {
         ch->cc %= wavelen;
         ch->cc_reset = hw.cc - ch->cc;
+    }
+
+    if(ch->freq == 0x07FF) { // Fixes CASPER e.g.
+        return r;
     }
 
     switch(ch->duty) {
@@ -99,13 +105,12 @@ static sample_t wave_mix() {
     wavelen = (cpu.freq/65536) * (2048 - wave.freq);
 
     if(wave.cc >= wavelen) {
-        if(wavelen == 0) {
-            printf("Null! %i\n", wave.freq);
-        }
         wave.cc %= wavelen;
         wave.cc_reset = hw.cc - wave.cc;
     }
-
+    if(wave.freq == 0x07FF) { // Fixes CASPER e.g.
+        return r;
+    }
     realsam = (wave.cc*0x20) / wavelen;
 
     if(realsam % 2 == 0) {

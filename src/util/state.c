@@ -12,6 +12,7 @@
 #include "core/mbc.h"
 #include "core/moo.h"
 #include "core/mem.h"
+#include "core/maps.h"
 #include "core/timers.h"
 #include "core/sound.h"
 #include "core/lcd.h"
