@@ -1,3 +1,4 @@
 0.2
 	- Fixed glitches in Alfred's Adventure, Chuck Rock
 	- Fixed RTC progressing day one hour late
+	- Savestates, SRAMs and configfiles are now placed in the appdata dir, not alongside the ROM anymore
