@@ -2,6 +2,7 @@
 #define SYS_H
 
 #include <time.h>
+#include "core/defines.h"
 
 typedef struct {
     time_t ticks;
@@ -27,6 +28,7 @@ typedef struct {
 
     int auto_rtc;
     int warned_rtc_sav_conflict;
+    int speed_factor;
 
     unsigned int bits_per_pixel;
     unsigned int bytes_per_pixel;
@@ -62,6 +64,9 @@ void sys_handle_events(void (*input_handle)(int, int));
 void sys_new_performance_info();
 
 void sys_set_scalingmode(int mode);
+
+u16 sys_map_cgb_color(u16 lcd_color);
+u16 sys_map_dmg_color(u16 lcd_color);
 
 //void sys_serial_connect();
 //void sys_serial_step();

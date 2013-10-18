@@ -8,7 +8,6 @@
 
 static u8 *linebuf = NULL;
 static int linebuf_size = 0;
-static u16 cgb_to_rgb_buf[0x8000];
 static int acolumns_in_fbpixel_buf[160];
 static int line_length;
 static int line_byte_offset;
@@ -48,7 +47,7 @@ static inline void fw_render_buffer(SDL_Surface *surface, void *buf, int bufline
     memcpy(surface->pixels + bytes_per_line * y, buf, buflines * bytes_per_line);
 }
 
-static void cgb_fw_render_fbline(int line) {
+static void render_fbline_to_buffer(int line) {
     int fb_pixel, buf_pos, ax, ppos, fbx;
     u16 s_color;
     int pixels_to_set;
@@ -58,43 +57,14 @@ static void cgb_fw_render_fbline(int line) {
     fbx = 0;
 
     for(ax = 0; ax < area.w; fbx++) {
-        s_color = cgb_to_rgb_buf[lcd.clean_fb[fb_pixel++]];
+        s_color = lcd.clean_fb[fb_pixel++];
         pixels_to_set = acolumns_in_fbpixel_buf[fbx];
         ax += pixels_to_set;
 
         for(ppos = 0; ppos < pixels_to_set; ppos++) {
-            linebuf[buf_pos++] = s_color & 0x00FF;
-            linebuf[buf_pos++] = s_color >> 8;
+            *(u16*)&linebuf[buf_pos] = s_color;
+            buf_pos+=2;
         }
-    }
-}
-
-static void dmg_fw_render_fbline(int line) {
-    int fb_pixel, buf_pos, ax, ppos, fbx;
-    u16 s_color;
-    int pixels_to_set;
-
-    buf_pos = line_byte_offset;
-    fb_pixel = line * 160;
-    fbx = 0;
-
-    for(ax = 0; ax < area.w; fbx++) {
-        s_color = dmg_to_rgb(lcd.clean_fb[fb_pixel++]);
-        pixels_to_set = acolumns_in_fbpixel(ax, area.w, fbx);
-
-        for(ppos = 0; ppos < pixels_to_set; ppos++, ax++) {
-            linebuf[buf_pos++] = s_color & 0x00FF;
-            linebuf[buf_pos++] = s_color >> 8;
-        }
-    }
-}
-
-static void render_fbline_to_buffer(int line) {
-    if(moo.mode == CGB_MODE) {
-        cgb_fw_render_fbline(line);
-    }
-    else {
-        dmg_fw_render_fbline(line);
     }
 }
 
@@ -162,16 +132,6 @@ void video_switch_display_mode() {
     gshift = screen->format->Gshift + 3 - screen->format->Gloss;
     bshift = screen->format->Bshift + 3 - screen->format->Bloss;
 
-    dmg_palette[0] = 0x1F<<rshift | 0x1F << gshift | 0x1F << bshift;
-    dmg_palette[1] = 0x13<<rshift | 0x13 << gshift | 0x13 << bshift;
-    dmg_palette[2] = 0x07<<rshift | 0x07 << gshift | 0x07 << bshift;
-    dmg_palette[3] = 0x00<<rshift | 0x00 << gshift | 0x00 << bshift;
-
-    int c;
-    for(c = 0; c < 0x8000; c++) {
-        cgb_to_rgb_buf[c] = cgb_to_rgb(c);
-    }
-
     memset(linebuf, 0x00, linebuf_size);
     SDL_FillRect(SDL_GetVideoSurface(), NULL, 0);
 }
@@ -204,3 +164,17 @@ void video_render(SDL_Surface *surface) {
     }
 }
 
+u16 sys_map_cgb_color(u16 lcd_color) {
+    return cgb_to_rgb(lcd_color);
+}
+
+u16 sys_map_dmg_color(u16 lcd_color) {
+    switch(lcd_color) {
+        case 0: return 0x1F<<rshift | 0x1F << gshift | 0x1F << bshift; break;
+        case 1: return 0x13<<rshift | 0x13 << gshift | 0x13 << bshift; break;
+        case 2: return 0x07<<rshift | 0x07 << gshift | 0x07 << bshift; break;
+        case 3: return 0x00<<rshift | 0x00 << gshift | 0x00 << bshift; break;
+
+        default: assert(0);
+    }
+}

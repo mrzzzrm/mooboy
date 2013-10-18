@@ -3,19 +3,17 @@
 #include "sys/sys.h"
 #include "core/cpu.h"
 #include "core/moo.h"
+#include <stdio.h>
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
 
 framerate_t framerate;
 
 void framerate_init() {
-    framerate.limit_framerate = 1;
     framerate.frameskip = -1;
     framerate.max_frameskip = 5;
-    framerate.delay_threshold = 1;
 
     framerate.cc_ahead = 0;
-    framerate.last_curb_ticks = 0;
     framerate.skipped = 0;
     framerate.first_frame_ticks = 0;
     framerate.framecount = 0;
@@ -28,7 +26,6 @@ void framerate_reset() {
 void framerate_begin() {
     framerate.first_frame_ticks = sys.ticks;
     framerate.cc_ahead = 0;
-    framerate.last_curb_ticks = 0;
 }
 
 int framerate_next_frame() {
@@ -71,22 +68,5 @@ int framerate_next_frame() {
 
     framerate.framecount = should_framecount;
     return next_frame;
-}
-
-void framerate_curb() {
-    int period = sys.ticks - (long)framerate.last_curb_ticks;
-
-    framerate.cc_ahead += sys.invoke_cc;
-    framerate.cc_ahead -= (period * cpu.freq)/1000;
-    // Set a lower limit for cc_ahead, kinda random
-    framerate.cc_ahead = max(framerate.cc_ahead, -cpu.freq/10);
-
-    int ms_ahead = framerate.cc_ahead / ((long)cpu.freq/1000);
-    if(ms_ahead >= framerate.delay_threshold) {
-        sys_delay(framerate.delay_threshold);
-        performance.counting.slept += framerate.delay_threshold;
-    }
-
-    framerate.last_curb_ticks = sys.ticks;
 }
 

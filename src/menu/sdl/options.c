@@ -1,5 +1,7 @@
 #include "options.h"
 #include "util/config.h"
+#include "util/framerate.h"
+#include "util/speed.h"
 #include "core/mbc.h"
 #include "sys/sys.h"
 #include "util.h"
@@ -16,6 +18,7 @@
 #define LABEL_SAVE_GLOBAL 7
 #define LABEL_LOAD_GLOBAL 8
 #define LABEL_RESET 9
+#define LABEL_SPEED_FACTOR 10
 
 
 static menu_list_t *list;
@@ -28,6 +31,21 @@ static void back() {
 static void change_sound(int dir) {
     sys.sound_on = dir ? !sys.sound_on : sys.sound_on;
     menu_listentry_val(list, LABEL_SOUND, sys.sound_on ? "on" : "off");
+}
+
+static void change_speed_factor(int dir) {
+    char buf[10];
+
+    speed.factor = speed.factor + dir;
+
+    speed.factor = min(speed.factor, SPEED_MAX_FACTOR);
+    speed.factor = max(speed.factor, 1);
+    speed_set_factor(speed.factor);
+
+    snprintf(buf, sizeof(buf), speed.factor == 1 ? "normal" : speed.factor < SPEED_MAX_FACTOR ? "%ix" : "unlimited", speed.factor);
+
+
+    menu_listentry_val(list, LABEL_SPEED_FACTOR, buf);
 }
 
 static void change_scaling(int dir) {
@@ -53,6 +71,7 @@ static void change_auto_rtc(int dir) {
 
 static void update_options() {
     change_sound(0);
+    change_speed_factor(0);
     change_scaling(0);
     change_statusbar(0);
     change_auto_continue(0);
@@ -97,6 +116,7 @@ void menu_options_init() {
     list->back_func = back;
 
     menu_new_listentry_selection(list, "Sound", LABEL_SOUND, change_sound);
+    menu_new_listentry_selection(list, "Speed", LABEL_SPEED_FACTOR, change_speed_factor);
     menu_new_listentry_selection(list, "Scaling", LABEL_SCALING, change_scaling);
     menu_new_listentry_selection(list, "Statusbar", LABEL_STATUSBAR, change_statusbar);
     menu_new_listentry_selection(list, "Auto-Continue", LABEL_AUTO_CONTINUE, change_auto_continue);

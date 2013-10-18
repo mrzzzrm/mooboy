@@ -6,6 +6,7 @@
 #include <string.h>
 #include "sys/sys.h"
 #include "util/framerate.h"
+#include "util/speed.h"
 #include "core/cpu.h"
 #include "core/joy.h"
 #include "core/rtc.h"
@@ -139,12 +140,12 @@ static value_t values[] = {
     V(timers.div_cc), V(timers.tima_cc),
     V(sys.ticks),
     V(sys.invoke_cc),
-    V(framerate.cc_ahead),
     V(framerate.skipped),
     V(framerate.delay_threshold),
     V(framerate.first_frame_ticks),
     V(framerate.framecount),
-    V(framerate.last_curb_ticks),
+    V(speed.cc_ahead),
+    V(speed.last_limit_check),
     V(hw.cc)
 };
 

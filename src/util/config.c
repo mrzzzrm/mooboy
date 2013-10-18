@@ -2,6 +2,8 @@
 #include "sys/sys.h"
 #include "core/moo.h"
 #include "util/pathes.h"
+#include "util/framerate.h"
+#include "util/speed.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,6 +27,7 @@ typedef struct {
 
 static config_value_t values[] = {
     {"sound_on", &sys.sound_on, 1},
+    {"speed_factor", &speed.factor, 1},
     {"scalingmode", &sys.scalingmode, 0},
     {"show_statusbar", &sys.show_statusbar, 0},
     {"auto_continue", &sys.auto_continue, SYS_AUTO_CONTINUE_ASK},
@@ -58,12 +61,12 @@ static const char *load(const char *key) {
     return NULL;
 }
 
-static int load_int(const char *key) {
+static int load_int(const char *key, int default_val) {
     int val;
     char *end;
     const char *sval = load(key);
     if(sval == NULL) {
-        return 0;
+        return default_val;
     }
 
     val = strtol(sval, &end, 10);
@@ -141,7 +144,7 @@ static int config_load(const char *path) {
 
     int v;
     for(v = 0; v < sizeof(values)/sizeof(*values); v++) {
-         *values[v].ptr = load_int(values[v].name);
+         *values[v].ptr = load_int(values[v].name, values[v].default_val);
     }
 
     clear();
@@ -152,6 +155,7 @@ static int config_load(const char *path) {
         return 0;
     }
     sys_set_scalingmode(sys.scalingmode);
+    speed_set_factor(speed.factor);
 
     return 1;
 }
@@ -162,6 +166,7 @@ void config_default() {
          *values[v].ptr = values[v].default_val;
     }
     sys_set_scalingmode(sys.scalingmode);
+    speed_set_factor(speed.factor);
 }
 
 void config_save_local() {

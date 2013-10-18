@@ -26,6 +26,7 @@
 #include "util/card.h"
 #include "util/state.h"
 #include "util/pathes.h"
+#include "util/speed.h"
 #include "sound.h"
 
 
@@ -83,6 +84,7 @@ void moo_begin() {
     timers_begin();
     sys_begin();
     framerate_begin();
+    speed_begin();
 }
 
 void moo_continue() {

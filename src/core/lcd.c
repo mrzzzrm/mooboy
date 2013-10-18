@@ -339,16 +339,23 @@ static void update_cgb_palettes_map(lcd_palettes_t *palettes, u8 s) {
 
     palette = s/8;
     color_id = (s/2)%4;
-    d = palettes->d[s];
 
-    palettes->map[palette][color_id] = s & 1 ? (palettes->map[palette][color_id] & 0x00FF) | (d << 8) : (palettes->map[palette][color_id] & 0xFF00) | d;
+    if(s&1) {
+        d = palettes->d[s] << 8 | palettes->d[s-1];
+    }
+    else {
+        d = palettes->d[s] | palettes->d[s+1] << 8;
+    }
+
+
+    palettes->map[palette][color_id] = sys_map_cgb_color(d);
 }
 
 static void update_dmg_palettes_map(lcd_palettes_t *palettes, u8 s) {
     u8 rc;
 
     for(rc = 0; rc < 4; rc++) {
-        palettes->map[s][rc] = (palettes->b[s] & (0x3 << (rc<<1))) >> (rc<<1);
+        palettes->map[s][rc] = sys_map_dmg_color((palettes->b[s] & (0x3 << (rc<<1))) >> (rc<<1));
     }
     maps_dirty();
 }

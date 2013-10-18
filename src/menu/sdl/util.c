@@ -14,9 +14,6 @@
 #define SCROLL_ACTIVE 2
 
 
-#define min(a, b) ((a) < (b) ? (a) : (b))
-#define max(a, b) ((a) > (b) ? (a) : (b))
-
 static TTF_Font *font;
 
 static void list_up(menu_list_t *list) {

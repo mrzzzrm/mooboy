@@ -15,8 +15,10 @@
 #include "util/state.h"
 #include "input.h"
 #include "audio.h"
+#include "util/speed.h"
 #include "util/framerate.h"
 #include "util/performance.h"
+#include "util/speed.h"
 
 #define SCALING_PROPORTIONAL 0
 #define SCALING_STRECHED 1
@@ -189,7 +191,7 @@ void sys_invoke() {
         performance.counting.frames++;
     }
 
-    framerate_curb();
+    speed_limit();
 
     sys_handle_events(input_event);
     performance_invoked();
@@ -197,7 +199,12 @@ void sys_invoke() {
 }
 
 void sys_play_audio(int on) {
-    SDL_PauseAudio(!on);
+    if(speed.factor == 1) {
+        SDL_PauseAudio(!on);
+    }
+    else {
+        SDL_PauseAudio(1);
+    }
 }
 
 void sys_new_performance_info() {
@@ -222,4 +229,3 @@ void sys_set_scalingmode(int mode) {
 
     video_set_area(area);
 }
-
