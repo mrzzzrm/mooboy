@@ -92,30 +92,27 @@ static void select_obj_indexes() {
     obj_count = buf_index;
 }
 
-static void sort(u8 **objs) {
-    u8 switched;
-
-    do {
-        u8 o;
-        switched = 0;
-        for(o = 0; o + 1 < obj_count; o++) {
-            if(POSX(objs[o]) > POSX(objs[o+1])) {
-                u8 *tmp = objs[o];
-                objs[o] = objs[o+1];
-                objs[o+1] = tmp;
-                switched = 1;
-            }
-        }
-    } while(switched);
+#define sort(objs, cmp) { \
+    u8 switched; \
+    do { \
+        u8 o; \
+        switched = 0; \
+        for(o = 0; o + 1 < obj_count; o++) { \
+            if(POSX(objs[o]) cmp POSX(objs[o+1])) { \
+                u8 *tmp = objs[o]; \
+                objs[o] = objs[o+1]; \
+                objs[o+1] = tmp; \
+                switched = 1; \
+            } \
+        } \
+    } while(switched); \
 }
 
 static void compute_ranges() {
     u8 *sorted_objs[OAM_OBJ_COUNT];
 
     memcpy(sorted_objs, objs, sizeof(*sorted_objs) * obj_count);
-    if(moo.mode == CGB_MODE) {
-        sort(sorted_objs);
-    }
+    sort(sorted_objs, >);
 
     int r, o;
     int last_range_end = 0;
@@ -123,7 +120,6 @@ static void compute_ranges() {
     for(o = 0, r = 0; o < obj_count; o++, r++) {
         ranges[r].diff = max(POSX(sorted_objs[o]) - 8 - last_range_end, 0);
         ranges[r].end = min(POSX(sorted_objs[o]), 160);
-
 
         for(; o < obj_count-1; o++) {
             if(POSX(sorted_objs[o+1]) - (ranges[r].end + 8) < 8) {
@@ -181,8 +177,6 @@ static void render_obj(u8 *obj) {
 
 
 void lcd_scan_obj(u16 *_scan, pixel_meta_t *_meta, obj_range_t *_ranges) {
-    int o;
-
     scan = _scan;
     meta = _meta;
     ranges = _ranges;
@@ -191,17 +185,16 @@ void lcd_scan_obj(u16 *_scan, pixel_meta_t *_meta, obj_range_t *_ranges) {
     obj_height = (obj_size_mode ? 15 : 7);
 
     select_obj_indexes();
-
+    compute_ranges();
 
     if(moo.mode == NON_CGB_MODE) {
-        sort(objs);
+        sort(objs, <);
     }
 
     obj_count = obj_count > MAX_PER_LINE ? MAX_PER_LINE : obj_count;
 
-    //compute_ranges();
-
-    for(o = 0; o < obj_count; o++) {
+    int o;
+    for(o = obj_count-1; o >= 0; o--) {
         render_obj(objs[o]);
     }
 }

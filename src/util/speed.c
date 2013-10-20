@@ -36,6 +36,6 @@ void speed_limit() {
 
 void speed_set_factor(int factor) {
     speed.factor = factor;
-    sys_play_audio(speed.factor == 1);
+    sys_play_audio(sys.sound_on);
 }
 

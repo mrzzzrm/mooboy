@@ -60,7 +60,7 @@ void sys_init(int argc, const char** argv) {
     int flags = SDL_FULLSCREEN;
 #endif
 
-    flags |= SDL_DOUBLEBUF;
+//    flags |= SDL_DOUBLEBUF;
 
     SDL_ShowCursor(0);
 

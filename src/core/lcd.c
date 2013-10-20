@@ -67,62 +67,50 @@ static void swap_fb() {
     lcd.working_fb = tmp;
 }
 
-static inline void draw_line_cgb_mode(u16 *obj_scan, pixel_meta_t *obj_meta, obj_range_t *obj_ranges, u16 *maps_scan, pixel_meta_t *maps_meta) {
-    u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
-    int x, bg_priority, draw_bg, r;
-
-//    for(x = 0, r = 0; x < LCD_WIDTH;) {
-//        memcpy(pixel, &maps_scan[x], obj_ranges[r].diff * sizeof(*pixel));
-//        x += obj_ranges[r].diff;
-//        pixel += obj_ranges[r].diff;
-
-        for(x = 0; x < LCD_WIDTH; x++, pixel++) {
-            bg_priority = (lcd.c & LCDC_BG_ENABLE_BIT) &&
-                          (maps_meta[x].priority || obj_meta[x].priority);
-            draw_bg = (bg_priority && maps_meta[x].color_id != 0) || obj_meta[x].color_id == 0;
-
-            *pixel = draw_bg ? maps_scan[x] : obj_scan[x];
-        }
-//
-//        r++;
-//    }
+static inline int cgb_priority(int maps_color_id, int maps_priority, int obj_color_id, int obj_priority) {
+    int bg_priority = (lcd.c & LCDC_BG_ENABLE_BIT) && (maps_priority || obj_priority);
+    return (bg_priority && maps_color_id != 0) || obj_color_id == 0;
 }
 
-static inline void draw_line_non_cgb_mode(u16 *obj_scan, pixel_meta_t *obj_meta, obj_range_t *obj_ranges, u16 *maps_scan, pixel_meta_t *maps_meta) {
-    u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
-    u8 x;
-    int bg_priority;
-
-    for(x = 0; x < LCD_WIDTH; x++, pixel++) {
-        bg_priority = (obj_meta[x].priority && maps_meta[x].color_id != 0) || obj_meta[x].color_id == 0;
-        *pixel = bg_priority ? maps_scan[x] : obj_scan[x];
-    }
+static inline int dmg_priority(int maps_color_id, int maps_priority, int obj_color_id, int obj_priority) {
+    return (obj_priority && maps_color_id != 0) || obj_color_id == 0;
 }
-
 
 static void draw_line() {
     u16 obj_scan[160], maps_scan[160];
     pixel_meta_t obj_meta[160], maps_meta[160];
     obj_range_t obj_ranges[11];
+    int x, bg_priority, draw_bg, r;
+    u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
+    int (*priority_func)(int, int, int, int);
 
     memset(obj_scan, 0x00, sizeof(obj_scan));
     memset(obj_meta, 0x00, sizeof(obj_meta));
 
-    if(lcd.c & LCDC_OBJ_ENABLE_BIT) {
-        lcd_scan_obj(obj_scan, obj_meta, obj_ranges);
-    }
-    else {
-        obj_ranges[0].diff = 160;
-        obj_ranges[0].end = 160;
-    }
-
     lcd_scan_maps(maps_scan, maps_meta);
 
-    if(moo.mode == CGB_MODE) {
-        draw_line_cgb_mode(obj_scan, obj_meta, obj_ranges, maps_scan, maps_meta);
+    if(lcd.c & LCDC_OBJ_ENABLE_BIT) {
+        lcd_scan_obj(obj_scan, obj_meta, obj_ranges);
+
+        priority_func = moo.mode == CGB_MODE ? cgb_priority : dmg_priority;
+
+        for(x = 0, r = 0; x < LCD_WIDTH; r++) {
+            memcpy(pixel, &maps_scan[x], obj_ranges[r].diff * sizeof(*pixel));
+            x += obj_ranges[r].diff;
+            pixel += obj_ranges[r].diff;
+
+            for(; x < LCD_WIDTH; x++, pixel++) {
+                if(priority_func(maps_meta[x].color_id, maps_meta[x].priority, obj_meta[x].color_id, obj_meta[x].priority)) {
+                    *pixel = maps_scan[x];
+                }
+                else {
+                    *pixel = obj_scan[x];
+                }
+            }
+        }
     }
     else {
-        draw_line_non_cgb_mode(obj_scan, obj_meta, obj_ranges, maps_scan, maps_meta);
+        memcpy(pixel, maps_scan, 160 * sizeof(*maps_scan));
     }
 }
 
