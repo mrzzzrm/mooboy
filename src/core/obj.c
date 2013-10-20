@@ -38,39 +38,37 @@ static u8 obj_height;
 static u8 obj_size_mode;
 static u8 priority;
 static u8 palette;
+static u16 *scan;
+static pixel_meta_t *meta;
+static obj_range_t *ranges;
 
-static inline scan_pixel_t render_pixel(u8 *line, u8 rshift, scan_pixel_t old_pixel) {
-    scan_pixel_t pixel;
+static inline void render_pixel(u8 *line, u8 rshift, u8 sx) {
     u8 lsb = (line[0] >> rshift) & 0x01;
     u8 msb = (line[1] >> rshift) & 0x01;
     u8 color_id = lsb + (msb << 1);
 
-    if(color_id == 0) {
-        return old_pixel;
-    }
-    else {
-        pixel.color_id = color_id;
-        pixel.priority = priority;
-        pixel.color = lcd.obp.map[palette][pixel.color_id];
-        return pixel;
+    if(color_id != 0) {
+        meta[sx].color_id = color_id;
+        meta[sx].priority = priority;
+        scan[sx] = lcd.obp.map[palette][color_id];
     }
 }
 
-static inline void render_obj_line(u8 *line, u8 tx, u8 sx, scan_pixel_t *scan) {
+static inline void render_obj_line(u8 *line, u8 tx, u8 sx) {
     s8 rshift;
     for(rshift = 7 - tx; rshift >= 0 && sx < LCD_WIDTH; rshift--, sx++) {
-        scan[sx] = render_pixel(line, rshift, scan[sx]);
+        render_pixel(line, rshift, sx);
     }
 }
 
-static inline void render_obj_line_flipped(u8 *line, u8 tx, u8 sx, scan_pixel_t *scan) {
+static inline void render_obj_line_flipped(u8 *line, u8 tx, u8 sx) {
     u8 rshift;
     for(rshift = tx; rshift < 8 && sx < LCD_WIDTH; rshift++, sx++) {
-        scan[sx] = render_pixel(line, rshift, scan[sx]);
+        render_pixel(line, rshift, sx);
     }
 }
 
-static unsigned int select_obj_indexes(u8 **buf) {
+static int select_obj_indexes(u8 **buf) {
     u8 buf_index;
     u8 *obj, *oam_end;
 
@@ -88,7 +86,7 @@ static unsigned int select_obj_indexes(u8 **buf) {
     return buf_index;
 }
 
-static unsigned int establish_render_priority(u8 **objs, unsigned int count) {
+static int establish_render_priority(u8 **objs, int count) {
     u8 switched;
 
     if(moo.mode == NON_CGB_MODE) {
@@ -105,12 +103,44 @@ static unsigned int establish_render_priority(u8 **objs, unsigned int count) {
             }
         } while(switched);
     }
+    else {
+        ranges[0].diff = 0;
+        ranges[0].end = 160;
+    }
 
     return count > MAX_PER_LINE ? MAX_PER_LINE : count;
 }
 
+static void compute_ranges(u8 **objs, int count) {
+    if(moo.mode == NON_CGB_MODE) {
+        int r, o;
+        int last_range_end = 0;
 
-static inline void render_obj(u8 *obj, scan_pixel_t *scan) {
+        for(o = 0, r = 0; o < count; o++, r++) {
+            ranges[r].diff = POSX(objs[o]) - last_range_end;
+            ranges[r].end = POSX(objs[o]) + 8;
+
+            for(; o < count-1; o++) {
+                if(POSX(objs[o+1]) - ranges[r].end < 8) {
+                    ranges[r].end = POSX(objs[o+1]) + 8;
+                }
+                else {
+                    break;
+                }
+            }
+
+            last_range_end = ranges[r].end;
+        }
+        ranges[r].diff = 160 - last_range_end;
+        ranges[r].end = 160;
+    }
+    else {
+        ranges[0].diff = 0;
+        ranges[0].end = 160;
+    }
+}
+
+static void render_obj(u8 *obj) {
     u8 *line_data;
     u8 obj_line, tile_index;
     s16 sx;
@@ -141,18 +171,22 @@ static inline void render_obj(u8 *obj, scan_pixel_t *scan) {
     palette = moo.mode == CGB_MODE ? obj[FLAGS_OFFSET] & 0x07 : (obj[FLAGS_OFFSET] >> 4) & 0x01;
 
     if(XFLIP(obj)) {
-        render_obj_line_flipped(line_data, tx, sx, scan);
+        render_obj_line_flipped(line_data, tx, sx);
     }
     else {
-        render_obj_line(line_data, tx, sx, scan);
+        render_obj_line(line_data, tx, sx);
     }
 }
 
 
-void lcd_scan_obj(scan_pixel_t *scan) {
+void lcd_scan_obj(u16 *_scan, pixel_meta_t *_meta, obj_range_t *_ranges) {
     int o;
-    unsigned int obj_count;
+    int obj_count;
     u8 *obj_indexes[OAM_OBJ_COUNT];
+
+    scan = _scan;
+    meta = _meta;
+    ranges = _ranges;
 
     obj_size_mode = lcd.c & LCDC_OBJ_SIZE_BIT;
     obj_height = (obj_size_mode ? 15 : 7);
@@ -160,8 +194,10 @@ void lcd_scan_obj(scan_pixel_t *scan) {
     obj_count = select_obj_indexes(obj_indexes);
     obj_count = establish_render_priority(obj_indexes, obj_count);
 
+    compute_ranges(obj_indexes, obj_count);
+
     for(o = obj_count - 1; o >= 0; o--) {
-        render_obj(obj_indexes[o], scan);
+        render_obj(obj_indexes[o]);
     }
 }
 

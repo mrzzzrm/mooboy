@@ -13,6 +13,11 @@
 #define OBJ_PALETTE(o) (((o) >> OBJ_PALETTE_SHIFT) & OBJ_PALETTE_MASK)
 #define OBJ_PRIORITY(o) ((o) & OBJ_PRIORITY_BIT)
 
-void lcd_scan_obj(scan_pixel_t *scan);
+typedef struct {
+    int diff;
+    int end;
+} obj_range_t;
+
+void lcd_scan_obj(u16 *scan, pixel_meta_t *meta, obj_range_t *ranges);
 
 #endif

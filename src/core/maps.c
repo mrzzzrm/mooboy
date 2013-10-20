@@ -16,14 +16,14 @@ static inline u8 render(u8 rshift) {
     return (lsb | (msb << 1));
 }
 
-#define draw_tile_line(scan, rshift_init, op) \
+#define draw_tile_line(scan, meta, rshift_init, op) \
     int tx; \
     u8 rshift = rshift_init; \
     \
     for(tx = 0; tx < 8; tx++, rshift op) { \
-        (scan)[tx].color_id = render(rshift); \
-        (scan)[tx].color = lcd.bgp.map[palette][(scan)[tx].color_id]; \
-        (scan)[tx].priority = priority; \
+        (meta)[tx].color_id = render(rshift); \
+        (meta)[tx].priority = priority; \
+        (scan)[tx] = lcd.bgp.map[palette][(meta)[tx].color_id]; \
     }
 
 #define iterate_tile(line_init, op) \
@@ -32,10 +32,10 @@ static inline u8 render(u8 rshift) {
         linedata = &tdt[tile*0x10 + line*2]; \
         \
         if(attr & 0x20) { \
-            draw_tile_line(&map->scan_cache[cy][cx], 0, ++); \
+            draw_tile_line(&map->scan_cache[cy][cx], &map->cache_meta[cy][cx], 0, ++); \
         } \
         else { \
-            draw_tile_line(&map->scan_cache[cy][cx], 7, --); \
+            draw_tile_line(&map->scan_cache[cy][cx], &map->cache_meta[cy][cx], 7, --); \
         } \
     }
 
@@ -106,7 +106,7 @@ static inline void redraw_dirty(lcd_map_t *map, int tx, int ty) {
     }
 }
 
-static inline void scan_bg(scan_pixel_t *scan) {
+static inline void scan_bg(u16 *scan, pixel_meta_t *meta) {
     lcd_map_t *map =  &lcd.maps[lcd.c & 0x08 ? 1 : 0];
 
     int my = (lcd.ly + lcd.scy) % 256;
@@ -114,12 +114,14 @@ static inline void scan_bg(scan_pixel_t *scan) {
 
     redraw_dirty(map, lcd.scx/8, my/8);
 
-    memcpy(scan, &map->scan_cache[my][lcd.scx], (ex) * sizeof(scan_pixel_t));
-    memcpy(&scan[ex], &map->scan_cache[my][0], (160 - ex) * sizeof(scan_pixel_t));
+    memcpy(scan, &map->scan_cache[my][lcd.scx], ex * sizeof(*scan));
+    memcpy(meta, &map->cache_meta[my][lcd.scx], ex * sizeof(*meta));
+    memcpy(&scan[ex], &map->scan_cache[my][0], (160 - ex) * sizeof(*scan));
+    memcpy(&meta[ex], &map->cache_meta[my][0], (160 - ex) * sizeof(*meta));
 }
 
 
-static inline void scan_wnd(scan_pixel_t *scan) {
+static inline void scan_wnd(u16 *scan, pixel_meta_t *meta) {
     if(lcd.wy > lcd.ly || lcd.wx > 166) {
         return;
     }
@@ -131,14 +133,15 @@ static inline void scan_wnd(scan_pixel_t *scan) {
 
     redraw_dirty(map, mx/8, my/8);
 
-    memcpy(&scan[sx], &map->scan_cache[my][mx], (160 - sx) * sizeof(scan_pixel_t));
+    memcpy(&scan[sx], &map->scan_cache[my][mx], (160 - sx) * sizeof(*scan));
+    memcpy(&meta[sx], &map->cache_meta[my][mx], (160 - sx) * sizeof(*meta));
 }
 
-void lcd_scan_maps(scan_pixel_t *scan) {
-    scan_bg(scan);
+void lcd_scan_maps(u16 *scan, pixel_meta_t *meta) {
+    scan_bg(scan, meta);
 
     if(lcd.c & 0x20) {
-        scan_wnd(scan);
+        scan_wnd(scan, meta);
     }
 }
 

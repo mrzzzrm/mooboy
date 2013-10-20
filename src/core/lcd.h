@@ -21,13 +21,13 @@
 
 
 typedef struct {
-    u16 color;
     u8 color_id;
     u8 priority;
-} scan_pixel_t;
+} pixel_meta_t;
 
 typedef struct {
-    scan_pixel_t scan_cache[256][256];
+    u16 scan_cache[256][256];
+    pixel_meta_t cache_meta[256][256];
     u32 cached_palette[32][32][2];
     int tile_dirty[32][32];
 
