@@ -31,6 +31,8 @@ void mem_reset();
 u8 mem_read_byte(u16 adr);
 u16 mem_read_word(u16 adr);
 
+void dbg_oam_write(u8 adr, u8 val);
+
 void mem_write_byte(u16 adr, u8 val);
 void mem_write_word(u16 adr, u16 val);
 

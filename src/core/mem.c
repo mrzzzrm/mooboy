@@ -97,6 +97,20 @@ u16 mem_read_word(u16 adr) {
     return (u16)mem_read_byte(adr) | ((u16)mem_read_byte(adr + 1) << 8);
 }
 
+#include <SDL/SDL.h>
+
+void dbg_oam_write(u8 adr, u8 val) {
+    if(ram.oam[adr] == val) {
+        return;
+    }
+
+    int o = adr/4;
+    int t = adr%4;
+
+    if(t > 1)
+    printf("%i: OAM %i %s %.2X=>%.2X\n", SDL_GetTicks(), o, t == 2 ? "index" : "attr", ram.oam[adr], val);
+}
+
 void mem_write_byte(u16 adr, u8 val) {
     switch(adr >> 12) {
         case 0x0: case 0x1: case 0x2: case 0x3:
@@ -129,10 +143,13 @@ void mem_write_byte(u16 adr, u8 val) {
                 mem_write_byte(adr - 0x2000, val);
             }
             else if(adr >= 0xFE00 && adr < 0xFEA0) { // Sprite attributes
-                if((lcd.stat & 0x03) <= 0x01 || !(lcd.c & 0x80))
+                if((lcd.stat & 0x03) <= 0x01 || !(lcd.c & 0x80)) {
+                    dbg_oam_write(adr-0xFE00, val);
                     ram.oam[adr - 0xFE00] = val;
-                else
+                }
+                else {
                     write_locked_mem(adr, val);
+                }
             }
             else if(adr >= 0xFEA0 && adr < 0xFF00) { // Locked
                 write_locked_mem(adr, val);

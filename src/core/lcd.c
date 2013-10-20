@@ -232,8 +232,11 @@ void lcd_dma(u8 v) {
     u8 b;
     u16 src;
 
+    printf(">> DMA %.2X\n", v);
     for(src = ((u16)v)<<8, b = 0; b < 0xA0; b++, src++) {
-        ram.oam[b] = mem_read_byte(src);
+        u8 val = mem_read_byte(src);
+        dbg_oam_write(b, val);
+        ram.oam[b] = val;
     }
 }
 

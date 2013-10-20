@@ -2,6 +2,7 @@
 #include "moo.h"
 #include "mem.h"
 #include "lcd.h"
+#include <stdio.h>
 
 #define MAX_PER_LINE 10
 #define OBJ_SIZE 4

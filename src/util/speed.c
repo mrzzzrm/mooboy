@@ -6,7 +6,6 @@
 speed_t speed;
 
 void speed_begin() {
-    speed.factor = 1;
     speed.cc_ahead = 0;
     speed.last_limit_check = 0;
 }
