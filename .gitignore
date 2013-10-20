@@ -7,4 +7,6 @@ sdl_release/*
 rom/*
 codeblocks/
 romdir.txt
-
+**.state
+**.card
+**.sav*

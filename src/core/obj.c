@@ -2,6 +2,9 @@
 #include "moo.h"
 #include "mem.h"
 #include "lcd.h"
+#include "defines.h"
+#include <string.h>
+#include <stdio.h>
 
 #define MAX_PER_LINE 10
 #define OBJ_SIZE 4
@@ -34,6 +37,7 @@
 
 #define OBJPTR(index) (&ram.oam[(index)*OBJ_SIZE])
 
+
 static u8 obj_height;
 static u8 obj_size_mode;
 static u8 priority;
@@ -41,6 +45,8 @@ static u8 palette;
 static u16 *scan;
 static pixel_meta_t *meta;
 static obj_range_t *ranges;
+static int obj_count;
+static u8 *objs[OAM_OBJ_COUNT];
 
 static inline void render_pixel(u8 *line, u8 rshift, u8 sx) {
     u8 lsb = (line[0] >> rshift) & 0x01;
@@ -68,7 +74,7 @@ static inline void render_obj_line_flipped(u8 *line, u8 tx, u8 sx) {
     }
 }
 
-static int select_obj_indexes(u8 **buf) {
+static void select_obj_indexes() {
     u8 buf_index;
     u8 *obj, *oam_end;
 
@@ -79,65 +85,60 @@ static int select_obj_indexes(u8 **buf) {
         s16 bottom_line = top_line + obj_height;
 
         if((s16)lcd.ly >= top_line && (s16)lcd.ly <= bottom_line) {
-            buf[buf_index++] = obj;
+            objs[buf_index++] = obj;
         }
     }
 
-    return buf_index;
+    obj_count = buf_index;
 }
 
-static int establish_render_priority(u8 **objs, int count) {
+static void sort(u8 **objs) {
     u8 switched;
 
-    if(moo.mode == NON_CGB_MODE) {
-      do {
-            u8 o;
-            switched = 0;
-            for(o = 0; o + 1 < count; o++) {
-                if(POSX(objs[o+1]) > POSX(objs[o])) {
-                    u8 *tmp = objs[o];
-                    objs[o] = objs[o+1];
-                    objs[o+1] = tmp;
-                    switched = 1;
-                }
+    do {
+        u8 o;
+        switched = 0;
+        for(o = 0; o + 1 < obj_count; o++) {
+            if(POSX(objs[o]) > POSX(objs[o+1])) {
+                u8 *tmp = objs[o];
+                objs[o] = objs[o+1];
+                objs[o+1] = tmp;
+                switched = 1;
             }
-        } while(switched);
-    }
-    else {
-        ranges[0].diff = 0;
-        ranges[0].end = 160;
-    }
-
-    return count > MAX_PER_LINE ? MAX_PER_LINE : count;
+        }
+    } while(switched);
 }
 
-static void compute_ranges(u8 **objs, int count) {
-    if(moo.mode == NON_CGB_MODE) {
-        int r, o;
-        int last_range_end = 0;
+static void compute_ranges() {
+    u8 *sorted_objs[OAM_OBJ_COUNT];
 
-        for(o = 0, r = 0; o < count; o++, r++) {
-            ranges[r].diff = POSX(objs[o]) - last_range_end;
-            ranges[r].end = POSX(objs[o]) + 8;
+    memcpy(sorted_objs, objs, sizeof(*sorted_objs) * obj_count);
+    if(moo.mode == CGB_MODE) {
+        sort(sorted_objs);
+    }
 
-            for(; o < count-1; o++) {
-                if(POSX(objs[o+1]) - ranges[r].end < 8) {
-                    ranges[r].end = POSX(objs[o+1]) + 8;
-                }
-                else {
-                    break;
-                }
+    int r, o;
+    int last_range_end = 0;
+
+    for(o = 0, r = 0; o < obj_count; o++, r++) {
+        ranges[r].diff = max(POSX(sorted_objs[o]) - 8 - last_range_end, 0);
+        ranges[r].end = min(POSX(sorted_objs[o]), 160);
+
+
+        for(; o < obj_count-1; o++) {
+            if(POSX(sorted_objs[o+1]) - (ranges[r].end + 8) < 8) {
+                ranges[r].end = min(POSX(sorted_objs[o+1]), 160);
             }
-
-            last_range_end = ranges[r].end;
+            else {
+                break;
+            }
         }
-        ranges[r].diff = 160 - last_range_end;
-        ranges[r].end = 160;
+
+        last_range_end = ranges[r].end;
     }
-    else {
-        ranges[0].diff = 0;
-        ranges[0].end = 160;
-    }
+
+    ranges[r].diff = 160 - last_range_end;
+    ranges[r].end = 160;
 }
 
 static void render_obj(u8 *obj) {
@@ -181,8 +182,6 @@ static void render_obj(u8 *obj) {
 
 void lcd_scan_obj(u16 *_scan, pixel_meta_t *_meta, obj_range_t *_ranges) {
     int o;
-    int obj_count;
-    u8 *obj_indexes[OAM_OBJ_COUNT];
 
     scan = _scan;
     meta = _meta;
@@ -191,13 +190,19 @@ void lcd_scan_obj(u16 *_scan, pixel_meta_t *_meta, obj_range_t *_ranges) {
     obj_size_mode = lcd.c & LCDC_OBJ_SIZE_BIT;
     obj_height = (obj_size_mode ? 15 : 7);
 
-    obj_count = select_obj_indexes(obj_indexes);
-    obj_count = establish_render_priority(obj_indexes, obj_count);
+    select_obj_indexes();
 
-    compute_ranges(obj_indexes, obj_count);
 
-    for(o = obj_count - 1; o >= 0; o--) {
-        render_obj(obj_indexes[o]);
+    if(moo.mode == NON_CGB_MODE) {
+        sort(objs);
+    }
+
+    obj_count = obj_count > MAX_PER_LINE ? MAX_PER_LINE : obj_count;
+
+    //compute_ranges();
+
+    for(o = 0; o < obj_count; o++) {
+        render_obj(objs[o]);
     }
 }
 
