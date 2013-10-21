@@ -12,6 +12,11 @@ typedef struct {
 
     int sound_on;
     int sound_freq;
+    int sound_sample_size;
+    u16 sound_buf_size;
+    u16 sound_buf_start;
+    u16 sound_buf_end;
+    u8 *sound_buf;
 
     int invoke_cc;
 

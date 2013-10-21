@@ -199,7 +199,7 @@ void lcd_scan_obj(u16 *_scan, pixel_meta_t *_meta, obj_range_t *_ranges) {
 
     obj_count = obj_count > MAX_PER_LINE ? MAX_PER_LINE : obj_count;
 
-    //compute_ranges();
+    compute_ranges();
 
     for(o = 0; o < obj_count; o++) {
         render_obj(objs[o]);

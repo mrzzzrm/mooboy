@@ -1,5 +1,4 @@
 [Emulator]
-    - Optimize scan-system - not every pixel should have separate layer-tests  
     - Why is tima working for cgb? It should be too fast the way it is
     - Magic-Number replacement, especially for bitchecks
     - Take care of byte-order and datatype size, especially for savestates
@@ -21,7 +20,6 @@
     - Animorphs: Crash during first battle
     - Animaniacs crashes
     - Donkey Kong GBC: Music too low?
-    - Casper: Sound dissortions
 
 [Menu]  
     - Frameskip chooseable
@@ -32,4 +30,6 @@
 [Refactoring]
 	- move config state into own struct
 	- Lazy initialize menu components? Reduces spaghetti...
+	- sys.sound -> sys.audio / sys_audio
+	- Remove defines from core/obj
 	

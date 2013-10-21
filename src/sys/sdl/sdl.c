@@ -36,8 +36,11 @@ static char *scalingmode_names[] = {"Proportional", "Streched", "Full Proportion
 void sys_init(int argc, const char** argv) {
     memset(&sys, 0x00, sizeof(sys));
 
-    sys.sound_on = 1;
+    sys.sound_on = 0;
     sys.sound_freq = 22050;
+    sys.sound_sample_size = 2;
+    sys.sound_buf_size = 4096;
+    sys.sound_buf = malloc(sys.sound_buf_size * sys.sound_sample_size * 2);
     sys.quantum_length = 1000;
     sys.bits_per_pixel = 16;
     sys.bytes_per_pixel = 2;
@@ -83,11 +86,15 @@ void sys_init(int argc, const char** argv) {
 }
 
 void sys_reset() {
+    sys.sound_buf_start = 0;
+    sys.sound_buf_end = 0;
     sys.ticks = 0;
     sys.invoke_cc = 0;
 }
 
 void sys_close() {
+    free(sys.sound_buf);
+
     video_close();
     SDL_PauseAudio(1);
     SDL_Quit();

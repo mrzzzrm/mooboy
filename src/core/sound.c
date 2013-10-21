@@ -177,8 +177,8 @@ static void mix(int mcs) {
         sys_unlock_audiobuf();
     }
 
-    sound.mix_threshold = (cpu.freq + sound.remainder) / sound.freq;
-    sound.remainder = (cpu.freq + sound.remainder) % sound.freq;
+    sound.mix_threshold = (cpu.freq + sound.remainder) / sys.sound_freq;
+    sound.remainder = (cpu.freq + sound.remainder) % sys.sound_freq;
 
     hw_schedule(&sound_mix_event, sound.mix_threshold - mcs);
 }
@@ -220,23 +220,15 @@ static void step_envelopes(int mcs) {
 
 void sound_init() {
     memset(&sound, 0x00, sizeof(sound));
-
-    sound.freq = sys.sound_freq;
-    sound.buf_size = 4096;
-    sound.sample_size = 2;
-    sound.buf = malloc(sound.buf_size * sound.sample_size * 2);
 }
 
 void sound_close() {
-    free(sound.buf);
 }
 
 void sound_reset() {
     sound.on = 1;
     sound.so1_volume = 7;
     sound.so2_volume = 7;
-    sound.buf_start = 0;
-    sound.buf_end = 0;
     sound.remainder = 0;
 
     memset(&sqw, 0x00, sizeof(sqw));
@@ -263,7 +255,7 @@ void sound_reset() {
 void sound_begin() {
     sound.remainder = 0;
 
-    hw_unschedule(&sound_mix_event);             hw_schedule(&sound_mix_event, cpu.freq / sound.freq);
+    hw_unschedule(&sound_mix_event);             hw_schedule(&sound_mix_event, cpu.freq / sys.sound_freq);
     hw_unschedule(&sound_length_counters_event); hw_schedule(&sound_length_counters_event, 4096);
     hw_unschedule(&sound_sweep_event);           hw_schedule(&sound_sweep_event, 4096);
     hw_unschedule(&sound_envelopes_event);       hw_schedule(&sound_envelopes_event, 18384);
@@ -274,19 +266,19 @@ void sound_begin() {
 void sound_mix() {
     sample_t samples[4];
 
-    u16 *buf = (u16*)sound.buf;
+    u16 *buf = (u16*)sys.sound_buf;
 
     if(!sound.on) {
-        buf[sound.buf_end*2 + 0] = 0x0000;
-        buf[sound.buf_end*2 + 1] = 0x0000;
+        buf[sys.sound_buf_end*2 + 0] = 0x0000;
+        buf[sys.sound_buf_end*2 + 1] = 0x0000;
     }
     else {
-        if((sound.buf_end + 1) % sound.buf_size == sound.buf_start) {
+        if((sys.sound_buf_end + 1) % sys.sound_buf_size == sys.sound_buf_start) {
 #ifdef DEBUG
             printf("WARNING: Sound-Buffer overrun!\n");
 #endif
-            sound.buf_start = 0;
-            sound.buf_end = 0;
+            sys.sound_buf_start = 0;
+            sys.sound_buf_end = 0;
         }
 
         samples[0] = sqw_mix(&sqw[0]);
@@ -294,11 +286,11 @@ void sound_mix() {
         samples[2] = wave_mix();
         samples[3] = noise_mix();
 
-        buf[sound.buf_end*2 + 0] = (samples[0].l + samples[1].l + samples[2].l + samples[3].l)*sound.so1_volume*0x40;
-        buf[sound.buf_end*2 + 1] = (samples[0].r + samples[1].r + samples[2].r + samples[3].r)*sound.so2_volume*0x40;
+        buf[sys.sound_buf_end*2 + 0] = (samples[0].l + samples[1].l + samples[2].l + samples[3].l)*sound.so1_volume*0x40;
+        buf[sys.sound_buf_end*2 + 1] = (samples[0].r + samples[1].r + samples[2].r + samples[3].r)*sound.so2_volume*0x40;
     }
-    sound.buf_end++;
-    sound.buf_end %= sound.buf_size;
+    sys.sound_buf_end++;
+    sys.sound_buf_end %= sys.sound_buf_size;
 }
 
 void sound_write(u8 sadr, u8 val) {

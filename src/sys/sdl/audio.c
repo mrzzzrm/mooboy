@@ -18,18 +18,18 @@ void sys_unlock_audiobuf() {
 
 static u16 get_available_samples() {
     u16 r;
-    if(sound.buf_start > sound.buf_end) {
-        r = sound.buf_size - (sound.buf_start - sound.buf_end) + 1;
+    if(sys.sound_buf_start > sys.sound_buf_end) {
+        r = sys.sound_buf_size - (sys.sound_buf_start - sys.sound_buf_end) + 1;
     }
     else {
-        r = sound.buf_end - sound.buf_start;
+        r = sys.sound_buf_end - sys.sound_buf_start;
     }
 
     return r;
 }
 
 static void handout_buf(void *_unused, Uint8 *stream, int length) {
-    u16 requested_samples = length / (sound.sample_size * 2);
+    u16 requested_samples = length / (sys.sound_sample_size * 2);
     u16 available_samples;
     u16 served_samples;
 
@@ -49,25 +49,24 @@ static void handout_buf(void *_unused, Uint8 *stream, int length) {
             sound_mix();
         }
 
-        if(sound.buf_start > sound.buf_end) {
-            served_samples = sound.buf_size - sound.buf_start;
+        if(sys.sound_buf_start > sys.sound_buf_end) {
+            served_samples = sys.sound_buf_size - sys.sound_buf_start;
             if(served_samples >= requested_samples) {
-                memcpy(stream, &sound.buf[sound.buf_start*2*2], length);
+                memcpy(stream, &sys.sound_buf[sys.sound_buf_start*2*2], length);
             }
             else {
-                u16 bytes = served_samples * sound.sample_size * 2;
-                memcpy(&stream[0], &sound.buf[sound.buf_start*2*2], bytes);
-                memcpy(&stream[bytes], &sound.buf[0], (requested_samples - served_samples) * sound.sample_size * 2);
+                u16 bytes = served_samples * sys.sound_sample_size * 2;
+                memcpy(&stream[0], &sys.sound_buf[sys.sound_buf_start*2*2], bytes);
+                memcpy(&stream[bytes], &sys.sound_buf[0], (requested_samples - served_samples) * sys.sound_sample_size * 2);
             }
         }
         else {
-            memcpy(stream, &sound.buf[sound.buf_start*2*2], length);
+            memcpy(stream, &sys.sound_buf[sys.sound_buf_start*2*2], length);
         }
     }
 
-
-    sound.buf_start += requested_samples;
-    sound.buf_start %= sound.buf_size;
+    sys.sound_buf_start += requested_samples;
+    sys.sound_buf_start %= sys.sound_buf_size;
 
     sys_unlock_audiobuf();
 }
@@ -88,6 +87,7 @@ void audio_init() {
         moo_fatalf("Couldn't open audio device: %s", SDL_GetError());
         exit(1);
     }
+    SDL_PauseAudio(1);
 }
 
 

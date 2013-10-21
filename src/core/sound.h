@@ -5,24 +5,12 @@
 #include "hw.h"
 
 typedef struct {
-    u32 freq;
-
-    u16 buf_size;
-    u16 buf_start;
-    u16 buf_end;
-    u8 *buf;
-    u8 sample_size;
-
     u8 on;
     u8 so1_volume;
     u8 so2_volume;
 
- //   u8 last_timer_step;
-
     int mix_threshold;
- //   int cc;
     hw_cycle_t cc_reset;
-//    int tick_cc;
     int remainder;
 } sound_t;
 
