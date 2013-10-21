@@ -4,9 +4,9 @@
 #include "util/pathes.h"
 #include "util/state.h"
 
-static menu_dialog_t *continue_dialog;
-static menu_dialog_t *warn_rtc_sav_conflict_dialog;
-static menu_dialog_t *error_dialog;
+static menu_dialog_t *continue_dialog = NULL;
+static menu_dialog_t *warn_rtc_sav_conflict_dialog = NULL;
+static menu_dialog_t *error_dialog = NULL;
 
 static void load_continue_state() {
     state_load(pathes.continue_state);
@@ -19,8 +19,15 @@ void menu_dialogs_init() {
 }
 
 void menu_dialogs_close() {
-    menu_dialog_free(continue_dialog);
-    menu_dialog_free(warn_rtc_sav_conflict_dialog);
+    if(continue_dialog != NULL) {
+        menu_dialog_free(continue_dialog);
+    }
+    if(warn_rtc_sav_conflict_dialog != NULL) {
+        menu_dialog_free(warn_rtc_sav_conflict_dialog);
+    }
+    if(error_dialog != NULL) {
+        menu_dialog_free(error_dialog);
+    }
 }
 
 void menu_continue() {

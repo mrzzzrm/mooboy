@@ -262,7 +262,7 @@ void moo_fatalf(const char *format, ...) {
 
     va_end(args);
 
-    moo_quit();
+    exit(1);
 }
 
 void moo_clear_error() {

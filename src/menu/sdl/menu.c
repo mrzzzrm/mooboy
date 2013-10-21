@@ -155,7 +155,9 @@ void menu_init() {
 
 
 void menu_close() {
-    menu_free_list(list);
+    if(list != NULL) {
+        menu_free_list(list);
+    }
 
     menu_rom_close();
     menu_options_close();

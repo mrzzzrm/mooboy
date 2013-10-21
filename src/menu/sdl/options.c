@@ -21,7 +21,7 @@
 #define LABEL_SPEED_FACTOR 10
 
 
-static menu_list_t *list;
+static menu_list_t *list = NULL;
 static int finished;
 
 static void back() {
@@ -134,7 +134,9 @@ void menu_options_init() {
 }
 
 void menu_options_close() {
-    menu_free_list(list);
+    if(list != NULL) {
+        menu_free_list(list);
+    }
 }
 
 static void options_input_event(int type, int key) {

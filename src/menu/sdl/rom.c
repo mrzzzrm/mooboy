@@ -319,7 +319,9 @@ void menu_rom_init() {
 void menu_rom_close() {
     selected_element_t *e;
 
-    menu_free_list(list);
+    if(list != NULL) {
+        menu_free_list(list);
+    }
 
     for(e = selected_elements; e != NULL; e = e->next) {
         free(e->path);

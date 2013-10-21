@@ -14,7 +14,7 @@
 #define SCROLL_ACTIVE 2
 
 
-static TTF_Font *font;
+static TTF_Font *font = NULL;
 
 static void list_up(menu_list_t *list) {
     if(list->selected < 0) {
@@ -71,7 +71,9 @@ void menu_util_init() {
 }
 
 void menu_util_close() {
-    TTF_CloseFont(font);
+    if(font != NULL) {
+        TTF_CloseFont(font);
+    }
 }
 
 menu_label_t *menu_label(const char *text) {
