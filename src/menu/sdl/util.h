@@ -3,9 +3,8 @@
 
 #include <SDL/SDL.h>
 #include <stdarg.h>
+#include "core/defines.h"
 
-#define min(a, b) ((a) < (b) ? (a) : (b))
-#define max(a, b) ((a) > (b) ? (a) : (b))
 
 #ifdef PANDORA
     #define KEY_ACCEPT SDLK_RETURN

@@ -1,5 +1,6 @@
 #include "lcd.h"
 #include <string.h>
+#include <assert.h>
 #include <stdio.h>
 #include "cpu.h"
 #include "sys/sys.h"
@@ -80,7 +81,7 @@ static void draw_line() {
     u16 obj_scan[160], maps_scan[160];
     pixel_meta_t obj_meta[160], maps_meta[160];
     obj_range_t obj_ranges[11];
-    int x, bg_priority, draw_bg, r;
+    int x, r;
     u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
     int (*priority_func)(int, int, int, int);
 
@@ -94,9 +95,9 @@ static void draw_line() {
 
         priority_func = moo.mode == CGB_MODE ? cgb_priority : dmg_priority;
 
-        for(x = 0, r = 0; x < LCD_WIDTH; r++) { printf("From %i, range %i copy %i\n", x, r, obj_ranges[r].diff);
+        for(x = 0, r = 0; x < LCD_WIDTH; r++) {
             memcpy(pixel, &maps_scan[x], obj_ranges[r].diff * sizeof(*pixel));
-            x += obj_ranges[r].diff;
+            x += obj_ranges[r].diff; assert(x <= 160);
             pixel += obj_ranges[r].diff;
 
             for(; x < LCD_WIDTH; x++, pixel++) {
@@ -347,7 +348,6 @@ static void update_cgb_palettes_map(lcd_palettes_t *palettes, u8 s) {
     else {
         d = palettes->d[s] | palettes->d[s+1] << 8;
     }
-
 
     palettes->map[palette][color_id] = sys_map_cgb_color(d);
 }

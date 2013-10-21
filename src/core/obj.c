@@ -118,6 +118,10 @@ static void compute_ranges() {
     int last_range_end = 0;
 
     for(o = 0, r = 0; o < obj_count; o++, r++) {
+        if(POSX(sorted_objs[o]) >= 168) {
+            break;
+        }
+
         ranges[r].diff = max(POSX(sorted_objs[o]) - 8 - last_range_end, 0);
         ranges[r].end = min(POSX(sorted_objs[o]), 160);
 

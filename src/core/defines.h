@@ -51,7 +51,6 @@ typedef uint64_t u64;
 #define IME_DOWN 1
 #define IME_OFF 0
 
-
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
 

@@ -11,6 +11,7 @@
 #include "core/lcd.h"
 #include "core/moo.h"
 #include "core/joy.h"
+#include "core/defines.h"
 #include "core/sound.h"
 #include "util/state.h"
 #include "input.h"
@@ -24,8 +25,6 @@
 #define SCALING_STRECHED 1
 #define SCALING_PROPORTIONAL_FULL 2
 #define SCALING_NONE 3
-
-#define min(a, b) ((a) < (b) ? (a) : (b))
 
 sys_t sys;
 
