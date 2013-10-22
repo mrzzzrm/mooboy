@@ -2,7 +2,7 @@
     <application id="mooboy.mrz" appdata="mooboy.mrz">
         <exec command="./mooboy"/>
         <author name="mrz"/>
-        <version major="0" minor="2" release="1" build="1" type="beta"/>
+        <version major="0" minor="2" release="1" build="2" type="beta"/>
         <titles>
             <title lang="en_US">mooBoy</title>
         </titles>
