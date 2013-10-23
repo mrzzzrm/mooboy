@@ -11,6 +11,7 @@ mkdir $PND_TMP_DIR/data
 
 cp mooboy $PND_TMP_DIR/
 cp ../data/Xolonium.ttf $PND_TMP_DIR/data/
+cp ../data/back.png $PND_TMP_DIR/data/
 cp ../icon.png $PND_TMP_DIR/
 cp PXML.xml $PND_TMP_DIR/
 cp mooboy.sh $PND_TMP_DIR/
