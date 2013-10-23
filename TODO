@@ -4,6 +4,7 @@
     - Take care of byte-order and datatype size, especially for savestates
     - Pixel-Depth independant rendering
 	- Support zipped ROMs
+	- Detect ROMs that change palettes every line and only redraw lines then, not tiles
    >- Support VSync(Notaz SDL?)
 	
     
@@ -16,10 +17,14 @@
     - 007 The World is not enough: 2 lines in the statusbar aren't palleted correcly
     - Addams Familiy: Same palette dissortions as ever
     - Madden NFL: dissortions on screen transitions
+    - QBert: Same palette issues as ever
+    - Mario Golf: First letter missing in dialogs
     
     - Animorphs: Crash during first battle
     - Animaniacs crashes
     - Donkey Kong GBC: Music too low?
+    - Mission Impossible: No actions possible ingame?
+    - Ninja Boy: Freeze on title screen
 
 [Menu]  
     - Frameskip chooseable
