@@ -31,5 +31,3 @@
 	- move config state into own struct
 	- Lazy initialize menu components? Reduces spaghetti...
 	- sys.sound -> sys.audio / sys_audio
-	- Remove defines from core/obj
-	

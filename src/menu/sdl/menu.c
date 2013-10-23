@@ -13,6 +13,7 @@
 #include "util.h"
 #include "util/pathes.h"
 #include <SDL/SDL.h>
+#include <SDL/SDL_image.h>
 
 
 #define LABEL_RESUME            0
@@ -29,7 +30,7 @@
 static menu_list_t *list = NULL;
 static int load_slot = 0;
 static int save_slot = 0;
-
+static SDL_Surface *background = NULL;
 
 static void back() {
     if(moo.state & MOO_ROM_LOADED_BIT) {
@@ -98,6 +99,8 @@ static void setup() {
 static void draw() {
     SDL_FillRect(SDL_GetVideoSurface(), NULL, 0);
 
+
+    SDL_BlitSurface(background, NULL,SDL_GetVideoSurface() , NULL);
     menu_draw_list(list);
 
     SDL_Flip(SDL_GetVideoSurface());
@@ -151,12 +154,17 @@ void menu_init() {
 
     set_slot(LABEL_LOAD_STATE, 0);
     set_slot(LABEL_SAVE_STATE, 0);
+
+    background = IMG_Load("data/back.png");
 }
 
 
 void menu_close() {
     if(list != NULL) {
         menu_free_list(list);
+    }
+    if(background != NULL) {
+        SDL_FreeSurface(background);
     }
 
     menu_rom_close();

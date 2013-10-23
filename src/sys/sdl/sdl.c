@@ -66,9 +66,12 @@ void sys_init(int argc, const char** argv) {
 
     SDL_ShowCursor(0);
 
-
     if(SDL_SetVideoMode(screen_w, screen_h, sys.bits_per_pixel, flags) == NULL) {
         moo_fatalf("Setting of SDL video-mode failed");
+    }
+
+    if(!IMG_Init(IMG_INIT_PNG)) {
+        moo_fatalf("Initialisation of SDL_image failed");
     }
 
     sys.scalingmode = 0;
@@ -95,6 +98,7 @@ void sys_close() {
     free(sys.sound_buf);
 
     video_close();
+    IMG_Quit();
     SDL_PauseAudio(1);
     SDL_Quit();
 }

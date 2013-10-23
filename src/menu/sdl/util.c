@@ -221,7 +221,6 @@ void menu_blit_word_string(menu_word_string_t *string, int x, int y) {
         }
     }
 
-
     cy = y - (lh * num_lines)/2;
     for(l = 0; l < num_lines; l++) {
         cx = x - line_width[l]/2;

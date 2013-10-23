@@ -16,12 +16,8 @@
 #define INDEX_OFFSET 2
 #define FLAGS_OFFSET 3
 
-#define PRIORITY_SHIFT 7
 #define YFLIP_BIT 0x40
 #define XFLIP_BIT 0x20
-#define DMG_PALETTE_BIT 0x10
-#define DMG_PALETTE_SHIFT 4
-#define CGB_PALETTE_MASK 0x07
 #define BANK_MASK 0x08
 #define BANK_SHIFT 3
 
@@ -30,12 +26,7 @@
 #define TILE(obj) (obj[INDEX_OFFSET])
 #define XFLIP(obj)  ((obj)[FLAGS_OFFSET] & XFLIP_BIT)
 #define YFLIP(obj)  ((obj)[FLAGS_OFFSET] & YFLIP_BIT)
-#define PRIORITY(obj) ((obj)[FLAGS_OFFSET] >> PRIORITY_SHIFT)
-#define DMG_PALETTE(obj) ((((obj)[FLAGS_OFFSET] & DMG_PALETTE_BIT) >> DMG_PALETTE_SHIFT) << OBJ_PALETTE_SHIFT)
-#define CGB_PALETTE(obj) (((obj)[FLAGS_OFFSET] & CGB_PALETTE_MASK) << OBJ_PALETTE_SHIFT)
 #define BANK(obj) (((obj)[FLAGS_OFFSET] & BANK_MASK) >> BANK_SHIFT)
-
-#define OBJPTR(index) (&ram.oam[(index)*OBJ_SIZE])
 
 
 static u8 obj_height;
