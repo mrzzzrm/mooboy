@@ -18,6 +18,6 @@ typedef struct {
     int end;
 } obj_range_t;
 
-void lcd_scan_obj(u16 *scan, pixel_meta_t *meta, obj_range_t *ranges);
+void lcd_scan_obj(u16 *scan, pixel_meta_t *meta, obj_range_t *ranges, int *num_obj_ranges);
 
 #endif

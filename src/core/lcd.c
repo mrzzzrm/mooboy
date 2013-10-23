@@ -84,6 +84,7 @@ static void draw_line() {
     int x, r;
     u16 *pixel = &lcd.working_fb[lcd.ly * LCD_WIDTH];
     int (*priority_func)(int, int, int, int);
+    int num_obj_ranges;
 
     memset(obj_scan, 0x00, sizeof(obj_scan));
     memset(obj_meta, 0x00, sizeof(obj_meta));
@@ -91,16 +92,16 @@ static void draw_line() {
     lcd_scan_maps(maps_scan, maps_meta);
 
     if(lcd.c & LCDC_OBJ_ENABLE_BIT) {
-        lcd_scan_obj(obj_scan, obj_meta, obj_ranges);
+        lcd_scan_obj(obj_scan, obj_meta, obj_ranges, &num_obj_ranges);
 
         priority_func = moo.mode == CGB_MODE ? cgb_priority : dmg_priority;
 
-        for(x = 0, r = 0; x < LCD_WIDTH; r++) {
+        for(x = 0, r = 0; r < num_obj_ranges; r++) {
             memcpy(pixel, &maps_scan[x], obj_ranges[r].diff * sizeof(*pixel));
             x += obj_ranges[r].diff; assert(x <= 160);
             pixel += obj_ranges[r].diff;
 
-            for(; x < LCD_WIDTH; x++, pixel++) {
+            for(; x < obj_ranges[r].end; x++, pixel++) {
                 if(priority_func(maps_meta[x].color_id, maps_meta[x].priority, obj_meta[x].color_id, obj_meta[x].priority)) {
                     *pixel = maps_scan[x];
                 }
@@ -109,6 +110,22 @@ static void draw_line() {
                 }
             }
         }
+        memcpy(pixel, &maps_scan[x], (160-x) * sizeof(*pixel));
+
+//        for(x = 0, r = 0; x < LCD_WIDTH; r++) {
+//            memcpy(pixel, &maps_scan[x], obj_ranges[r].diff * sizeof(*pixel));
+//            x += obj_ranges[r].diff; assert(x <= 160);
+//            pixel += obj_ranges[r].diff;
+//
+//            for(; x < LCD_WIDTH; x++, pixel++) {
+//                if(priority_func(maps_meta[x].color_id, maps_meta[x].priority, obj_meta[x].color_id, obj_meta[x].priority)) {
+//                    *pixel = maps_scan[x];
+//                }
+//                else {
+//                    *pixel = obj_scan[x];
+//                }
+//            }
+//        }
     }
     else {
         memcpy(pixel, maps_scan, 160 * sizeof(*maps_scan));

@@ -99,8 +99,9 @@ static void select_obj_indexes() {
     } while(switched); \
 }
 
-static void compute_ranges() {
+static int compute_ranges() {
     u8 *sorted_objs[OAM_OBJ_COUNT];
+    int num = 0;
 
     memcpy(sorted_objs, objs, sizeof(*sorted_objs) * obj_count);
     sort(sorted_objs, >);
@@ -124,12 +125,11 @@ static void compute_ranges() {
                 break;
             }
         }
-
+        num++;
         last_range_end = ranges[r].end;
     }
 
-    ranges[r].diff = 160 - last_range_end;
-    ranges[r].end = 160;
+    return num;
 }
 
 static void render_obj(u8 *obj) {
@@ -171,7 +171,7 @@ static void render_obj(u8 *obj) {
 }
 
 
-void lcd_scan_obj(u16 *_scan, pixel_meta_t *_meta, obj_range_t *_ranges) {
+void lcd_scan_obj(u16 *_scan, pixel_meta_t *_meta, obj_range_t *_ranges, int *num_obj_ranges) {
     scan = _scan;
     meta = _meta;
     ranges = _ranges;
@@ -180,7 +180,7 @@ void lcd_scan_obj(u16 *_scan, pixel_meta_t *_meta, obj_range_t *_ranges) {
     obj_height = (obj_size_mode ? 15 : 7);
 
     select_obj_indexes();
-    compute_ranges();
+    *num_obj_ranges = compute_ranges();
 
     if(moo.mode == NON_CGB_MODE) {
         sort(objs, <);
