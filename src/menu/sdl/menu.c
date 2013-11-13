@@ -100,7 +100,7 @@ static void draw() {
     SDL_FillRect(SDL_GetVideoSurface(), NULL, 0);
 
 
-    SDL_BlitSurface(background, NULL,SDL_GetVideoSurface() , NULL);
+    menu_blit(background, SDL_GetVideoSurface()->w - background->w, SDL_GetVideoSurface()->h - background->h);
     menu_draw_list(list);
 
     SDL_Flip(SDL_GetVideoSurface());

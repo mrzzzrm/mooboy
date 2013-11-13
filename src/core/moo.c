@@ -95,6 +95,7 @@ void moo_continue() {
 }
 
 void moo_restart_rom() {
+    card_save();
     moo_reset();
     moo_load_rom_config();
     card_load();
