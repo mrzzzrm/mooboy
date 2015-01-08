@@ -73,6 +73,7 @@ void moo_reset() {
 
     performance_reset();
     framerate_reset();
+    speed_reset();
 }
 
 void moo_begin() {
