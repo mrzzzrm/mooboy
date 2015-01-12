@@ -5,8 +5,11 @@
 
 speed_t speed;
 
-void speed_begin() {
+void speed_reset() {
     speed.factor = 1;
+}
+
+void speed_begin() {
     speed.cc_ahead = 0;
     speed.last_limit_check = 0;
 }

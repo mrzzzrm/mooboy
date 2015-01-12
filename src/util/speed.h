@@ -14,6 +14,7 @@ typedef struct {
 
 extern speed_t speed;
 
+void speed_reset();
 void speed_begin();
 void speed_limit();
 void speed_set_factor(int factor);
