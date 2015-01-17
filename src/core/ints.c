@@ -1,8 +1,9 @@
 #include "ints.h"
+
 #include <assert.h>
 #include <stdio.h>
+
 #include "cpu.h"
-#include "defines.h"
 #include "defines.h"
 
 static inline void exec_int(u8 i) {

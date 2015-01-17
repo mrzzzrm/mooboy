@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <unistd.h>
 
 #define FONT_SIZE 40
 #define SCROLL_THRESHOLD 500
@@ -65,7 +66,12 @@ void menu_util_init() {
         int font_size = SDL_GetVideoSurface()->h / 15;
         font = TTF_OpenFont("data/Xolonium.ttf", font_size);
         if(font == NULL) {
-            moo_fatalf("Couldn't open font");
+            static char cwd[512] = "";
+
+            if(getcwd(cwd, sizeof(cwd)) != NULL)
+                moo_fatalf("Couldn't open font, working directory is '%s'", cwd);
+            else
+                moo_fatalf("Couldn't open font and failed to fetch cwd", cwd);
         }
     }
 }

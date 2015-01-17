@@ -13,7 +13,7 @@ void joy_reset() {
     joy.col = 0;
 }
 
-void joy_set_button(u8 button, u8 state) {
+void joy_set_button(u8 button, u8 state) { printf("Button %x\n", state);
     u8 old_state = joy.state & button ? JOY_STATE_RELEASED : JOY_STATE_PRESSED;
     if(old_state != state) {
         if(state) {
@@ -35,7 +35,7 @@ void joy_select_col(u8 flag) {
     }
 }
 
-u8 joy_read() {
+u8 joy_read() { printf("Read\n");
     if(joy.col == 0)
         return joy.state & 0x0F;
     else
