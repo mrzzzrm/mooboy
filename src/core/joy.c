@@ -3,6 +3,10 @@
 #include "defines.h"
 #include "joy.h"
 
+#ifdef DEBUG
+#include "debug/event.h"
+#endif // DEBUG
+
 #define SELECT_DIRECTION_BIT 0x10
 #define SELECT_ACTION_BIT 0x20
 
@@ -13,9 +17,17 @@ void joy_reset() {
     joy.col = 0;
 }
 
-void joy_set_button(u8 button, u8 state) { printf("Button %x\n", state);
+void joy_set_button(u8 button, u8 state) {
     u8 old_state = joy.state & button ? JOY_STATE_RELEASED : JOY_STATE_PRESSED;
     if(old_state != state) {
+#ifdef DEBUG
+        debug_event_t event;
+        event.type = EVENT_JOY;
+        event.joy.button = button;
+        event.joy.state = state;
+
+        debug_event(event);
+#endif // DEBUG
         if(state) {
             joy.state |= button;
         }
@@ -35,7 +47,7 @@ void joy_select_col(u8 flag) {
     }
 }
 
-u8 joy_read() { printf("Read\n");
+u8 joy_read() {
     if(joy.col == 0)
         return joy.state & 0x0F;
     else

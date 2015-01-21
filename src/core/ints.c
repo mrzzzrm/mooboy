@@ -5,15 +5,22 @@
 
 #include "cpu.h"
 #include "defines.h"
+#include "hw.h"
 
 static inline void exec_int(u8 i) {
+    hw_step(2);
+
     cpu.irq &= ~(1 << i);
     cpu.ime = IME_OFF;
 
     SP -= 2;
     mem_write_word(SP, PC);
 
+    hw_step(2);
+
     PC = 0x40 + (i<<3);
+
+    hw_step(1);
 }
 
 void ints_handle() {

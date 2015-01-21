@@ -77,6 +77,13 @@ add_executable(${EXEC_NAME}
     src/menu/sdl/dialog.h
     src/menu/sdl/util.h
     src/menu/menu.h
+    
+    src/debug/disasm.c
+    src/debug/disasm.h
+    src/debug/event.c
+    src/debug/event.h
+    src/debug/record.c
+    src/debug/record.h
 
     src/util/last_rom.h
     src/util/card.c

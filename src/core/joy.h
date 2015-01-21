@@ -15,15 +15,12 @@
 #define JOY_STATE_PRESSED   0x00
 #define JOY_STATE_RELEASED  0x01
 
-
 typedef struct {
     u8 state;
     u8 col;
 } joy_t;
 
-
 extern joy_t joy;
-
 
 void joy_reset();
 

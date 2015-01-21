@@ -105,3 +105,4 @@ void rtc_advance_seconds(time_t seconds) {
         rtc_tick(0);
     }
 }
+

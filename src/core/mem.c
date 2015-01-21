@@ -144,7 +144,7 @@ void mem_write_byte(u16 adr, u8 val) {
                 ram.hram[adr - 0xFF80] = val;
             }
             else {
-                cpu.ie = val & 0x1F; printf("IE: %x\n", cpu.ie);
+                cpu.ie = val & 0x1F;
             }
         return;
     }
