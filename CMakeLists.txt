@@ -17,6 +17,10 @@ find_package(SDL_image REQUIRED)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_definition(DEBUG)
+endif()
+
 add_executable(${EXEC_NAME}
     src/sys/sdl/input.h
     src/sys/sdl/serial.c
