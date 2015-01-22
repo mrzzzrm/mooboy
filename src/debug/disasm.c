@@ -325,7 +325,7 @@ static void build_f(OP op, FLAG f) {
 
 static void build_dmr(OP op, DATA d, REG r) {
     c_op.op = op;
-    c_op.sig = OP_SIG_RR;
+    c_op.sig = OP_SIG_DMR;
     c_op.d = d;
     c_op.r1 = r;
 }
@@ -347,7 +347,7 @@ static void build_rrd(OP op, REG r1, REG r2, DATA d) {
 
 static void build_rn(OP op, REG r, u8 n) {
     c_op.op = op;
-    c_op.sig = OP_SIG_RR;
+    c_op.sig = OP_SIG_RN;
     c_op.r1 = r;
     c_op.n = n;
 }

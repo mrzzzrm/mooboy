@@ -72,7 +72,6 @@ static int op_length(op_t op) {
         case OP_SIG_FD:
         case OP_SIG_RMR:
         case OP_SIG_N:
-        case OP_SIG_DMR:
         case OP_SIG_RN:
         case OP_SIG_RMN:
         case OP_SIG_F:
@@ -86,10 +85,23 @@ static int op_length(op_t op) {
         case OP_SIG_D:
         case OP_SIG_RDM:
         case OP_SIG_RRD:
+        case OP_SIG_DMR:
             return 1 + data_length(op.d);
         default:
             assert(0);
     }
+}
+
+int block_index(u16 addr) {
+    int b;
+
+    for (b = 0; b < BLOCK_BUFFER_SIZE; b++) {
+        if (blocks[b].begin == addr) {
+            return b;
+        }
+    }
+
+    return -1;
 }
 
 void record_cpu_cycle() {
@@ -111,30 +123,42 @@ void record_cpu_cycle() {
     }
 
     if(!current_block) {
-        current_block = &blocks[block_cursor];
-        block_cursor++;
-        block_cursor %= BLOCK_BUFFER_SIZE;
-
         u16 pc = PC;
 
-        current_block->begin = pc;
 
-        printf("Entered block\n");
-
-        for (;;) {
-            op_t op = disasm(pc);
-
-            printf("  %.4X: %s\n", pc, disasm_str(op));
-
-            if (is_branch(op)) {
-                current_block->end = pc;
-                break;
+        {
+            int index = block_index(pc);
+            if (index > 0) {
+                current_block = &blocks[index];
+                printf("Entered block %i\n", index);
             }
+            else {
+                current_block = &blocks[block_cursor];
+                current_block->begin = pc;
 
-            assert (pc + op_length(op) <= 0xFFFF);
+                block_cursor++;
+                block_cursor %= BLOCK_BUFFER_SIZE;
 
-            pc += op_length(op);
+                printf("Entered block %i\n", block_cursor);
+
+                for (;;) {
+                    op_t op = disasm(pc);
+
+                    printf("  %.4X: %s\n", pc, disasm_str(op));
+
+                    if (is_branch(op)) {
+                        current_block->end = pc;
+                        break;
+                    }
+
+                    assert (pc + op_length(op) <= 0xFFFF);
+
+                    pc += op_length(op);
+                }
+            }
         }
+
+
     }
 
 //    if (get_record(0)->pc > loops[loop_top-1].end)

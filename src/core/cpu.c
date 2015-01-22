@@ -55,6 +55,7 @@ u8 cpu_step() {
 
 #ifdef DEBUG
     record_cpu_cycle();
+ //   printf("%.4X %.2X\n", PC, mem_read_byte(PC));
 #endif
 
     cpu.op = mem_read_byte(PC++);
