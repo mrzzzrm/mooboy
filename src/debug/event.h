@@ -4,21 +4,22 @@
 #include "core/defines.h"
 
 typedef enum {
-    EVENT_JOY
+    EVENT_JOY_INPUT,
+    EVENT_JOY_NOTICED
 } EVENT_TYPE;
 
 typedef struct {
     EVENT_TYPE type;
 
     union {
-        // EVENT_JOY
+        // EVENT_JOY_INPUT/EVENT_JOY_NOTICED
         struct {
             u8 button;
             u8 state;
         } joy;
     };
-} debug_event_t;
+} event_t;
 
-void debug_event(debug_event_t event);
+void debug_event(event_t event);
 
 #endif // DEBUG_EVENT_H

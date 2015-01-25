@@ -5,6 +5,10 @@
 #include "sys/sys.h"
 #include <SDL/SDL.h>
 
+#ifdef DEBUG
+#include "debug/break.h"
+#endif // DEBUG
+
 input_t input;
 
 void input_init() {
@@ -35,6 +39,10 @@ void input_init() {
     input.keys.accept = SDLK_RETURN;
     input.keys.back = SDLK_ESCAPE;
 #endif
+
+#ifdef DEBUG
+    input.keys.debug = SDLK_b;
+#endif // DEBUG
 }
 
 void input_event(int type, int key) {
@@ -55,4 +63,13 @@ void input_event(int type, int key) {
     if(key == input.keys.b)      joy_set_button(JOY_BUTTON_B, state);
     if(key == input.keys.start)  joy_set_button(JOY_BUTTON_START, state);
     if(key == input.keys.select) joy_set_button(JOY_BUTTON_SELECT, state);
+
+#ifdef DEBUG
+    if(key == input.keys.debug) {
+        if (type == SDL_KEYDOWN) {
+            debug_break();
+        }
+    }
+#endif // DEBUG
 }
+

@@ -7,6 +7,8 @@
 #include "core/cpu.h"
 #include "core/mem.h"
 
+#include "debug.h"
+
 static char out_disasm_str[256] = { '\0' };
 static u16 pc;
 static u8 op;
@@ -34,7 +36,7 @@ static const char* op_str[_OP_COUNT_] = {
     "RLA",
     "RRA",
     "DAA",
-    "RLL",
+    "CPL",
     "SCF",
     "CCF",
     "HALT",
@@ -42,7 +44,7 @@ static const char* op_str[_OP_COUNT_] = {
     "SBC",
     "JP",
     "CALL",
-    "RST"
+    "RST",
     "AND",
     "XOR",
     "OR",
@@ -102,31 +104,31 @@ static const char* data_val(DATA data) {
 
     switch(data) {
         case DATA_A8: {
-            u8 a8 = mem_read_byte(pc + 1);
+            u8 a8 = debug_read_byte(pc + 1);
             sprintf(tmp_str, "%.2X", (int)a8);
             return tmp_str;
         }
 
         case DATA_A16: {
-            u16 a16 = mem_read_word(pc + 1);
+            u16 a16 = debug_read_word(pc + 1);
             sprintf(tmp_str, "%.2X", (int)a16);
             return tmp_str;
         }
 
         case DATA_R8: {
-            u8 r8 = mem_read_byte(pc + 1);
+            u8 r8 = debug_read_byte(pc + 1);
             sprintf(tmp_str, "%s%.2X", r8 > 126 ? "-" : "", (int)(r8 > 126 ? (u8)(~r8 + 1) : r8));
             return tmp_str;
         }
 
         case DATA_D8: {
-            u8 d8 = mem_read_byte(pc + 1);
+            u8 d8 = debug_read_byte(pc + 1);
             sprintf(tmp_str, "%.2X", (int)d8);
             return tmp_str;
         }
 
         case DATA_D16: {
-            u16 d16 = mem_read_word(pc + 1);
+            u16 d16 = debug_read_word(pc + 1);
             sprintf(tmp_str, "%.2X", (int)d16);
             return tmp_str;
         }
@@ -191,23 +193,23 @@ static void str_r() {
 }
 
 static void str_rm() {
-    snprintf(out_disasm_str, sizeof(out_disasm_str), "%s (%s)(%.4X)", op_str[str_op.op], reg_str[str_op.r1], mem_read_word(reg_val(str_op.r1)));
+    snprintf(out_disasm_str, sizeof(out_disasm_str), "%s (%s)(%.2X)", op_str[str_op.op], reg_str[str_op.r1], debug_read_byte(reg_val(str_op.r1)));
 }
 
 static void str_rr() {
-    snprintf(out_disasm_str, sizeof(out_disasm_str), "%s %s, %s(%.4X)", op_str[str_op.op], reg_str[str_op.r1], reg_str[str_op.r2], reg_val(str_op.r2));
+    snprintf(out_disasm_str, sizeof(out_disasm_str), "%s %s(%.4X), %s(%.4X)", op_str[str_op.op], reg_str[str_op.r1], reg_val(str_op.r1), reg_str[str_op.r2], reg_val(str_op.r2));
 }
 
 static void str_rrm() {
-    snprintf(out_disasm_str, sizeof(out_disasm_str), "%s %s, (%s)(%.4X)", op_str[str_op.op], reg_str[str_op.r1], reg_str[str_op.r2], mem_read_word(reg_val(str_op.r2)));
+    snprintf(out_disasm_str, sizeof(out_disasm_str), "%s %s(%.4X), (%s)(%.2X)", op_str[str_op.op], reg_str[str_op.r1], reg_val(str_op.r1), reg_str[str_op.r2], debug_read_byte(reg_val(str_op.r2)));
 }
 
 static void str_rmd() {
-    snprintf(out_disasm_str, sizeof(out_disasm_str), "%s (%s)(%.4X) %s(%s)", op_str[str_op.op], reg_str[str_op.r1], mem_read_word(reg_val(str_op.r1)), data_str[str_op.d], data_val(str_op.d));
+    snprintf(out_disasm_str, sizeof(out_disasm_str), "%s (%s)(%.2X) %s(%s)", op_str[str_op.op], reg_str[str_op.r1], debug_read_byte(reg_val(str_op.r1)), data_str[str_op.d], data_val(str_op.d));
 }
 
 static void str_rd() {
-    snprintf(out_disasm_str, sizeof(out_disasm_str), "%s %s(%.4X), (%s)(%s)", op_str[str_op.op], reg_str[str_op.r1], reg_val(str_op.r1), data_str[str_op.d], data_val(str_op.d));
+    snprintf(out_disasm_str, sizeof(out_disasm_str), "%s %s(%.4X), %s(%s)", op_str[str_op.op], reg_str[str_op.r1], reg_val(str_op.r1), data_str[str_op.d], data_val(str_op.d));
 }
 
 static void str_d() {
@@ -215,7 +217,7 @@ static void str_d() {
 }
 
 static void str_rmr() {
-    snprintf(out_disasm_str, sizeof(out_disasm_str), "%s (%s)(%.4X), %s(%.4X)", op_str[str_op.op], reg_str[str_op.r1], mem_read_word(reg_val(str_op.r1)), reg_str[str_op.r2], reg_val(str_op.r2));
+    snprintf(out_disasm_str, sizeof(out_disasm_str), "%s (%s)(%.2X), %s(%.4X)", op_str[str_op.op], reg_str[str_op.r1], debug_read_byte(reg_val(str_op.r1)), reg_str[str_op.r2], reg_val(str_op.r2));
 }
 
 static void str_n() {
@@ -339,7 +341,7 @@ static void build_rdm(OP op, REG r, DATA d) {
 
 static void build_rrd(OP op, REG r1, REG r2, DATA d) {
     c_op.op = op;
-    c_op.sig = OP_SIG_RR;
+    c_op.sig = OP_SIG_RRD;
     c_op.r1 = r1;
     c_op.r2 = r2;
     c_op.d = d;
@@ -410,7 +412,7 @@ static void build_undefined() {
 op_t disasm(u16 addr)
 {
     pc = addr;
-    op = mem_read_byte(addr);
+    op = debug_read_byte(addr);
 
     switch(op)
     {
@@ -629,7 +631,7 @@ op_t disasm(u16 addr)
         case 0xC8: build_f(OP_RET, FLAG_Z); break;
         case 0xC9: build_noarg(OP_RET); break;
         case 0xCA: build_fd(OP_JP, FLAG_Z, DATA_A16); break;
-        case 0xCB: build_cb(mem_read_byte(addr+1)); break;
+        case 0xCB: build_cb(debug_read_byte(addr+1)); break;
         case 0xCC: build_fd(OP_CALL, FLAG_Z, DATA_A16); break;
         case 0xCD: build_d(OP_CALL, DATA_A16); break;
         case 0xCE: build_rd(OP_ADC, REG_A, DATA_A8); break;

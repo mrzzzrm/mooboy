@@ -8,6 +8,10 @@
 #include "cpu.h"
 #include "mbc.h"
 
+#ifdef DEBUG
+#include "debug/watch.h"
+#endif // DEBUG
+
 ram_t ram;
 card_t card;
 
@@ -39,6 +43,20 @@ void mem_reset() {
 }
 
 u8 mem_read_byte(u16 adr) {
+#ifdef DEBUG
+    {
+        static int recurse = 1;
+
+        if (recurse) {
+            recurse = 0;
+            watch_event_mem_r(adr);
+        }
+        else {
+            recurse = 1;
+        }
+    }
+#endif // DEBUG
+
     switch(adr >> 12) {
         case 0x0: case 0x1: case 0x2: case 0x3:
             return card.rombanks[0][adr];
@@ -98,11 +116,15 @@ u16 mem_read_word(u16 adr) {
 }
 
 void mem_write_byte(u16 adr, u8 val) {
+#ifdef DEBUG
+    u8 watch_old_val = mem_read_byte(adr);
+#endif // DEBUG
+
     switch(adr >> 12) {
         case 0x0: case 0x1: case 0x2: case 0x3:
         case 0x4: case 0x5: case 0x6: case 0x7:
             mbc_lower_write(adr, val);
-        return;
+        break;
         case 0x8: case 0x9:
             if((lcd.stat & 0x03) != 0x03 || !(lcd.c & 0x80)) {
                 lcd_vram_write(adr, val);
@@ -110,19 +132,19 @@ void mem_write_byte(u16 adr, u8 val) {
             else {
                 write_locked_mem(adr, val);
             }
-        return;
+        break;
         case 0xA: case 0xB:
             mbc_upper_write(adr, val);
-        return;
+        break;
         case 0xC:
             ram.rambanks[0][adr - 0xC000] = (mbc.type == 2) ? (val & 0x0F) : val;
-        return;
+        break;
         case 0xD:
             ram.rambank[adr - 0xD000] = (mbc.type == 2) ? (val & 0x0F) : val;
-        return;
+        break;
         case 0xE:
             mem_write_byte(adr - 0x2000, val);
-        return;
+        break;
 
         case 0xF:
             if(adr < 0xFE00) {
@@ -138,7 +160,7 @@ void mem_write_byte(u16 adr, u8 val) {
                 write_locked_mem(adr, val);
             }
             else if(adr >= 0xFF00 && adr < 0xFF80) { // IO Registers
-                return io_write(adr, val);
+                io_write(adr, val);
             }
             else if(adr >= 0xFF80 && adr < 0xFFFF) { // HiRAM
                 ram.hram[adr - 0xFF80] = val;
@@ -146,9 +168,14 @@ void mem_write_byte(u16 adr, u8 val) {
             else {
                 cpu.ie = val & 0x1F;
             }
-        return;
+        break;
+        default:
+            assert(0);
     }
-    assert(0);
+
+#ifdef DEBUG
+    watch_event_mem_w(adr, watch_old_val, mem_read_byte(adr));
+#endif // DEBUG
 }
 
 void mem_write_word(u16 adr, u16 val) {

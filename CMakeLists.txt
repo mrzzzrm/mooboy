@@ -18,7 +18,7 @@ find_package(SDL_image REQUIRED)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_definition(DEBUG)
+    add_definitions(-DDEBUG)
 endif()
 
 add_executable(${EXEC_NAME}
@@ -82,12 +82,18 @@ add_executable(${EXEC_NAME}
     src/menu/sdl/util.h
     src/menu/menu.h
     
+    src/debug/debug.c
+    src/debug/debug.h
     src/debug/disasm.c
     src/debug/disasm.h
     src/debug/event.c
     src/debug/event.h
     src/debug/record.c
     src/debug/record.h
+    src/debug/watch.c
+    src/debug/watch.h
+    src/debug/break.c
+    src/debug/break.h
 
     src/util/last_rom.h
     src/util/card.c

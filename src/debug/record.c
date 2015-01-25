@@ -4,7 +4,6 @@
 #include <stdlib.h>
 
 #include "core/cpu.h"
-#include "core/defines.h"
 
 #include "disasm.h"
 
@@ -12,14 +11,10 @@ typedef struct {
     u16 pc;
 } record_t;
 
-typedef struct {
-    u16 begin;
-    u16 end;
-} block_t;
 
 #define RECORDS_BUFFER_SIZE 4096
 //#define LOOP_STACK_SIZE 128
-#define BLOCK_BUFFER_SIZE 256
+#define BLOCK_BUFFER_SIZE 2560
 
 static int records_cursor = 0;
 static int records_count = 0;
@@ -33,6 +28,7 @@ static record_t records[RECORDS_BUFFER_SIZE];
 static int block_cursor = 0;
 static block_t blocks[BLOCK_BUFFER_SIZE];
 static block_t* current_block = NULL;
+static u16 last_recorded_pc = 0;
 
 static record_t* get_record(int offset) {
     int index = records_cursor + offset - 1;
@@ -50,7 +46,7 @@ static record_t* get_record(int offset) {
 static int is_branch(op_t op) {
     switch(op.op) {
         case OP_JP: case OP_JR: case OP_CALL:
-        case OP_RET: case OP_RETI:
+        case OP_RET: case OP_RETI: case OP_RST:
             return 1;
         default:
             return 0;
@@ -66,7 +62,7 @@ static int data_length(DATA d) {
     }
 }
 
-static int op_length(op_t op) {
+int op_length(op_t op) {
     switch(op.sig) {
         case OP_SIG_NOARG:
         case OP_SIG_FD:
@@ -83,7 +79,9 @@ static int op_length(op_t op) {
         case OP_SIG_RMD:
         case OP_SIG_RD:
         case OP_SIG_D:
+            return 1 + data_length(op.d);
         case OP_SIG_RDM:
+            return 1 + data_length(op.d);
         case OP_SIG_RRD:
         case OP_SIG_DMR:
             return 1 + data_length(op.d);
@@ -108,6 +106,7 @@ void record_cpu_cycle() {
     record_t record;
 
     record.pc = PC;
+    last_recorded_pc = PC;
 
     records[records_cursor] = record;
 
@@ -125,75 +124,41 @@ void record_cpu_cycle() {
     if(!current_block) {
         u16 pc = PC;
 
+        int index = block_index(pc);
+        if (index > 0) {
+            current_block = &blocks[index];
+            //printf("Entered block %i\n", index);
+        }
+        else {
+            current_block = &blocks[block_cursor];
+            current_block->begin = pc;
 
-        {
-            int index = block_index(pc);
-            if (index > 0) {
-                current_block = &blocks[index];
-                printf("Entered block %i\n", index);
-            }
-            else {
-                current_block = &blocks[block_cursor];
-                current_block->begin = pc;
+            block_cursor++;
+            block_cursor %= BLOCK_BUFFER_SIZE;
 
-                block_cursor++;
-                block_cursor %= BLOCK_BUFFER_SIZE;
+            //printf("Entered block %i\n", block_cursor);
 
-                printf("Entered block %i\n", block_cursor);
+            for (;;) {
+                op_t op = disasm(pc);
 
-                for (;;) {
-                    op_t op = disasm(pc);
-
-                    printf("  %.4X: %s\n", pc, disasm_str(op));
-
-                    if (is_branch(op)) {
-                        current_block->end = pc;
-                        break;
-                    }
-
-                    assert (pc + op_length(op) <= 0xFFFF);
-
-                    pc += op_length(op);
+                if (is_branch(op)) {
+                    current_block->end = pc;
+                    break;
                 }
+
+                assert (pc + op_length(op) <= 0xFFFF);
+
+                pc += op_length(op);
             }
         }
+    }
+}
 
-
+block_t * record_get_current_block() {
+    if (PC != last_recorded_pc) {
+        record_cpu_cycle();
     }
 
-//    if (get_record(0)->pc > loops[loop_top-1].end)
-//    {
-//        printf("Left loop %.4X<->%.4X after %i iterations\n", loops[loop_top-1].begin, loops[loop_top-1].end, loops[loop_top-1].iterations);
-//
-//        in_loop = 0;
-//        loop_top--;
-//    }
-//
-//    if (get_record(0)->pc < get_record(-1)->pc) {
-//        if (records_count > 1 && (loop_top == 0 || get_record(0)->pc != loops[loop_top-1].begin))
-//        {
-//            assert(loop_top < LOOP_STACK_SIZE);
-//
-//            loop_t loop;
-//
-//            loop.begin = get_record(0)->pc;
-//            loop.end = get_record(-1)->pc;
-//            loop.iterations = 0;
-//
-//            loops[loop_top] = loop;
-//            loop_top++;
-//
-//            in_loop = 1;
-//
-//            printf("Entered loop %.4X<->%.4X\n", loop.begin, loop.end);
-//        }
-//        if (loop_top > 0) {
-//            loops[loop_top-1].iterations++;
-//        }
-//    }
-//
-//    if (!in_loop) {
-//        printf("%4X: %s\n", PC, disasm(PC));
-//    }
+    return current_block;
 }
 

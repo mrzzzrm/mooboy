@@ -21,13 +21,14 @@ void joy_set_button(u8 button, u8 state) {
     u8 old_state = joy.state & button ? JOY_STATE_RELEASED : JOY_STATE_PRESSED;
     if(old_state != state) {
 #ifdef DEBUG
-        debug_event_t event;
-        event.type = EVENT_JOY;
+        event_t event;
+        event.type = EVENT_JOY_INPUT;
         event.joy.button = button;
         event.joy.state = state;
 
         debug_event(event);
 #endif // DEBUG
+
         if(state) {
             joy.state |= button;
         }
@@ -45,12 +46,27 @@ void joy_select_col(u8 flag) {
     else if((~flag) & SELECT_DIRECTION_BIT) {
         joy.col = 0;
     }
+    else {
+        joy.col = 0xFF;
+    }
 }
 
 u8 joy_read() {
+#ifdef DEBUG
+    if ((joy.col == 0 ? joy.state & 0x0F : joy.state >> 4) != 0xF) {
+        event_t event;
+        event.type = EVENT_JOY_NOTICED;
+        event.joy.state = joy.state;
+
+        debug_event(event);
+    }
+#endif // DEBUG
+
     if(joy.col == 0)
-        return joy.state & 0x0F;
+        return SELECT_ACTION_BIT | (joy.state & 0x0F);
+    else if (joy.col == 1)
+        return SELECT_DIRECTION_BIT | (joy.state >> 4);
     else
-        return joy.state >> 4;
+        return SELECT_ACTION_BIT | SELECT_DIRECTION_BIT;
 }
 
