@@ -7,6 +7,9 @@ typedef struct {
         int a, b, start, select;
 
         int menu, accept, back;
+#ifdef DEBUG
+        int debug;
+#endif
     } keys;
 } input_t;
 

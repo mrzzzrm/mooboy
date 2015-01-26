@@ -159,7 +159,8 @@ static void sort_entries() {
             if(!direntries[e]->is_file && direntries[e+1]->is_file) {
                 continue;
             }
-            if(strcasecmp(direntries[e]->name, direntries[e+1]->name) > 0) {
+            if(strcasecmp(direntries[e]->name, "..") > 0 &&
+               strcasecmp(direntries[e]->name, direntries[e+1]->name) > 0) {
                 swap_entries(e);
                 swapped = 1;
             }

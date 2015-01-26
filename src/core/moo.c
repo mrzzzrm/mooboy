@@ -29,6 +29,9 @@
 #include "util/speed.h"
 #include "sound.h"
 
+#ifdef DEBUG
+#include "debug/debug.h"
+#endif
 
 moo_t moo;
 
@@ -195,6 +198,9 @@ static void moo_cycle(int num) {
             hw_step(1);
         }
         else {
+#ifdef DEBUG
+            debug_step();
+#endif // DEBUG
             u8 mcs = cpu_step();
             hw_step(mcs);
         }

@@ -14,6 +14,9 @@
 #include "timers.h"
 #include "sys/sys.h"
 
+#ifdef DEBUG
+#include "debug/record.h"
+#endif
 
 cpu_t cpu;
 
@@ -49,6 +52,11 @@ void cpu_reset() {
 
 u8 cpu_step() {
     ints_handle();
+
+#ifdef DEBUG
+    record_cpu_cycle();
+#endif
+
     cpu.op = mem_read_byte(PC++);
     return op_exec();
 }

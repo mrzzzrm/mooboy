@@ -1,3 +1,7 @@
+0.3
+    - Fixed speed_factor not being loaded from config
+    - Fixed ".." in rom browser being displayed below certain directories
+
 0.2
 	- Fixed glitches in Alfred's Adventure, Chuck Rock
 	- Fixed RTC progressing day one hour late
