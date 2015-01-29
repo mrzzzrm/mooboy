@@ -44,17 +44,7 @@ void mem_reset() {
 
 u8 mem_read_byte(u16 adr) {
 #ifdef DEBUG
-    {
-        static int recurse = 1;
-
-        if (recurse) {
-            recurse = 0;
-            watch_event_mem_r(adr);
-        }
-        else {
-            recurse = 1;
-        }
-    }
+    watch_event_mem_r(adr);
 #endif // DEBUG
 
     switch(adr >> 12) {

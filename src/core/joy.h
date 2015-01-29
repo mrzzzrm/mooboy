@@ -17,7 +17,8 @@
 
 typedef struct {
     u8 state;
-    u8 col;
+    u8 col; // deprecated
+    u8 reg;
 } joy_t;
 
 extern joy_t joy;
@@ -25,7 +26,8 @@ extern joy_t joy;
 void joy_reset();
 
 void joy_set_button(u8 button, u8 state);
+
 u8 joy_read();
-void joy_select_col(u8 flag);
+void joy_write(u8 val);
 
 #endif

@@ -80,7 +80,7 @@ static value_t values[] = {
     V(cpu.freq_factor),
     V(cpu.freq_switch),
     V(cpu.halted),
-    V(joy.col),
+    V(joy.reg),
     VA(lcd.fb),
     V(lcd.c),
     V(lcd.stat),

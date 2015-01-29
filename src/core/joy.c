@@ -12,13 +12,37 @@
 
 joy_t joy;
 
+static void update_reg() {
+    u8 old_lines = joy.reg;
+
+    joy.reg &= 0x30;
+    joy.reg |= 0xC0;
+
+    u8 keys = ~joy.state;
+
+    if (!(joy.reg & SELECT_DIRECTION_BIT)) {
+        joy.reg |= (keys & 0x0F);
+    }
+
+    if (!(joy.reg & SELECT_ACTION_BIT)) {
+        joy.reg |= (keys >> 4);
+    }
+
+    joy.reg ^= 0x0F;
+
+    if (old_lines & ~joy.reg & 0x0F) {
+        cpu.irq |= IF_JOYPAD;
+    }
+}
+
 void joy_reset() {
     joy.state = 0xFF;
-    joy.col = 0;
+    joy.reg = 0xFF;
 }
 
 void joy_set_button(u8 button, u8 state) {
     u8 old_state = joy.state & button ? JOY_STATE_RELEASED : JOY_STATE_PRESSED;
+
     if(old_state != state) {
 #ifdef DEBUG
         event_t event;
@@ -33,40 +57,19 @@ void joy_set_button(u8 button, u8 state) {
             joy.state |= button;
         }
         else {
-            joy.state ^= button;
-            cpu.irq |= IF_JOYPAD;
+            joy.state &= ~button;
         }
+
+        update_reg();
     }
 }
 
-void joy_select_col(u8 flag) {
-    if((~flag) & SELECT_ACTION_BIT) {
-        joy.col = 1;
-    }
-    else if((~flag) & SELECT_DIRECTION_BIT) {
-        joy.col = 0;
-    }
-    else {
-        joy.col = 0xFF;
-    }
+void joy_write(u8 val) {
+    joy.reg = val;
+    update_reg();
 }
 
 u8 joy_read() {
-#ifdef DEBUG
-    if ((joy.col == 0 ? joy.state & 0x0F : joy.state >> 4) != 0xF) {
-        event_t event;
-        event.type = EVENT_JOY_NOTICED;
-        event.joy.state = joy.state;
-
-        debug_event(event);
-    }
-#endif // DEBUG
-
-    if(joy.col == 0)
-        return SELECT_ACTION_BIT | (joy.state & 0x0F);
-    else if (joy.col == 1)
-        return SELECT_DIRECTION_BIT | (joy.state >> 4);
-    else
-        return SELECT_ACTION_BIT | SELECT_DIRECTION_BIT;
+    return joy.reg;
 }
 

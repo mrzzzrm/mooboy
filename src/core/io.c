@@ -86,7 +86,7 @@ void io_write(u16 adr, u8 val) {
     u8 reg = adr & 0x00FF;
 
     switch(reg) {
-        case 0x00: joy_select_col(val); break;
+        case 0x00: joy_write(val); break;
 
         case 0x01: /*serial.sb = val;*/  break;
         case 0x02: /*serial_sc_write(val);*/ break;
