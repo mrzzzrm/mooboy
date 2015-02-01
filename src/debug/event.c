@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include "core/joy.h"
+#include "core/cpu.h"
 
 #include "break.h"
 #include "debug.h"
@@ -44,6 +45,11 @@ static void joy_read_event() {
     break_handle_event(current_event);
 }
 
+static void pc_address_event() {
+    // printf("PC: %.4X\n", PC);
+    break_handle_event(current_event);
+}
+
 void debug_event(event_t event) {
     if (in_debug_scope()) {
         return;
@@ -54,6 +60,7 @@ void debug_event(event_t event) {
     switch(event.type) {
         case EVENT_JOY_INPUT: joy_input_event(); break;
         case EVENT_JOY_NOTICED: joy_read_event(); break;
+        case EVENT_PROGRAM_COUNTER: pc_address_event(); break;
         default:
             assert(0);
     }

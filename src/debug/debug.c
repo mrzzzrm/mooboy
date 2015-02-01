@@ -79,6 +79,11 @@ static void cmd_break(char* tail) {
         bp.address.pc = strtol(bpc, NULL, 16);
         valid_bp = 1;
     }
+    else if (!strcmp(subcmd, "clear")) {
+        printf("Cleared all breakpoints\n", subcmd);
+        break_clear();
+        return;
+    }
     else {
         printf("Unknown break command '%s'\n", subcmd);
         valid_bp = 0;

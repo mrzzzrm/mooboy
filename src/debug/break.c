@@ -38,6 +38,14 @@ void break_disable(int id) {
     breakpoints[id].enabled = 0;
 }
 
+void break_clear() {
+    int i; 
+    for (i = 0; i < BREAKPOINT_BUFFER_SIZE; i++) {
+        break_disable(i);
+    }
+    breakpoint_cursor = 0;
+}
+
 void break_handle_event(event_t event) {
     int b;
     for (b = 0; b < breakpoint_cursor; b++) {
