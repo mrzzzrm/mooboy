@@ -15,6 +15,9 @@
 #define JOY_STATE_PRESSED   0x00
 #define JOY_STATE_RELEASED  0x01
 
+#define SELECT_DIRECTION_BIT 0x10
+#define SELECT_ACTION_BIT 0x20
+
 typedef struct {
     u8 state;
     u8 col;

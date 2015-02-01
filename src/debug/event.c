@@ -40,7 +40,7 @@ static void joy_input_event() {
 }
 
 static void joy_read_event() {
-    printf("JOY READ\n");
+    printf("JOY READ: Pad %.2X Buttons %.2X\n", (joy.state >> 4), (joy.state & 0x0F));
     break_handle_event(current_event);
 }
 

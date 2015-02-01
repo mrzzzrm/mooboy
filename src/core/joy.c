@@ -7,8 +7,7 @@
 #include "debug/event.h"
 #endif // DEBUG
 
-#define SELECT_DIRECTION_BIT 0x10
-#define SELECT_ACTION_BIT 0x20
+
 
 joy_t joy;
 
