@@ -16,6 +16,7 @@
 
 #ifdef DEBUG
 #include "debug/record.h"
+#include "debug/event.h"
 #endif
 
 cpu_t cpu;
