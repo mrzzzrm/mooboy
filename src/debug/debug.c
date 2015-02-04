@@ -175,6 +175,38 @@ static void cmd_cpureg() {
     printf("PC = %.4X\n", PC);
 }
 
+static void cmd_memdump(char* tail) {
+    char* startaddr = word(&tail);
+    assert(*startaddr != '\0');
+    char* endaddr = word(&tail);
+    if (*endaddr == '\0') {
+        endaddr = startaddr;
+    }
+
+    u16 curaddr = strtol(startaddr, NULL, 16);
+    u16 finish = strtol(endaddr, NULL, 16);
+    if (finish < curaddr) {
+        finish = curaddr + 0x10;
+    }
+    u8 needaddrmarker = 1;
+    int newlineat = 16;
+    while (curaddr <= finish) {
+         if (needaddrmarker != 0) {
+             printf("%.4X | ", curaddr);
+             newlineat = 16;
+             needaddrmarker = 0;
+         }
+         printf("%.2X ", debug_read_byte(curaddr));
+         newlineat--;
+         if (newlineat == 0) {
+             needaddrmarker = 1;
+             printf("\n");
+         }
+         curaddr++;
+    }
+    printf("\n");
+}
+
 void debug_step() {
     int continue_emulation = !break_now();
 
@@ -233,6 +265,9 @@ void debug_step() {
         }
         else if (!strcmp("c", cmd)) {
             cmd_cpureg();
+        }
+        else if (!strcmp("m", cmd)) {
+            cmd_memdump(trim(tail));
         }
         else {
             printf("Unknown cmd '%s'\n", cmd);
