@@ -5,7 +5,8 @@
 
 typedef enum {
     EVENT_JOY_INPUT,
-    EVENT_JOY_NOTICED
+    EVENT_JOY_NOTICED,
+    EVENT_PROGRAM_COUNTER
 } EVENT_TYPE;
 
 typedef struct {
@@ -17,6 +18,10 @@ typedef struct {
             u8 button;
             u8 state;
         } joy;
+        // EVENT_PROGRAM_COUNTER
+        struct {
+          u16 pc;
+        } address;
     };
 } event_t;
 

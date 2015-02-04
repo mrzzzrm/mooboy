@@ -72,6 +72,18 @@ static void cmd_break(char* tail) {
         int i = atoi(subsubcmd);
         break_disable(i);
     }
+    else if (!strcmp(subcmd, "pc")) {
+        char* bpc = word(&tail);
+        assert(*bpc != '\0');
+        bp.type = BREAKPOINT_ADDRESS;
+        bp.address.pc = strtol(bpc, NULL, 16);
+        valid_bp = 1;
+    }
+    else if (!strcmp(subcmd, "clear")) {
+        printf("Cleared all breakpoints\n", subcmd);
+        break_clear();
+        return;
+    }
     else {
         printf("Unknown break command '%s'\n", subcmd);
         valid_bp = 0;
@@ -122,6 +134,11 @@ static void cmd_watch(char* tail) {
     else if (!strcmp(subcmd, "mem-w")) {
         watchpoint.type = WATCHPOINT_MEM_W;
     }
+    else if (!strcmp(subcmd, "clear")) {
+        printf("Cleared all watches\n", subcmd);
+        watch_clear();
+        return;
+    }
     else {
         printf("Unknown watch subcommand '%s'\n", subcmd);
         return;
@@ -147,6 +164,47 @@ static void cmd_watch(char* tail) {
     }
 
     watch_enable(watchpoint);
+}
+
+static void cmd_cpureg() {
+    printf("AF [ A = %.2X ; F = %.2X ]\n", A, F);
+    printf("BC [ B = %.2X ; C = %.2X ]\n", B, C);
+    printf("DE [ D = %.2X ; E = %.2X ]\n", D, E);
+    printf("HL [ H = %.2X ; L = %.2X ]\n", H, L);
+    printf("SP = %.4X\n", SP);
+    printf("PC = %.4X\n", PC);
+}
+
+static void cmd_memdump(char* tail) {
+    char* startaddr = word(&tail);
+    assert(*startaddr != '\0');
+    char* endaddr = word(&tail);
+    if (*endaddr == '\0') {
+        endaddr = startaddr;
+    }
+
+    u16 curaddr = strtol(startaddr, NULL, 16);
+    u16 finish = strtol(endaddr, NULL, 16);
+    if (finish < curaddr) {
+        finish = curaddr + 0x10;
+    }
+    u8 needaddrmarker = 1;
+    int newlineat = 16;
+    while (curaddr <= finish) {
+         if (needaddrmarker != 0) {
+             printf("%.4X | ", curaddr);
+             newlineat = 16;
+             needaddrmarker = 0;
+         }
+         printf("%.2X ", debug_read_byte(curaddr));
+         newlineat--;
+         if (newlineat == 0) {
+             needaddrmarker = 1;
+             printf("\n");
+         }
+         curaddr++;
+    }
+    printf("\n");
 }
 
 void debug_step() {
@@ -204,6 +262,12 @@ void debug_step() {
         }
         else if (!strcmp("w", cmd)) {
             cmd_watch(trim(tail));
+        }
+        else if (!strcmp("c", cmd)) {
+            cmd_cpureg();
+        }
+        else if (!strcmp("m", cmd)) {
+            cmd_memdump(trim(tail));
         }
         else {
             printf("Unknown cmd '%s'\n", cmd);

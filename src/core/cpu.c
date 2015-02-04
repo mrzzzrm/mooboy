@@ -16,6 +16,7 @@
 
 #ifdef DEBUG
 #include "debug/record.h"
+#include "debug/event.h"
 #endif
 
 cpu_t cpu;
@@ -55,6 +56,11 @@ u8 cpu_step() {
 
 #ifdef DEBUG
     record_cpu_cycle();
+		
+    event_t event;
+    event.type = EVENT_PROGRAM_COUNTER;
+    event.address.pc = PC;
+    debug_event(event);
 #endif
 
     cpu.op = mem_read_byte(PC++);

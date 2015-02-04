@@ -36,6 +36,14 @@ void watch_disable(int id) {
     watchpoint_enabled[id] = 0;
 }
 
+void watch_clear() {
+    int i; 
+    for (i = 0; i < WATCHPOINT_BUFFER_SIZE; i++) {
+        watch_disable(i);
+    }
+    watchpoint_cursor = 0;
+}
+
 void watch_event_mem_w(u16 addr, u8 a, u8 b) {
     if (in_debug_scope()) {
         return;

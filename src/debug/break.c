@@ -38,9 +38,22 @@ void break_disable(int id) {
     breakpoints[id].enabled = 0;
 }
 
+void break_clear() {
+    int i; 
+    for (i = 0; i < BREAKPOINT_BUFFER_SIZE; i++) {
+        break_disable(i);
+    }
+    breakpoint_cursor = 0;
+}
+
 void break_handle_event(event_t event) {
     int b;
     for (b = 0; b < breakpoint_cursor; b++) {
+        if (breakpoints[b].breakpoint.type == BREAKPOINT_ADDRESS) {
+            if (event.type == EVENT_PROGRAM_COUNTER && event.address.pc == breakpoints[b].breakpoint.address.pc ) {
+                now = 1;
+            }
+        }
         if (breakpoints[b].breakpoint.type == BREAKPOINT_EVENT) {
             if (event.type == EVENT_JOY_NOTICED) {
                 now = 1;
